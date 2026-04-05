@@ -272,6 +272,25 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
             <option value="sec">Accent colour</option>
           </select>
         </div>
+        <div class="frow">
+          <div class="fl">
+            <label>Who is this page for?</label>
+            <select id="f-audience">
+              <option value="all">Students, parents &amp; community</option>
+              <option value="students">Students</option>
+              <option value="parents">Parents &amp; families</option>
+              <option value="staff">Staff</option>
+            </select>
+          </div>
+          <div class="fl">
+            <label>School level</label>
+            <select id="f-level">
+              <option value="all">All ages</option>
+              <option value="primary">Primary school</option>
+              <option value="secondary">Secondary school</option>
+            </select>
+          </div>
+        </div>
         <div class="step-actions">
           <button class="btn-back" onclick="goBack('title')">&#8592; Back</button>
           <button class="btn-next" onclick="nextStep('title')">Continue &#8594;</button>
@@ -292,6 +311,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         <div class="img-prev" id="hero-prev">
           <img id="hero-prev-img" src="" alt="">
           <button class="img-prev-rm" onclick="removeHero()">&#10005; Remove</button>
+        </div>
+        <div class="fl" style="margin-top:10px">
+          <label>Describe this photo <span class="opt">(required for accessibility)</span></label>
+          <input type="text" id="f-hero-alt" placeholder="e.g. Students studying in the Resource Centre">
+          <div class="fhint">This description helps visually impaired students using screen readers.</div>
         </div>
         <div class="step-actions" style="margin-top:14px">
           <button class="btn-back" onclick="goBack('photo')">&#8592; Back</button>
@@ -714,8 +738,10 @@ async function uploadCloudinary(file){
 // ── VIEW SWITCHING ──
 function setView(mode){
   currentView = mode;
-  // Hide all
+
+  // Reset all panels
   g('prevscroll').style.display = 'none';
+  g('iframe-wrap').style.display = 'none';
   g('wysiwyg-wrap').style.display = 'none';
   g('codeview').style.display = 'none';
   g('wysiwyg-toolbar').classList.remove('show');
@@ -723,22 +749,25 @@ function setView(mode){
   document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
 
   if(mode==='preview'){
+    // Show scroll container + iframe inside it
     g('prevscroll').style.display = '';
+    if(genHTML) g('iframe-wrap').style.display = 'block';
     g('vbtn-preview').classList.add('on');
-    // Make iframe non-editable
-    var iw=g('iframe-wrap');if(iw)iw.style.pointerEvents='none';
+
   } else if(mode==='edit'){
-    if(!genHTML){setView('preview');return;}
-    // Populate editor with current content
+    if(!genHTML){ setView('preview'); return; }
+    // IMPORTANT: prevscroll must be visible — wysiwyg-wrap lives inside it
+    g('prevscroll').style.display = '';
     g('wysiwyg-editor').innerHTML = genHTML;
     g('wysiwyg-wrap').style.display = 'block';
     g('wysiwyg-toolbar').classList.add('show');
     g('edit-notice').classList.add('show');
     g('vbtn-edit').classList.add('on');
-    // Also update code view
-    g('code-out').textContent = genHTML;
+    setTimeout(function(){ g('wysiwyg-editor').focus(); }, 100);
+
   } else if(mode==='code'){
     g('codeview').style.display = 'block';
+    g('code-out').textContent = genHTML;
     g('vbtn-code').classList.add('on');
   }
 }
@@ -813,20 +842,77 @@ function generate(){
 }
 
 function buildSystem(){
-  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.\n\n'
-    +'OUTPUT RULES:\n'
-    +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.\n'
-    +'2. No script tags.\n'
-    +'3. No external fonts or CDN links.\n'
-    +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n'
-    +'5. One <style> block at the top. All CSS class names prefixed with sp-.\n'
-    +'6. Output ONLY the HTML. No markdown, no backticks, no explanation.\n\n'
-    +'CONTENT RULES:\n'
-    +'- Preserve the school\'s exact wording. Do not rewrite or paraphrase any text.\n'
-    +'- Structure content with appropriate headings and sections based on natural breaks in the text.\n'
-    +'- If you spot important notices, warnings, deadlines, or key facts, format them as styled callout boxes (blue info style).\n'
-    +'- Split long blocks into readable paragraphs.\n'
-    +'- Professional Australian school tone.';
+  var audience = gv('f-audience') || 'all';
+  var level = gv('f-level') || 'all';
+  var audienceNote = {
+    'all': 'The audience includes students, parents and the wider school community.',
+    'students': 'The audience is students. Use clear, engaging, age-appropriate language.',
+    'parents': 'The audience is parents and families. Use warm, reassuring, informative language.',
+    'staff': 'The audience is school staff. Use professional, direct language.'
+  }[audience];
+  var levelNote = {
+    'all': '',
+    'primary': 'This is a primary school page — keep language simple and warm.',
+    'secondary': 'This is a secondary school page — language can be more detailed and formal.'
+  }[level];
+
+  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.
+
+'
+    +'OUTPUT RULES:
+'
+    +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.
+'
+    +'2. No script tags.
+'
+    +'3. No external fonts or CDN links.
+'
+    +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.
+'
+    +'5. One <style> block at the top. All CSS class names prefixed with sp-.
+'
+    +'6. Output ONLY the HTML. No markdown, no backticks, no explanation.
+
+'
+    +'CONTENT RULES:
+'
+    +'- Preserve the school's exact wording. Do not rewrite or paraphrase any text.
+'
+    +'- Structure content with appropriate headings and sections based on natural breaks in the text.
+'
+    +'- If you spot important notices, warnings, deadlines, or key facts, format them as styled callout boxes.
+'
+    +'- Split long blocks into readable paragraphs.
+'
+    +'- '+audienceNote+'
+'
+    +(levelNote?'- '+levelNote+'
+':'')
+    +'
+'
+    +'ACCESSIBILITY — WCAG 2.1 AA (Queensland Department of Education Standard):
+'
+    +'- Every <img> tag MUST include a descriptive alt attribute. Example: alt="Students studying in the library"
+'
+    +'- For decorative images with no informational value, use alt=""
+'
+    +'- Use proper semantic heading hierarchy: h2 for main section headings, h3 for sub-sections. Never skip levels.
+'
+    +'- All link text must be descriptive — never use "click here" or "read more". Use the destination name instead.
+'
+    +'- Add visible :focus styles to all links: outline: 2px solid #2B5CE6; outline-offset: 2px;
+'
+    +'- Use semantic HTML: <ul>/<ol> for lists, never just bullet characters in <p> tags.
+'
+    +'- Ensure body text (#333 or darker) on white backgrounds for sufficient contrast.
+'
+    +'- Do not rely on colour alone to convey meaning — use icons or text labels too.
+'
+    +'- Add role="region" and aria-label attributes to major page sections.
+'
+    +'- Tile grid links must have aria-label="[tile name] - opens in new tab" attributes.
+'
+    +'- Callout boxes must include a visually hidden prefix like "Important: " or "Note: " for screen readers.';
 }
 
 function buildPrompt(pri,sec){
@@ -846,7 +932,8 @@ function buildPrompt(pri,sec){
 
   // Hero image
   if(heroImageUrl&&!skipped['photo']){
-    lines.push(n+'. HERO IMAGE: <img src="'+heroImageUrl+'"> \u2014 width:100%; max-height:320px; object-fit:cover; display:block.');
+    var heroAlt = gv('f-hero-alt')||'Page banner image';
+    lines.push(n+'. HERO IMAGE: <img src="'+heroImageUrl+'" alt="'+heroAlt+'"> \u2014 width:100%; max-height:320px; object-fit:cover; display:block. IMPORTANT: use the exact alt text provided.');
     n++;
   }
 
