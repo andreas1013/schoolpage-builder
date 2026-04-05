@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SchoolPage Builder</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F2F1ED;--white:#fff;--surface:#FAFAF8;
+  --border:#E5E2DB;--border2:#D0CCC4;
+  --ink:#1A1A1A;--ink2:#4A4A4A;--ink3:#8A8A8A;
+  --blue:#2B5CE6;--blue-lt:#EEF2FF;
+  --green:#1A9E5C;--red:#E03434;
+  --r:10px;--rs:7px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
+
+/* API KEY BANNER */
+#api-banner{background:#1e293b;color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:44px;flex-shrink:0}
+#api-banner span{font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
+#api-key-input{flex:1;max-width:340px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:12px;font-family:monospace;outline:none}
+#api-key-input::placeholder{color:rgba(255,255,255,.3)}
+#api-key-input:focus{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.12)}
+#api-banner a{color:#60a5fa;font-size:11px;white-space:nowrap}
+.key-ok{color:#4ade80;font-size:11px;display:none}
+.key-ok.show{display:block}
+
+/* TOP BAR */
+#topbar{height:50px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
+.logo{font-size:15px;font-weight:700;color:var(--ink)}
+.logo span{color:var(--blue)}
+.sep{width:1px;height:18px;background:var(--border)}
+.school-input{border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--ink);outline:none;width:180px;font-family:inherit;background:var(--surface)}
+.school-input:focus{border-color:var(--blue)}
+.color-pills{display:flex;gap:6px}
+.cpill{display:flex;align-items:center;gap:5px;padding:4px 10px 4px 5px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink3);cursor:pointer;background:var(--surface)}
+.cpill:hover{border-color:var(--border2)}
+.cdot{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.12);overflow:hidden;flex-shrink:0}
+.cdot input[type=color]{width:32px;height:32px;margin:-7px;border:none;cursor:pointer;background:none;padding:0}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+#status{font-size:11px;color:var(--ink3)}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:var(--rs);font-size:12px;font-weight:600;padding:8px 14px;transition:all .15s}
+#btn-gen{background:var(--ink);color:#fff}
+#btn-gen:hover{background:#000;transform:translateY(-1px)}
+#btn-gen:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#btn-copy{background:var(--green);color:#fff;display:none}
+#btn-copy:hover{opacity:.85}
+#btn-copy.show{display:block}
+
+/* LAYOUT */
+#app{display:flex;overflow:hidden}
+#app{height:calc(100vh - 50px)} /* adjusted below if api banner shown */
+
+/* LEFT PANEL */
+#left{width:370px;min-width:330px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+#bscroll{flex:1;overflow-y:auto;padding:10px}
+#bscroll::-webkit-scrollbar{width:3px}
+#bscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#bempty{text-align:center;padding:36px 16px;color:var(--ink3);font-size:12px}
+#addbar{flex-shrink:0;padding:10px 10px 12px;border-top:1px solid var(--border);background:var(--surface)}
+.add-lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:5px 10px;font-size:11px;font-weight:500;border:1px solid var(--border);border-radius:20px;background:var(--white);color:var(--ink2)}
+.chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+
+/* BLOCK CARDS */
+.bc{background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;overflow:hidden;transition:border-color .12s}
+.bc:hover{border-color:var(--border2)}
+.bc-hd{display:flex;align-items:center;gap:8px;padding:9px 10px 9px 14px;cursor:pointer;position:relative}
+.bc-stripe{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.bc-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;flex-shrink:0}
+.bc-prev{flex:1;font-size:11px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.bc-del{background:none;border:none;color:var(--ink3);font-size:16px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;flex-shrink:0;padding:0}
+.bc-del:hover{background:#fee2e2;color:var(--red)}
+.bc-chev{font-size:10px;color:var(--ink3);flex-shrink:0;transition:transform .15s}
+.bc.open .bc-chev{transform:rotate(90deg)}
+.bc-body{display:none;padding:0 10px 11px 14px;border-top:1px solid var(--border)}
+.bc.open .bc-body{display:block}
+
+/* FIELDS */
+.fsec{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin:11px 0 7px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.fsec:first-child{margin-top:10px}
+.fl{margin-bottom:9px}
+.fl:last-child{margin-bottom:0}
+.fl label{display:block;font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:4px}
+.fl input,.fl textarea,.fl select{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;background:var(--surface);color:var(--ink);outline:none;transition:border-color .12s;line-height:1.4}
+.fl input:focus,.fl textarea:focus,.fl select:focus{border-color:var(--blue);background:var(--white)}
+.fl textarea{resize:vertical;min-height:60px}
+.fhint{font-size:10px;color:var(--ink3);margin-top:3px;line-height:1.4}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+
+/* REPEATABLE ITEMS */
+.kv-list,.link-list,.sub-list,.tile-list{display:flex;flex-direction:column;gap:4px;margin-bottom:5px}
+.kv-row,.link-row{display:flex;gap:4px;align-items:center}
+.kv-row input:first-child{flex:0 0 95px}
+.kv-row input:last-of-type,.link-row input{flex:1}
+.delbtn{background:var(--surface);border:1px solid var(--border);border-radius:4px;width:22px;height:22px;padding:0;color:var(--ink3);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.delbtn:hover{background:#fee2e2;color:var(--red);border-color:#fca5a5}
+.addbtn{background:none;border:1px dashed var(--border2);border-radius:var(--rs);padding:5px 9px;width:100%;font-size:11px;font-weight:500;color:var(--ink3);margin-top:4px}
+.addbtn:hover{border-color:var(--blue);color:var(--blue)}
+.sub-item,.tile-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:9px;margin-bottom:4px}
+.item-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.item-lbl{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px}
+
+/* RIGHT PANEL */
+#right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#prevbar{height:40px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+.pbar-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px}
+.vtog{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:2px;gap:2px;margin-left:auto}
+.vbtn{padding:3px 10px;border-radius:5px;background:none;border:none;font-size:11px;font-weight:500;color:var(--ink3);cursor:pointer}
+.vbtn.on{background:var(--white);color:var(--ink);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#prevscroll{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
+#prevscroll::-webkit-scrollbar{width:4px}
+#prevscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+#prev-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.prev-tag{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+#prev-empty{padding:60px 24px;text-align:center}
+#prev-empty .pe-t{font-size:15px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+#prev-empty .pe-s{font-size:12px;color:var(--ink3);line-height:1.6;max-width:280px;margin:0 auto}
+#loading-area{display:none;flex-direction:column;align-items:center;gap:12px;padding:40px}
+#loading-area.show{display:flex}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#err-box{display:none;margin:12px;padding:12px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--rs);font-size:12px;color:#b91c1c;line-height:1.5}
+#err-box.show{display:block}
+#iframe-wrap{display:none}
+#preview-iframe{width:100%;border:none;display:block;min-height:100px}
+#codeview{display:none;flex:1;overflow-y:auto;background:#0d1117;padding:16px}
+#codeview pre{font-family:'Courier New',monospace;font-size:11px;color:#8b949e;white-space:pre-wrap;word-break:break-all;line-height:1.65}
+#pastebar{display:none;background:var(--white);border-top:1px solid var(--border);padding:9px 16px;flex-shrink:0;align-items:center;gap:10px;flex-wrap:wrap}
+#pastebar.show{display:flex}
+.pb-lbl{font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.pb-steps{font-size:11px;color:var(--ink2)}
+.pb-code{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:10px}
+</style>
+</head>
+<body>
+
+<!-- API KEY BANNER -->
+<div id="api-banner">
+  <span>Anthropic API Key:</span>
+  <input id="api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off">
+  <span class="key-ok" id="key-ok">&#10003; Key saved</span>
+  <a href="https://console.anthropic.com/settings/keys" target="_blank">Get a key →</a>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">School<span>Page</span></div>
+  <div class="sep"></div>
+  <input class="school-input" id="school-name" type="text" placeholder="School name..." value="Western Cape College">
+  <div class="sep"></div>
+  <div class="color-pills">
+    <div class="cpill"><div class="cdot" id="d-pri" style="background:#1a3a6b"><input type="color" id="c-pri" value="#1a3a6b" oninput="sc()"></div>Primary</div>
+    <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="sc()"></div>Secondary</div>
+    <div class="cpill"><div class="cdot" id="d-txt" style="background:#fff;border:1px solid #ddd"><input type="color" id="c-txt" value="#ffffff" oninput="sc()"></div>On primary</div>
+  </div>
+  <div class="tb-right">
+    <span id="status"></span>
+    <button id="btn-copy" onclick="copyHTML()">Copy HTML</button>
+    <button id="btn-gen" onclick="generate()">&#10024; Generate</button>
+  </div>
+</div>
+
+<div id="app">
+  <!-- LEFT -->
+  <div id="left">
+    <div id="bscroll">
+      <div id="blist"></div>
+      <div id="bempty">No blocks yet — add some below</div>
+    </div>
+    <div id="addbar">
+      <div class="add-lbl">Add a block</div>
+      <div class="chips">
+        <button class="chip" onclick="ab('banner')">Banner</button>
+        <button class="chip" onclick="ab('image')">Image</button>
+        <button class="chip" onclick="ab('infobar')">Info bar</button>
+        <button class="chip" onclick="ab('text')">Text</button>
+        <button class="chip" onclick="ab('section')">Section</button>
+        <button class="chip" onclick="ab('subsections')">Sub-sections</button>
+        <button class="chip" onclick="ab('tiles')">Tiles</button>
+        <button class="chip" onclick="ab('callout')">Callout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right">
+    <div id="prevbar">
+      <span class="pbar-lbl">Preview</span>
+      <div class="vtog">
+        <button class="vbtn on" id="vv" onclick="sv('vis')">Visual</button>
+        <button class="vbtn" id="vc" onclick="sv('code')">HTML</button>
+      </div>
+    </div>
+    <div id="prevscroll">
+      <div id="prev-card">
+        <div class="prev-tag">SharePoint embed zone — content appears here</div>
+        <div id="loading-area"><div class="spinner"></div><span style="font-size:12px;color:#666">Generating — takes about 15 seconds...</span></div>
+        <div id="err-box"></div>
+        <div id="prev-empty">
+          <div class="pe-t">Ready to generate</div>
+          <div class="pe-s">Add blocks on the left, enter your API key above, then click Generate.</div>
+        </div>
+        <div id="iframe-wrap">
+          <iframe id="preview-iframe" sandbox="allow-same-origin" scrolling="no"></iframe>
+        </div>
+      </div>
+    </div>
+    <div id="codeview"><pre id="code-out"></pre></div>
+    <div id="pastebar">
+      <span class="pb-lbl">How to paste into SharePoint</span>
+      <span class="pb-steps">Edit page &rarr; <strong>+ Add web part</strong> &rarr; search <span class="pb-code">Embed</span> &rarr; paste HTML into embed code field &rarr; <strong>Republish</strong></span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── APP HEIGHT (accounts for API banner) ──
+document.getElementById('app').style.height = (window.innerHeight - 50 - 44) + 'px';
+
+// ── API KEY ──
+var apiKey = localStorage.getItem('sp_api_key') || '';
+if (apiKey) {
+  document.getElementById('api-key-input').value = apiKey;
+  document.getElementById('key-ok').classList.add('show');
+}
+document.getElementById('api-key-input').addEventListener('input', function() {
+  apiKey = this.value.trim();
+  localStorage.setItem('sp_api_key', apiKey);
+  document.getElementById('key-ok').classList.toggle('show', apiKey.length > 10);
+});
+
+// ── COLOR SYNC ──
+function sc() {
+  document.getElementById('d-pri').style.background = gv('c-pri');
+  document.getElementById('d-sec').style.background = gv('c-sec');
+  document.getElementById('d-txt').style.background = gv('c-txt');
+}
+function gv(id) { return document.getElementById(id).value; }
+function g(id) { return document.getElementById(id); }
+
+// ── BLOCK DEFINITIONS ──
+var BD = {
+  banner:      {c:'#3B82F6',bg:'#EFF6FF',tc:'#1D4ED8',n:'Banner'},
+  image:       {c:'#8B5CF6',bg:'#F5F3FF',tc:'#6D28D9',n:'Image'},
+  infobar:     {c:'#0D9488',bg:'#F0FDFA',tc:'#0F766E',n:'Info bar'},
+  text:        {c:'#6B7280',bg:'#F9FAFB',tc:'#374151',n:'Text'},
+  section:     {c:'#D97706',bg:'#FFFBEB',tc:'#92400E',n:'Section'},
+  subsections: {c:'#059669',bg:'#ECFDF5',tc:'#065F46',n:'Sub-sections'},
+  tiles:       {c:'#DB2777',bg:'#FDF2F8',tc:'#9D174D',n:'Tiles'},
+  callout:     {c:'#EA580C',bg:'#FFF7ED',tc:'#9A3412',n:'Callout'}
+};
+
+var blocks = [], ic = 0, genHTML = '';
+
+function ab(type, data) {
+  data = data || {};
+  var id = ++ic;
+  blocks.push({ id: id, type: type, data: data });
+  var def = BD[type];
+  var div = document.createElement('div');
+  div.className = 'bc open';
+  div.id = 'bc' + id;
+  div.innerHTML =
+    '<div class="bc-hd" onclick="tog(' + id + ')">'
+    + '<div class="bc-stripe" style="background:' + def.c + '"></div>'
+    + '<span class="bc-badge" style="background:' + def.bg + ';color:' + def.tc + '">' + def.n + '</span>'
+    + '<span class="bc-prev" id="bp' + id + '">' + pv(type, data) + '</span>'
+    + '<button class="bc-del" onclick="event.stopPropagation();rm(' + id + ')">&times;</button>'
+    + '<span class="bc-chev">&#9656;</span>'
+    + '</div>'
+    + '<div class="bc-body">' + bf(id, type, data) + '</div>';
+  g('blist').appendChild(div);
+  g('bempty').style.display = 'none';
+}
+
+function tog(id) { g('bc' + id).classList.toggle('open'); }
+
+function rm(id) {
+  blocks = blocks.filter(function(b) { return b.id !== id; });
+  var el = g('bc' + id);
+  if (el) el.remove();
+  if (blocks.length === 0) g('bempty').style.display = 'block';
+}
+
+function pv(t, d) {
+  if (t === 'banner') return d.title || 'No title';
+  if (t === 'image') return d.url ? d.url.substring(0, 45) : 'No URL';
+  if (t === 'infobar') return (d.items || []).map(function(i) { return i.k; }).filter(Boolean).join(', ') || 'No items';
+  if (t === 'text') return (d.body || '').substring(0, 55) || 'No content';
+  if (t === 'section' || t === 'subsections') return d.heading || 'No heading';
+  if (t === 'tiles') return (d.tiles || []).length + ' tile(s)';
+  if (t === 'callout') return (d.text || '').substring(0, 50) || 'No text';
+  return '';
+}
+
+function upd(id, f, v) {
+  var b = blocks.find(function(b) { return b.id === id; });
+  if (b) { b.data[f] = v; g('bp' + id).textContent = pv(b.type, b.data); }
+}
+function updKV(id, i, f, v) {
+  var b = blocks.find(function(b) { return b.id === id; });
+  if (b) { b.data.items = b.data.items || []; b.data.items[i] = b.data.items[i] || {}; b.data.items[i][f] = v; }
+}
+function updS(sid, si, f, v) {
+  var b = blocks.find(function(b) { return b.id === sid; });
+  if (b) { b.data.subs = b.data.subs || []; b.data.subs[si] = b.data.subs[si] || {}; b.data.subs[si][f] = v; }
+}
+function updSL(sid, si, li, f, v) {
+  var b = blocks.find(function(b) { return b.id === sid; });
+  if (!b || !b.data.subs || !b.data.subs[si]) return;
+  b.data.subs[si].links = b.data.subs[si].links || [];
+  b.data.subs[si].links[li] = b.data.subs[si].links[li] || {};
+  b.data.subs[si].links[li][f] = v;
+}
+function updT(bid, ti, f, v) {
+  var b = blocks.find(function(b) { return b.id === bid; });
+  if (b) { b.data.tiles = b.data.tiles || []; b.data.tiles[ti] = b.data.tiles[ti] || {}; b.data.tiles[ti][f] = v; g('bp' + bid).textContent = pv('tiles', b.data); }
+}
+
+function addKV(id) {
+  var b = blocks.find(function(b) { return b.id === id; });
+  if (!b) return;
+  b.data.items = b.data.items || [];
+  var i = b.data.items.length;
+  b.data.items.push({ k: '', v: '' });
+  var l = g('kv' + id);
+  if (!l) return;
+  var r = document.createElement('div');
+  r.className = 'kv-row';
+  r.innerHTML = '<input type="text" placeholder="Label" oninput="updKV(' + id + ',' + i + ',\'k\',this.value)">'
+    + '<input type="text" placeholder="Value" oninput="updKV(' + id + ',' + i + ',\'v\',this.value)">'
+    + '<button class="delbtn" onclick="this.closest(\'.kv-row\').remove()">&times;</button>';
+  l.appendChild(r);
+}
+
+function addSub(sid) {
+  var b = blocks.find(function(b) { return b.id === sid; });
+  if (!b) return;
+  b.data.subs = b.data.subs || [];
+  var si = b.data.subs.length;
+  b.data.subs.push({ title: '', body: '', links: [] });
+  var c = g('subs' + sid);
+  if (!c) return;
+  var div = document.createElement('div');
+  div.className = 'sub-item';
+  div.innerHTML = '<div class="item-hd"><span class="item-lbl">Sub-section ' + (si + 1) + '</span>'
+    + '<button class="delbtn" onclick="this.closest(\'.sub-item\').remove()">&times;</button></div>'
+    + '<div class="fl"><label>Heading</label><input type="text" placeholder="e.g. Ebooks Digital" oninput="updS(' + sid + ',' + si + ',\'title\',this.value)"></div>'
+    + '<div class="fl"><label>Body text</label><textarea rows="2" oninput="updS(' + sid + ',' + si + ',\'body\',this.value)"></textarea></div>'
+    + '<div class="fl"><label>Bullet links</label><div class="link-list" id="ll' + sid + 'x' + si + '"></div>'
+    + '<button class="addbtn" onclick="addSL(' + sid + ',' + si + ')">+ Add link</button></div>';
+  c.appendChild(div);
+}
+
+function addSL(sid, si) {
+  var b = blocks.find(function(b) { return b.id === sid; });
+  if (!b) return;
+  b.data.subs = b.data.subs || [];
+  b.data.subs[si] = b.data.subs[si] || {};
+  b.data.subs[si].links = b.data.subs[si].links || [];
+  var li = b.data.subs[si].links.length;
+  b.data.subs[si].links.push({ t: '', u: '' });
+  var l = g('ll' + sid + 'x' + si);
+  if (!l) return;
+  var r = document.createElement('div');
+  r.className = 'link-row';
+  r.innerHTML = '<input type="text" placeholder="Link text" oninput="updSL(' + sid + ',' + si + ',' + li + ',\'t\',this.value)">'
+    + '<input type="url" placeholder="https://..." oninput="updSL(' + sid + ',' + si + ',' + li + ',\'u\',this.value)">'
+    + '<button class="delbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button>';
+  l.appendChild(r);
+}
+
+function addTile(bid) {
+  var b = blocks.find(function(b) { return b.id === bid; });
+  if (!b) return;
+  b.data.tiles = b.data.tiles || [];
+  var ti = b.data.tiles.length;
+  b.data.tiles.push({ label: '', url: '', img: '' });
+  var c = g('tiles' + bid);
+  if (!c) return;
+  var div = document.createElement('div');
+  div.className = 'tile-item';
+  div.innerHTML = '<div class="item-hd"><span class="item-lbl">Tile ' + (ti + 1) + '</span>'
+    + '<button class="delbtn" onclick="this.closest(\'.tile-item\').remove()">&times;</button></div>'
+    + '<div class="frow"><div class="fl"><label>Label</label><input type="text" placeholder="Program name" oninput="updT(' + bid + ',' + ti + ',\'label\',this.value)"></div>'
+    + '<div class="fl"><label>Link URL</label><input type="url" placeholder="https://..." oninput="updT(' + bid + ',' + ti + ',\'url\',this.value)"></div></div>'
+    + '<div class="fl" style="margin:0"><label>Logo/image URL (optional)</label><input type="url" placeholder="https://..." oninput="updT(' + bid + ',' + ti + ',\'img\',this.value)"></div>';
+  c.appendChild(div);
+}
+
+function bf(id, type, d) {
+  if (type === 'banner') return '<div class="fsec">Banner</div>'
+    + '<div class="fl"><label>Title</label><input type="text" value="' + (d.title || '') + '" placeholder="Page title" oninput="upd(' + id + ',\'title\',this.value)"></div>'
+    + '<div class="fl"><label>Subtitle (optional)</label><input type="text" value="' + (d.sub || '') + '" placeholder="Short description" oninput="upd(' + id + ',\'sub\',this.value)"></div>'
+    + '<div class="fl"><label>Background colour</label><select onchange="upd(' + id + ',\'cm\',this.value)"><option value="pri">School primary</option><option value="sec">School secondary</option></select></div>';
+
+  if (type === 'image') return '<div class="fsec">Full-width image</div>'
+    + '<div class="fl"><label>Image URL</label><input type="url" value="' + (d.url || '') + '" placeholder="https://..." oninput="upd(' + id + ',\'url\',this.value)"></div>'
+    + '<p class="fhint">In SharePoint: right-click your image &rarr; Copy link &rarr; paste here. Or use any public image URL.</p>';
+
+  if (type === 'infobar') {
+    var items = d.items || [];
+    var rows = items.map(function(it, i) {
+      return '<div class="kv-row"><input type="text" value="' + (it.k || '') + '" placeholder="Label" oninput="updKV(' + id + ',' + i + ',\'k\',this.value)"><input type="text" value="' + (it.v || '') + '" placeholder="Value" oninput="updKV(' + id + ',' + i + ',\'v\',this.value)"><button class="delbtn" onclick="this.closest(\'.kv-row\').remove()">&times;</button></div>';
+    }).join('');
+    return '<div class="fsec">Key info (e.g. Email, Phone, Hours)</div>'
+      + '<div class="kv-list" id="kv' + id + '">' + rows + '</div>'
+      + '<button class="addbtn" onclick="addKV(' + id + ')">+ Add item</button>';
+  }
+
+  if (type === 'text') return '<div class="fsec">Body text</div>'
+    + '<div class="fl"><label>Content &mdash; blank line between paragraphs</label><textarea rows="6" oninput="upd(' + id + ',\'body\',this.value)">' + (d.body || '') + '</textarea></div>';
+
+  if (type === 'section') return '<div class="fsec">Section heading + text</div>'
+    + '<div class="fl"><label>Heading</label><input type="text" value="' + (d.heading || '') + '" placeholder="e.g. Physical Resources" oninput="upd(' + id + ',\'heading\',this.value)"></div>'
+    + '<div class="fl"><label>Body text</label><textarea rows="4" oninput="upd(' + id + ',\'body\',this.value)">' + (d.body || '') + '</textarea></div>';
+
+  if (type === 'subsections') {
+    var subs = d.subs || [];
+    var subsHtml = subs.map(function(s, si) {
+      var lks = (s.links || []).map(function(l, li) {
+        return '<div class="link-row"><input type="text" value="' + (l.t || '') + '" placeholder="Link text" oninput="updSL(' + id + ',' + si + ',' + li + ',\'t\',this.value)"><input type="url" value="' + (l.u || '') + '" placeholder="https://..." oninput="updSL(' + id + ',' + si + ',' + li + ',\'u\',this.value)"><button class="delbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button></div>';
+      }).join('');
+      return '<div class="sub-item"><div class="item-hd"><span class="item-lbl">Sub-section ' + (si + 1) + '</span><button class="delbtn" onclick="this.closest(\'.sub-item\').remove()">&times;</button></div>'
+        + '<div class="fl"><label>Heading</label><input type="text" value="' + (s.title || '') + '" oninput="updS(' + id + ',' + si + ',\'title\',this.value)"></div>'
+        + '<div class="fl"><label>Body text</label><textarea rows="2" oninput="updS(' + id + ',' + si + ',\'body\',this.value)">' + (s.body || '') + '</textarea></div>'
+        + '<div class="fl"><label>Bullet links</label><div class="link-list" id="ll' + id + 'x' + si + '">' + lks + '</div>'
+        + '<button class="addbtn" onclick="addSL(' + id + ',' + si + ')">+ Add link</button></div></div>';
+    }).join('');
+    return '<div class="fsec">Section with sub-sections</div>'
+      + '<div class="fl"><label>Main heading</label><input type="text" value="' + (d.heading || '') + '" placeholder="e.g. E-Resources" oninput="upd(' + id + ',\'heading\',this.value)"></div>'
+      + '<div class="sub-list" id="subs' + id + '">' + subsHtml + '</div>'
+      + '<button class="addbtn" onclick="addSub(' + id + ')">+ Add sub-section</button>';
+  }
+
+  if (type === 'tiles') {
+    var tiles = d.tiles || [];
+    var th = tiles.map(function(t, ti) {
+      return '<div class="tile-item"><div class="item-hd"><span class="item-lbl">Tile ' + (ti + 1) + '</span><button class="delbtn" onclick="this.closest(\'.tile-item\').remove()">&times;</button></div>'
+        + '<div class="frow"><div class="fl"><label>Label</label><input type="text" value="' + (t.label || '') + '" oninput="updT(' + id + ',' + ti + ',\'label\',this.value)"></div>'
+        + '<div class="fl"><label>Link URL</label><input type="url" value="' + (t.url || '') + '" oninput="updT(' + id + ',' + ti + ',\'url\',this.value)"></div></div>'
+        + '<div class="fl" style="margin:0"><label>Logo/image URL (optional)</label><input type="url" value="' + (t.img || '') + '" oninput="updT(' + id + ',' + ti + ',\'img\',this.value)"></div></div>';
+    }).join('');
+    return '<div class="fsec">Clickable tile grid</div>'
+      + '<div class="fl"><label>Heading (optional)</label><input type="text" value="' + (d.heading || '') + '" placeholder="For more information, click on the tiles below:" oninput="upd(' + id + ',\'heading\',this.value)"></div>'
+      + '<div class="tile-list" id="tiles' + id + '">' + th + '</div>'
+      + '<button class="addbtn" onclick="addTile(' + id + ')">+ Add tile</button>'
+      + '<p class="fhint" style="margin-top:6px">Image URLs should be hosted in your school\'s SharePoint document library.</p>';
+  }
+
+  if (type === 'callout') return '<div class="fsec">Callout / highlight box</div>'
+    + '<div class="fl"><label>Message</label><textarea rows="3" oninput="upd(' + id + ',\'text\',this.value)">' + (d.text || '') + '</textarea></div>'
+    + '<div class="fl"><label>Style</label><select onchange="upd(' + id + ',\'style\',this.value)"><option value="info">Info (blue)</option><option value="warn">Warning (amber)</option><option value="ok">Success (green)</option></select></div>';
+
+  return '';
+}
+
+function sv(m) {
+  var ps = g('prevscroll'), cv = g('codeview');
+  var vv = g('vv'), vc = g('vc');
+  if (m === 'vis') { ps.style.display = ''; cv.style.display = 'none'; vv.classList.add('on'); vc.classList.remove('on'); }
+  else { ps.style.display = 'none'; cv.style.display = 'block'; vv.classList.remove('on'); vc.classList.add('on'); }
+}
+
+function setStatus(msg) { g('status').textContent = msg; }
+
+function generate() {
+  apiKey = g('api-key-input').value.trim();
+  if (!apiKey) { alert('Please enter your Anthropic API key in the banner at the top.'); return; }
+  if (!blocks.length) { alert('Add at least one content block first.'); return; }
+
+  var btn = g('btn-gen');
+  btn.disabled = true;
+  g('prev-empty').style.display = 'none';
+  g('err-box').classList.remove('show');
+  g('loading-area').classList.add('show');
+  g('iframe-wrap').style.display = 'none';
+  setStatus('Generating...');
+
+  var pri = gv('c-pri'), sec = gv('c-sec'), txt = gv('c-txt');
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 4000,
+      system: 'You generate HTML fragments for SharePoint Embed web parts.\n\nRULES:\n1. Output raw HTML only. No DOCTYPE, html, head, or body tags.\n2. No script tags ever.\n3. No external resources. No Google Fonts. No CDN links.\n4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n5. One <style> block at the very top with all CSS. Class names prefixed with sp-.\n6. HTML divs directly after the style block.\n7. CSS-only hover effects (no JS).\n8. Output ONLY the HTML fragment. No markdown. No explanation. No code fences.',
+      messages: [{ role: 'user', content: buildPrompt(pri, sec, txt) }]
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error('API ' + r.status + ': ' + t); });
+    return r.json();
+  })
+  .then(function(data) {
+    var html = (data.content && data.content[0] && data.content[0].text) || '';
+    if (!html) throw new Error('Empty response');
+    genHTML = html;
+    showPreview(html);
+    g('btn-copy').classList.add('show');
+    g('pastebar').classList.add('show');
+    setStatus('Done!');
+    setTimeout(function() { setStatus(''); }, 2500);
+  })
+  .catch(function(err) {
+    var eb = g('err-box');
+    eb.textContent = 'Error: ' + err.message;
+    eb.classList.add('show');
+    g('prev-empty').style.display = 'block';
+    setStatus('');
+    console.error(err);
+  })
+  .finally(function() {
+    g('loading-area').classList.remove('show');
+    btn.disabled = false;
+  });
+}
+
+function buildPrompt(pri, sec, txt) {
+  var lines = [];
+  lines.push('Build a professional content page for an Australian school SharePoint site.');
+  lines.push('School: ' + (gv('school-name') || 'Our School'));
+  lines.push('Brand — Primary: ' + pri + ' | Secondary: ' + sec + ' | Text on primary: ' + txt);
+  lines.push('');
+  lines.push('CONTENT BLOCKS (implement each in order):');
+  lines.push('');
+
+  blocks.forEach(function(b, idx) {
+    var d = b.data || {}, n = idx + 1;
+
+    if (b.type === 'banner') {
+      var bg = (d.cm === 'sec') ? sec : pri;
+      lines.push(n + '. HERO BANNER: background:' + bg + '; color:' + txt + '; border-radius:10px; padding:28px 32px.');
+      lines.push('   Title "' + (d.title || 'Page Title') + '" — font-size:26px; font-weight:700.');
+      if (d.sub) lines.push('   Subtitle "' + d.sub + '" — font-size:15px; opacity:0.88; margin-top:8px.');
+    }
+    else if (b.type === 'image' && d.url) {
+      lines.push(n + '. HERO IMAGE: <img src="' + d.url + '"> — width:100%; max-height:320px; object-fit:cover; display:block.');
+    }
+    else if (b.type === 'infobar') {
+      var kvs = (d.items || []).filter(function(i) { return i.k; }).map(function(i) { return i.k + ': ' + i.v; }).join(' | ');
+      lines.push(n + '. INFO BAR: One row, bold label then normal value. font-size:13px; padding:12px 0; border-bottom:1px solid #e5e7eb; margin-bottom:16px. Items: ' + kvs);
+    }
+    else if (b.type === 'text') {
+      lines.push(n + '. BODY TEXT: Split on blank lines into <p> tags. font-size:14px; line-height:1.75; color:#333; margin-bottom:20px.');
+      lines.push('   ' + d.body);
+    }
+    else if (b.type === 'section') {
+      lines.push(n + '. SECTION: Heading "' + d.heading + '" — color:' + pri + '; font-size:20px; font-weight:700; border-bottom:2px solid ' + pri + '; padding-bottom:6px; margin:24px 0 12px.');
+      lines.push('   Body: font-size:14px; line-height:1.7; color:#333. ' + d.body);
+    }
+    else if (b.type === 'subsections') {
+      lines.push(n + '. SECTION WITH SUB-SECTIONS: Heading "' + d.heading + '" — color:' + pri + '; font-size:20px; font-weight:700; border-bottom:2px solid ' + pri + '; padding-bottom:6px; margin:24px 0 16px.');
+      (d.subs || []).forEach(function(s, si) {
+        lines.push('   Sub ' + (si + 1) + ': bold heading "' + s.title + '" 14px #111; body "' + s.body + '" 13px #444 line-height:1.65; margin-bottom:20px.');
+        var lks = (s.links || []).filter(function(l) { return l.t; });
+        if (lks.length) lines.push('   Bullet links (color:' + pri + ' no-underline hover:underline): ' + lks.map(function(l) { return '"' + l.t + '" href="' + (l.u || '#') + '"'; }).join(', '));
+      });
+    }
+    else if (b.type === 'tiles') {
+      lines.push(n + '. TILE GRID:' + (d.heading ? ' Heading "' + d.heading + '" 13px bold #333 margin-bottom:12px.' : ''));
+      lines.push('   CSS grid: repeat(3,1fr); gap:14px. Responsive: 2-col @540px, 1-col @360px.');
+      lines.push('   Each tile: <a href target="_blank"> — display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px 14px; border:2px solid ' + pri + '; border-radius:10px; text-decoration:none; min-height:120px.');
+      lines.push('   Tile :hover (CSS only): border-color:' + sec + '; box-shadow:0 4px 16px rgba(0,0,0,0.1); transform:translateY(-2px).');
+      lines.push('   If img URL: <img> max-height:70px; max-width:110px; object-fit:contain; margin-bottom:10px.');
+      lines.push('   Label text: font-size:13px; font-weight:700; color:' + pri + '; text-align:center; line-height:1.3.');
+      (d.tiles || []).forEach(function(t, ti) {
+        lines.push('   Tile ' + (ti + 1) + ': label="' + (t.label || '') + '" href="' + (t.url || '#') + '"' + (t.img ? ' img="' + t.img + '"' : ' (no image — show styled label text)'));
+      });
+    }
+    else if (b.type === 'callout') {
+      var cs = { info: { bg: '#DBEAFE', bl: '#93C5FD', c: '#1E3A8A' }, warn: { bg: '#FEF9C3', bl: '#FDE047', c: '#713F12' }, ok: { bg: '#DCFCE7', bl: '#86EFAC', c: '#14532D' } }[d.style || 'info'];
+      lines.push(n + '. CALLOUT: background:' + cs.bg + '; border-left:4px solid ' + cs.bl + '; color:' + cs.c + '; border-radius:0 8px 8px 0; padding:14px 18px; font-size:13px; line-height:1.6; margin:16px 0.');
+      lines.push('   Text: "' + d.text + '"');
+    }
+  });
+
+  lines.push('');
+  lines.push('DESIGN: Wrap in div max-width:880px. System fonts only (Arial/Helvetica/Georgia). No scripts. All links target="_blank". Clean, professional Australian school website look.');
+  return lines.join('\n');
+}
+
+function showPreview(html) {
+  var wrap = g('iframe-wrap');
+  var iframe = g('preview-iframe');
+  wrap.style.display = 'block';
+  var full = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:16px;line-height:1.5}</style>'
+    + '</head><body>' + html + '</body></html>';
+  iframe.srcdoc = full;
+  iframe.onload = function() {
+    try {
+      var h = iframe.contentDocument.body.scrollHeight;
+      if (h > 50) iframe.style.height = (h + 20) + 'px';
+    } catch (e) { iframe.style.height = '600px'; }
+  };
+  g('code-out').textContent = html;
+  sv('vis');
+}
+
+function copyHTML() {
+  if (!genHTML) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(genHTML).then(function() {
+      setStatus('Copied!');
+      setTimeout(function() { setStatus(''); }, 2000);
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = genHTML;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    setStatus('Copied!');
+    setTimeout(function() { setStatus(''); }, 2000);
+  }
+}
+
+// Pre-load Resource Centre example
+ab('banner', { title: 'Resource Centre', sub: 'Your modern, accessible learning space' });
+ab('image', { url: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=900&q=80' });
+ab('infobar', { items: [{ k: 'Email', v: 'library@school.edu.au' }, { k: 'Opening Hours', v: '7:45am – 3:15pm (most days)' }] });
+ab('text', { body: 'The Resource Centre is located at the Weipa Campus and is a modern, accessible learning space for students of all year levels, staff and community.\n\nThe Resource Centre aims to be a school and community hub, supporting differentiated teaching and learning and encouraging a lifelong love of reading.' });
+ab('section', { heading: 'Physical Resources', body: 'The Resource Centre has an extensive range of physical resources including Junior Fiction, Non-Fiction, Young Adults, Graphic Novels, Teacher Reference and STEM Resources, class sets of books, Laptops, Desktop Computers, Reading Resources and Maps/Globes.' });
+ab('subsections', {
+  heading: 'E-Resources',
+  subs: [
+    { title: 'Ebooks Digital (Sora)', body: 'Access thousands of eBooks via the Overdrive platform for staff and students.', links: [{ t: 'Access the Digital Library', u: '#' }, { t: 'Getting Started with OverDrive', u: '#' }] },
+    { title: 'Scootle', body: 'National digital learning repository with curriculum-aligned resources by year level and learning area.', links: [{ t: 'Scootle Login', u: '#' }] },
+    { title: 'Clickview', body: 'Copyright-safe video platform. WCC pays this as a schoolwide subscription.', links: [{ t: 'Clickview', u: '#' }] }
+  ]
+});
+</script>
+</body>
+</html>
