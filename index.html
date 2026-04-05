@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SchoolPage Builder</title>
+<title>Digitalschools Pages — Prototype v1</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -14,6 +14,7 @@
   --blue:#2B5CE6;--blue-lt:#EEF2FF;
   --green:#1A9E5C;--green-lt:#ECFDF5;
   --red:#DC2626;
+  --proto:#7C3AED;--proto-lt:#EDE9FE;
   --r:14px;--rs:10px;
   --shadow:0 2px 8px rgba(0,0,0,.07),0 8px 24px rgba(0,0,0,.05);
   --shadow-sm:0 1px 3px rgba(0,0,0,.06);
@@ -23,7 +24,23 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
 /* TOP BAR */
 #topbar{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:var(--shadow-sm)}
-.logo{font-size:16px;font-weight:700}.logo em{color:var(--blue);font-style:normal}
+.logo{font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px}
+.logo-text{}
+.logo-text em{color:var(--blue);font-style:normal}
+.proto-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--proto-lt);color:var(--proto);
+  border:1px solid #C4B5FD;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:2px 8px;text-transform:uppercase;
+}
+.version-badge{
+  display:inline-flex;align-items:center;
+  background:var(--surface);color:var(--ink3);
+  border:1px solid var(--border);border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.4px;
+  padding:2px 8px;font-family:monospace;
+}
 .sep{width:1px;height:18px;background:var(--border)}
 .school-label{font-size:13px;font-weight:600;color:var(--ink2)}
 .color-pills{display:flex;gap:6px}
@@ -207,7 +224,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <div class="logo">School<em>Page</em></div>
+  <div class="logo">
+    <span class="logo-text">Digital<em>schools</em> Pages</span>
+    <span class="proto-badge">&#9679; Prototype</span>
+    <span class="version-badge">v1</span>
+  </div>
   <div class="sep"></div>
   <div class="school-label" id="school-label">Western Cape College</div>
   <div class="sep"></div>
@@ -240,12 +261,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         <div class="step-q">What kind of page are you building?</div>
         <div class="step-hint">This helps us ask the right questions.</div>
         <div class="type-grid">
-          <button class="type-card" onclick="selectType('main')">
+          <!-- BUG FIX v1: pass `this` so selectType() can reference the clicked element
+               reliably. Using implicit `event` was failing silently in modern browsers. -->
+          <button class="type-card" onclick="selectType('main', this)">
             <span class="type-ico">&#128196;</span>
             <span class="type-name">Main page</span>
             <span class="type-desc">Short intro with clickable tiles linking to sub-pages</span>
           </button>
-          <button class="type-card" onclick="selectType('sub')">
+          <button class="type-card" onclick="selectType('sub', this)">
             <span class="type-ico">&#128209;</span>
             <span class="type-name">Content page</span>
             <span class="type-desc">Detailed page with full text, sections and links</span>
@@ -447,14 +470,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 </div>
 
 <script>
-// ── CONFIG ───────────────────────────────────────────────────
+// ── CONFIG ─────────────────────────────────────────────────────────────────────
+// To deploy for a different school, update these four values only.
 var SCHOOL_NAME       = "Western Cape College";
 var PRIMARY_COLOR     = "#1a3a6b";
 var ACCENT_COLOR      = "#f07f24";
 var WORKER_URL        = "https://schoolpage-api.webmaster-349.workers.dev";
 var CLOUDINARY_CLOUD  = "dewljixlc";
 var CLOUDINARY_PRESET = "pvsbmdmd";
-// ─────────────────────────────────────────────────────────────
+// ── VERSION ────────────────────────────────────────────────────────────────────
+// Bump this each time you push a new build to GitHub so testers can confirm
+// they're running the latest file. Format: v1, v2, v3 …
+var APP_VERSION = "v1";
+// ──────────────────────────────────────────────────────────────────────────────
 
 var pageType = '';
 var heroImageUrl = '';
@@ -550,10 +578,12 @@ function renderProgress(steps, activeIdx){
 }
 
 // ── PAGE TYPE ──
-function selectType(type){
+// v1 FIX: accepts `el` (the clicked button) directly instead of relying on
+// the implicit `event` global, which fails silently in modern browsers.
+function selectType(type, el){
   pageType = type;
   document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('selected');});
-  event.currentTarget.classList.add('selected');
+  el.classList.add('selected');
   var steps = type==='main' ? STEPS_MAIN : STEPS_SUB;
   if(type==='main'){
     g('content-q').textContent = 'Write a brief introduction';
@@ -610,7 +640,6 @@ function nextStep(name){
       return;
     }
   }
-  // All done
   g('step-done').classList.remove('hidden');
   g('step-done').scrollIntoView({behavior:'smooth',block:'nearest'});
   renderProgress(steps, steps.length);
@@ -736,10 +765,11 @@ async function uploadCloudinary(file){
 }
 
 // ── VIEW SWITCHING ──
+// v1 FIX: prevscroll must stay visible in edit mode — it's the scroll container
+// that wysiwyg-wrap lives inside. Previous version hid it which blanked the editor.
 function setView(mode){
   currentView = mode;
 
-  // Reset all panels
   g('prevscroll').style.display = 'none';
   g('iframe-wrap').style.display = 'none';
   g('wysiwyg-wrap').style.display = 'none';
@@ -749,14 +779,12 @@ function setView(mode){
   document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
 
   if(mode==='preview'){
-    // Show scroll container + iframe inside it
     g('prevscroll').style.display = '';
     if(genHTML) g('iframe-wrap').style.display = 'block';
     g('vbtn-preview').classList.add('on');
 
   } else if(mode==='edit'){
     if(!genHTML){ setView('preview'); return; }
-    // IMPORTANT: prevscroll must be visible — wysiwyg-wrap lives inside it
     g('prevscroll').style.display = '';
     g('wysiwyg-editor').innerHTML = genHTML;
     g('wysiwyg-wrap').style.display = 'block';
@@ -773,7 +801,6 @@ function setView(mode){
 }
 
 function onEditorChange(){
-  // Keep genHTML in sync with editor
   genHTML = g('wysiwyg-editor').innerHTML;
   g('code-out').textContent = genHTML;
 }
@@ -801,7 +828,6 @@ function generate(){
   g('iframe-wrap').style.display='none';
   g('wysiwyg-wrap').style.display='none';
   setTbStatus('Building\u2026');
-  // Switch to preview tab while loading
   g('prevscroll').style.display='';
   g('wysiwyg-toolbar').classList.remove('show');
   document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
@@ -841,80 +867,55 @@ function generate(){
   });
 }
 
+// ── SYSTEM PROMPT sent to Claude ──────────────────────────────────────────────
+// This tells Claude what kind of output to produce and enforces accessibility.
 function buildSystem(){
   var audience = gv('f-audience') || 'all';
   var level = gv('f-level') || 'all';
   var audienceNote = {
-    'all': 'The audience includes students, parents and the wider school community.',
+    'all':      'The audience includes students, parents and the wider school community.',
     'students': 'The audience is students. Use clear, engaging, age-appropriate language.',
-    'parents': 'The audience is parents and families. Use warm, reassuring, informative language.',
-    'staff': 'The audience is school staff. Use professional, direct language.'
+    'parents':  'The audience is parents and families. Use warm, reassuring, informative language.',
+    'staff':    'The audience is school staff. Use professional, direct language.'
   }[audience];
   var levelNote = {
-    'all': '',
-    'primary': 'This is a primary school page — keep language simple and warm.',
+    'all':       '',
+    'primary':   'This is a primary school page — keep language simple and warm.',
     'secondary': 'This is a secondary school page — language can be more detailed and formal.'
   }[level];
 
-  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.
-
-'
-    +'OUTPUT RULES:
-'
-    +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.
-'
-    +'2. No script tags.
-'
-    +'3. No external fonts or CDN links.
-'
-    +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.
-'
-    +'5. One <style> block at the top. All CSS class names prefixed with sp-.
-'
-    +'6. Output ONLY the HTML. No markdown, no backticks, no explanation.
-
-'
-    +'CONTENT RULES:
-'
-    +'- Preserve the school's exact wording. Do not rewrite or paraphrase any text.
-'
-    +'- Structure content with appropriate headings and sections based on natural breaks in the text.
-'
-    +'- If you spot important notices, warnings, deadlines, or key facts, format them as styled callout boxes.
-'
-    +'- Split long blocks into readable paragraphs.
-'
-    +'- '+audienceNote+'
-'
-    +(levelNote?'- '+levelNote+'
-':'')
-    +'
-'
-    +'ACCESSIBILITY — WCAG 2.1 AA (Queensland Department of Education Standard):
-'
-    +'- Every <img> tag MUST include a descriptive alt attribute. Example: alt="Students studying in the library"
-'
-    +'- For decorative images with no informational value, use alt=""
-'
-    +'- Use proper semantic heading hierarchy: h2 for main section headings, h3 for sub-sections. Never skip levels.
-'
-    +'- All link text must be descriptive — never use "click here" or "read more". Use the destination name instead.
-'
-    +'- Add visible :focus styles to all links: outline: 2px solid #2B5CE6; outline-offset: 2px;
-'
-    +'- Use semantic HTML: <ul>/<ol> for lists, never just bullet characters in <p> tags.
-'
-    +'- Ensure body text (#333 or darker) on white backgrounds for sufficient contrast.
-'
-    +'- Do not rely on colour alone to convey meaning — use icons or text labels too.
-'
-    +'- Add role="region" and aria-label attributes to major page sections.
-'
-    +'- Tile grid links must have aria-label="[tile name] - opens in new tab" attributes.
-'
+  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.\n'
+    +'OUTPUT RULES:\n'
+    +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.\n'
+    +'2. No script tags.\n'
+    +'3. No external fonts or CDN links.\n'
+    +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n'
+    +'5. One <style> block at the top. All CSS class names prefixed with sp-.\n'
+    +'6. Output ONLY the HTML. No markdown, no backticks, no explanation.\n\n'
+    +'CONTENT RULES:\n'
+    +'- Preserve the school\'s exact wording. Do not rewrite or paraphrase any text.\n'
+    +'- Structure content with appropriate headings and sections based on natural breaks in the text.\n'
+    +'- If you spot important notices, warnings, deadlines, or key facts, format them as styled callout boxes.\n'
+    +'- Split long blocks into readable paragraphs.\n'
+    +'- '+audienceNote+'\n'
+    +(levelNote?'- '+levelNote+'\n':'')
+    +'\n'
+    +'ACCESSIBILITY — WCAG 2.1 AA (Queensland Department of Education Standard):\n'
+    +'- Every <img> tag MUST include a descriptive alt attribute. Example: alt="Students studying in the library"\n'
+    +'- For decorative images with no informational value, use alt=""\n'
+    +'- Use proper semantic heading hierarchy: h2 for main section headings, h3 for sub-sections. Never skip levels.\n'
+    +'- All link text must be descriptive — never use "click here" or "read more". Use the destination name instead.\n'
+    +'- Add visible :focus styles to all links: outline: 2px solid #2B5CE6; outline-offset: 2px;\n'
+    +'- Use semantic HTML: <ul>/<ol> for lists, never just bullet characters in <p> tags.\n'
+    +'- Ensure body text (#333 or darker) on white backgrounds for sufficient contrast.\n'
+    +'- Do not rely on colour alone to convey meaning — use icons or text labels too.\n'
+    +'- Add role="region" and aria-label attributes to major page sections.\n'
+    +'- Tile grid links must have aria-label="[tile name] - opens in new tab" attributes.\n'
     +'- Callout boxes must include a visually hidden prefix like "Important: " or "Note: " for screen readers.';
 }
 
+// ── USER PROMPT sent to Claude ────────────────────────────────────────────────
+// This carries all the form data and tells Claude exactly what to build.
 function buildPrompt(pri,sec){
   var bannerBg=gv('f-banner-color')==='sec'?sec:pri;
   var lines=['Build a '+(pageType==='main'?'main landing':'detailed content')+' page for '+SCHOOL_NAME+'.'];
@@ -1008,7 +1009,6 @@ function showPreview(html){
 
 // ── COPY ──
 function copyHTML(){
-  // If in edit mode, get from editor (catches any edits)
   if(currentView==='edit'){
     genHTML = g('wysiwyg-editor').innerHTML;
   }
