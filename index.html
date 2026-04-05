@@ -22,140 +22,182 @@ html,body{height:100%;overflow:hidden}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
 
 /* TOP BAR */
-#topbar{height:54px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;box-shadow:var(--shadow-sm)}
-.logo{font-size:16px;font-weight:700;color:var(--ink)}.logo em{color:var(--blue);font-style:normal}
+#topbar{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;box-shadow:var(--shadow-sm)}
+.logo{font-size:16px;font-weight:700}.logo em{color:var(--blue);font-style:normal}
 .sep{width:1px;height:18px;background:var(--border)}
 .school-label{font-size:13px;font-weight:600;color:var(--ink2)}
-.color-pills{display:flex;gap:7px}
+.color-pills{display:flex;gap:6px}
 .cpill{display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink3);background:var(--surface);cursor:pointer}
 .cpill:hover{border-color:var(--border2)}
 .cdot{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.12);overflow:hidden;flex-shrink:0}
 .cdot input[type=color]{width:27px;height:27px;margin:-6px;border:none;cursor:pointer;background:none}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-#status{font-size:12px;color:var(--ink3)}
-#btn-copy{padding:9px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px}
+#tb-status{font-size:12px;color:var(--ink3)}
+#btn-copy{padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:5px}
 #btn-copy.show{display:flex}#btn-copy:hover{opacity:.88}
-#btn-gen{padding:10px 22px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
-#btn-gen:hover{background:#1D4ED8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(43,92,230,.3)}
-#btn-gen:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+#btn-gen-top{padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+#btn-gen-top:hover{background:#1D4ED8;transform:translateY(-1px)}
+#btn-gen-top:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
 /* LAYOUT */
-#app{display:flex;height:calc(100vh - 54px);overflow:hidden}
+#app{display:flex;height:calc(100vh - 52px);overflow:hidden}
 
 /* LEFT FORM */
-#form-panel{width:500px;min-width:440px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-#form-scroll{flex:1;overflow-y:auto;padding:24px 24px 40px}
+#form-panel{width:480px;min-width:420px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+
+/* PROGRESS BAR */
+#progress-bar{flex-shrink:0;padding:14px 24px 0;background:var(--white)}
+.progress-steps{display:flex;align-items:center;gap:0;margin-bottom:14px}
+.prog-step{display:flex;align-items:center;gap:0;flex:1}
+.prog-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink3);flex-shrink:0;transition:all .2s;z-index:1}
+.prog-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.prog-dot.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 3px rgba(43,92,230,.15)}
+.prog-line{flex:1;height:2px;background:var(--border);margin:0 2px;transition:background .2s}
+.prog-line.done{background:var(--green)}
+.prog-label{font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:14px;text-align:center}
+.prog-label.active-label{color:var(--blue)}
+
+/* FORM SCROLL */
+#form-scroll{flex:1;overflow-y:auto;padding:16px 24px 24px}
 #form-scroll::-webkit-scrollbar{width:4px}
 #form-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
 /* STEP CARDS */
-.step{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:12px;transition:all .2s}
+.step{border:1.5px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:10px;background:var(--surface);transition:all .2s}
 .step.active{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(43,92,230,.07),var(--shadow-sm)}
+.step.completed{background:var(--surface);border-color:var(--border);cursor:pointer}
+.step.completed:hover{border-color:var(--border2)}
 .step.hidden{display:none}
-.step-q{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.3}
-.step-hint{font-size:12px;color:var(--ink3);margin-bottom:16px;line-height:1.5}
+.step-q{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px;line-height:1.3}
+.step-hint{font-size:12px;color:var(--ink3);margin-bottom:14px;line-height:1.5}
+.step-summary{font-size:12px;color:var(--ink2);line-height:1.5;margin-top:4px}
+.step-summary strong{color:var(--ink)}
+.step-edit-link{font-size:11px;color:var(--blue);font-weight:600;margin-top:6px;display:inline-block;cursor:pointer}
+.step-edit-link:hover{text-decoration:underline}
 
 /* PAGE TYPE */
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.type-card{border:2px solid var(--border);border-radius:var(--r);padding:18px 16px;cursor:pointer;transition:all .15s;text-align:left;background:var(--white);font-family:inherit;width:100%}
+.type-card{border:2px solid var(--border);border-radius:var(--r);padding:16px 14px;cursor:pointer;transition:all .15s;text-align:left;background:var(--white);font-family:inherit;width:100%}
 .type-card:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-1px)}
 .type-card.selected{border-color:var(--blue);background:var(--blue-lt)}
-.type-ico{font-size:28px;margin-bottom:10px;display:block}
-.type-name{font-size:14px;font-weight:700;color:var(--ink);display:block;margin-bottom:4px}
-.type-desc{font-size:12px;color:var(--ink3);line-height:1.5;display:block}
+.type-ico{font-size:26px;margin-bottom:9px;display:block}
+.type-name{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:3px}
+.type-desc{font-size:11px;color:var(--ink3);line-height:1.5;display:block}
 
 /* FIELDS */
-.fl{margin-bottom:11px}.fl:last-child{margin-bottom:0}
-.fl label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.fl{margin-bottom:10px}.fl:last-child{margin-bottom:0}
+.fl label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
 .fl label .opt{font-weight:400;color:var(--ink3);font-size:11px}
-.fl input,.fl textarea,.fl select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--white);line-height:1.5}
+.fl input,.fl textarea,.fl select{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--white);line-height:1.5}
 .fl input:focus,.fl textarea:focus,.fl select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.07)}
 .fl textarea{resize:vertical}
-.fhint{font-size:11px;color:var(--ink3);margin-top:5px;line-height:1.5}
+.fhint{font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.5}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
-/* IMAGE UPLOAD */
-.img-upload-area{border:2px dashed var(--border2);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);position:relative}
-.img-upload-area:hover{border-color:var(--blue);background:var(--blue-lt)}
-.img-upload-area.has-image{border-style:solid;border-color:var(--green);background:var(--green-lt)}
-.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.img-upload-ico{font-size:28px;margin-bottom:8px;display:block;opacity:.4}
-.img-upload-t{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:3px}
-.img-upload-s{font-size:11px;color:var(--ink3)}
-.img-preview-wrap{margin-top:10px;position:relative;display:none}
-.img-preview-wrap.show{display:block}
-.img-preview-wrap img{width:100%;max-height:140px;object-fit:cover;border-radius:var(--rs);display:block}
-.img-remove{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
-.img-uploading{font-size:12px;color:var(--blue);margin-top:6px;display:none}
-.img-uploading.show{display:block}
+/* STEP ACTIONS */
+.step-actions{display:flex;align-items:center;gap:8px;margin-top:14px}
+.btn-next{padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .12s}
+.btn-next:hover{background:#1D4ED8}
+.btn-back{padding:9px 14px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink3);cursor:pointer}
+.btn-back:hover{border-color:var(--border2);color:var(--ink2)}
+.btn-skip{padding:9px 14px;background:none;border:none;font-family:inherit;font-size:12px;color:var(--ink3);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.btn-skip:hover{color:var(--ink2)}
 
-/* KV / LINK / TILE / SECTION ITEMS */
-.kv-list,.link-list,.tile-list,.sections-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.kv-row,.link-row{display:flex;gap:6px;align-items:center}
-.kv-row input:first-child{flex:0 0 130px}
+/* IMAGE UPLOAD */
+.img-upload-area{border:2px dashed var(--border2);border-radius:var(--rs);padding:18px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);position:relative;overflow:hidden}
+.img-upload-area:hover{border-color:var(--blue);background:var(--blue-lt)}
+.img-upload-area.has-img{border-style:solid;border-color:var(--green);background:var(--green-lt)}
+.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-ico{font-size:24px;opacity:.35;margin-bottom:6px;display:block}
+.img-upload-t{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:2px}
+.img-upload-s{font-size:11px;color:var(--ink3)}
+.img-prev{position:relative;margin-top:10px;display:none}
+.img-prev.show{display:block}
+.img-prev img{width:100%;max-height:130px;object-fit:cover;border-radius:var(--rs);display:block}
+.img-prev-rm{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.uploading-msg{font-size:11px;color:var(--blue);margin-top:6px;display:none}
+.uploading-msg.show{display:block}
+
+/* KV + LINKS */
+.kv-list,.link-list,.tile-list,.lsec-list{display:flex;flex-direction:column;gap:5px;margin-bottom:7px}
+.kv-row,.link-row{display:flex;gap:5px;align-items:center}
+.kv-row input:first-child{flex:0 0 120px}
 .kv-row input:last-of-type,.link-row input{flex:1}
-.xbtn{background:var(--surface);border:1px solid var(--border);border-radius:6px;width:26px;height:26px;padding:0;color:var(--ink3);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:inherit}
+.xbtn{background:var(--surface);border:1px solid var(--border);border-radius:5px;width:24px;height:24px;padding:0;color:var(--ink3);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:inherit}
 .xbtn:hover{background:#fee2e2;color:var(--red);border-color:#fca5a5}
-.add-row-btn{display:flex;align-items:center;gap:5px;padding:8px 12px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;width:100%;margin-top:2px}
+.add-row-btn{display:flex;align-items:center;gap:5px;padding:7px 11px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;width:100%}
 .add-row-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 
-/* TILE ITEMS */
-.tile-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:6px}
-.tile-item:last-child{margin-bottom:0}
-.tile-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.tile-lbl{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
-.tile-img-row{display:flex;align-items:center;gap:8px;margin-top:8px}
-.tile-img-thumb{width:40px;height:40px;border-radius:6px;object-fit:contain;border:1px solid var(--border);background:var(--surface);display:none}
-.tile-img-thumb.show{display:block}
-.tile-upload-btn{flex:1;display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px dashed var(--border2);border-radius:var(--rs);background:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;position:relative;overflow:hidden}
+/* TILES */
+.tile-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:6px}
+.tile-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.tile-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px}
+.tile-logo-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.tile-thumb{width:36px;height:36px;border-radius:6px;object-fit:contain;border:1px solid var(--border);background:var(--surface);display:none;flex-shrink:0}
+.tile-thumb.show{display:block}
+.tile-upload-btn{flex:1;display:flex;align-items:center;gap:5px;padding:6px 10px;border:1.5px dashed var(--border2);border-radius:var(--rs);background:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;position:relative;overflow:hidden}
 .tile-upload-btn:hover{border-color:var(--blue);color:var(--blue)}
 .tile-upload-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.tile-upload-status{font-size:10px;color:var(--blue);margin-top:3px;display:none}
-.tile-upload-status.show{display:block}
+.tile-upload-ok{font-size:10px;color:var(--green);margin-top:3px;display:none}
+.tile-upload-ok.show{display:block}
 
-/* SECTION ITEMS */
-.section-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:6px}
-.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.section-lbl{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
-.sub-topic{background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:5px}
-.sub-topic-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.sub-topic-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px}
+/* LINK SECTIONS */
+.lsec-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:6px}
+.lsec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.lsec-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px}
 
-/* NEXT / SKIP */
-.step-actions{display:flex;align-items:center;gap:8px;margin-top:14px}
-.btn-next{padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-.btn-next:hover{background:#1D4ED8}
-.btn-skip{padding:9px 14px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink3);cursor:pointer}
-.btn-skip:hover{border-color:var(--border2);color:var(--ink2)}
+/* GENERATE BOTTOM */
+#gen-bottom{flex-shrink:0;padding:14px 24px;border-top:1px solid var(--border);background:var(--white)}
+#btn-gen-bottom{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+#btn-gen-bottom:hover{background:#1D4ED8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(43,92,230,.3)}
+#btn-gen-bottom:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.gen-bottom-hint{font-size:11px;color:var(--ink3);text-align:center;margin-bottom:8px}
 
 /* RIGHT PREVIEW */
 #preview-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
-#prev-bar{height:44px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
+#prev-bar{height:44px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0}
 .prev-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3)}
 .vtog{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:2px;gap:2px;margin-left:auto}
-.vbtn{padding:4px 13px;border-radius:7px;background:none;border:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer}
+.vbtn{padding:4px 12px;border-radius:7px;background:none;border:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;white-space:nowrap}
 .vbtn.on{background:var(--white);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.edit-notice{font-size:11px;color:var(--blue);background:var(--blue-lt);border:1px solid #BFDBFE;border-radius:6px;padding:3px 10px;display:none}
+.edit-notice.show{display:block}
+
+/* WYSIWYG TOOLBAR */
+#wysiwyg-toolbar{display:none;padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;align-items:center;gap:4px;flex-wrap:wrap}
+#wysiwyg-toolbar.show{display:flex}
+.tb-btn{padding:5px 9px;background:var(--white);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--ink2);transition:all .12s}
+.tb-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.tb-divider{width:1px;height:18px;background:var(--border);margin:0 4px}
+.tb-hint{font-size:11px;color:var(--ink3);margin-left:auto}
+
+#prev-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
 #prevscroll{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
+#prevscroll::-webkit-scrollbar{width:5px}
+#prevscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 #prev-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-.prev-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);padding:9px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:6px}
+.prev-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:6px}
 .ptag-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
 #prev-empty{padding:60px 32px;text-align:center}
-.pe-ico{font-size:40px;opacity:.18;margin-bottom:14px}
-.pe-t{font-size:16px;font-weight:700;color:var(--ink2);margin-bottom:8px}
-.pe-s{font-size:13px;color:var(--ink3);line-height:1.7;max-width:280px;margin:0 auto}
+.pe-ico{font-size:36px;opacity:.18;margin-bottom:12px}
+.pe-t{font-size:15px;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.pe-s{font-size:13px;color:var(--ink3);line-height:1.7;max-width:260px;margin:0 auto}
 #loading-area{display:none;flex-direction:column;align-items:center;gap:14px;padding:48px}
 #loading-area.show{display:flex}
-.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .load-t{font-size:14px;font-weight:600;color:var(--ink2)}
-.load-s{font-size:12px;color:var(--ink3)}
-#err-box{display:none;margin:16px;padding:14px 16px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:var(--rs);font-size:13px;color:#991B1B;line-height:1.5}
+.load-s{font-size:12px;color:var(--ink3);text-align:center;max-width:240px;line-height:1.5}
+#err-box{display:none;margin:14px;padding:12px 14px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:var(--rs);font-size:12px;color:#991B1B;line-height:1.5}
 #err-box.show{display:block}
 #iframe-wrap{display:none}
 #prev-iframe{width:100%;border:none;display:block}
-#codeview{display:none;flex:1;overflow-y:auto;background:#0D1117;padding:20px}
+#wysiwyg-wrap{display:none;padding:16px;background:var(--white)}
+#wysiwyg-editor{outline:none;min-height:300px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
+#wysiwyg-editor:focus{outline:none}
+#codeview{display:none;flex:1;overflow-y:auto;background:#0D1117;padding:18px}
 #codeview pre{font-family:'Courier New',monospace;font-size:11px;color:#8B949E;white-space:pre-wrap;word-break:break-all;line-height:1.7}
-#paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:12px 20px;flex-shrink:0;align-items:center;gap:10px}
+#paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:11px 18px;flex-shrink:0;align-items:center;gap:10px}
 #paste-guide.show{display:flex}
 .pg-t{font-size:12px;color:#065F46;line-height:1.5;flex:1}
 .pg-code{background:rgba(0,0,0,.07);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px}
@@ -174,9 +216,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor('sec')"></div>Accent</div>
   </div>
   <div class="tb-right">
-    <span id="status"></span>
-    <button id="btn-copy" onclick="copyHTML()">&#10003; Copy my HTML</button>
-    <button id="btn-gen" onclick="generate()">&#10024; Build my page</button>
+    <span id="tb-status"></span>
+    <button id="btn-copy" onclick="copyHTML()">&#10003; Copy HTML</button>
+    <button id="btn-gen-top" onclick="generate()">&#10024; Build my page</button>
   </div>
 </div>
 
@@ -184,10 +226,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
   <!-- LEFT: FORM -->
   <div id="form-panel">
+
+    <!-- PROGRESS -->
+    <div id="progress-bar">
+      <div class="progress-steps" id="prog-steps"></div>
+      <div class="prog-label" id="prog-label"></div>
+    </div>
+
     <div id="form-scroll">
 
-      <!-- STEP 1: PAGE TYPE -->
-      <div class="step active" id="step-type">
+      <!-- STEP 1: TYPE -->
+      <div class="step active" id="step-type" data-step="0">
         <div class="step-q">What kind of page are you building?</div>
         <div class="step-hint">This helps us ask the right questions.</div>
         <div class="type-grid">
@@ -204,17 +253,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         </div>
       </div>
 
-      <!-- STEP 2: PAGE TITLE -->
-      <div class="step hidden" id="step-title">
+      <!-- STEP 2: TITLE -->
+      <div class="step hidden" id="step-title" data-step="1">
         <div class="step-q">What&#8217;s this page called?</div>
-        <div class="step-hint">This appears as the big heading at the top of the page.</div>
+        <div class="step-hint">The big heading at the top of the page.</div>
         <div class="fl">
           <label>Page title</label>
           <input type="text" id="f-title" placeholder="e.g. Resource Centre, Academic Programs, Sport...">
         </div>
         <div class="fl">
           <label>One-line tagline <span class="opt">(optional)</span></label>
-          <input type="text" id="f-sub" placeholder="e.g. Extend and enrich your learning beyond the classroom">
+          <input type="text" id="f-sub" placeholder="e.g. Extending and enriching learning beyond the classroom">
         </div>
         <div class="fl">
           <label>Banner colour</label>
@@ -224,72 +273,64 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
           </select>
         </div>
         <div class="step-actions">
+          <button class="btn-back" onclick="goBack('title')">&#8592; Back</button>
           <button class="btn-next" onclick="nextStep('title')">Continue &#8594;</button>
         </div>
       </div>
 
       <!-- STEP 3: PHOTO -->
-      <div class="step hidden" id="step-photo">
+      <div class="step hidden" id="step-photo" data-step="2">
         <div class="step-q">Add a photo <span style="font-size:13px;font-weight:400;color:var(--ink3)">(optional)</span></div>
-        <div class="step-hint">A full-width photo below the heading looks great. Pick one from your computer.</div>
+        <div class="step-hint">A full-width photo just below the heading looks great. Pick one from your computer.</div>
         <div class="img-upload-area" id="hero-upload-area">
           <input type="file" accept="image/*" onchange="handleHeroUpload(this)">
           <span class="img-upload-ico">&#128247;</span>
           <div class="img-upload-t">Click to choose a photo</div>
-          <div class="img-upload-s">JPG, PNG or WEBP &#8212; up to 10MB</div>
+          <div class="img-upload-s">JPG, PNG or WEBP &mdash; up to 10MB</div>
         </div>
-        <div class="img-uploading" id="hero-uploading">&#8593; Uploading your photo&#8230;</div>
-        <div class="img-preview-wrap" id="hero-preview-wrap">
-          <img id="hero-preview-img" src="" alt="Preview">
-          <button class="img-remove" onclick="removeHeroImage()">&#10005; Remove</button>
+        <div class="uploading-msg" id="hero-uploading">Uploading your photo&hellip;</div>
+        <div class="img-prev" id="hero-prev">
+          <img id="hero-prev-img" src="" alt="">
+          <button class="img-prev-rm" onclick="removeHero()">&#10005; Remove</button>
         </div>
         <div class="step-actions" style="margin-top:14px">
+          <button class="btn-back" onclick="goBack('photo')">&#8592; Back</button>
           <button class="btn-next" onclick="nextStep('photo')">Continue &#8594;</button>
-          <button class="btn-skip" onclick="skipStep('photo')">No photo, skip</button>
+          <button class="btn-skip" onclick="skipStep('photo')">Skip</button>
         </div>
       </div>
 
-      <!-- STEP 4: KEY DETAILS (sub-page only) -->
-      <div class="step hidden" id="step-details">
-        <div class="step-q">Any key details to show? <span style="font-size:13px;font-weight:400;color:var(--ink3)">(optional)</span></div>
-        <div class="step-hint">These appear as a quick-reference bar &#8212; great for Email, Phone, Opening Hours.</div>
-        <div class="kv-list" id="kv-list"></div>
-        <button class="add-row-btn" onclick="addKV()">+ Add a detail</button>
-        <div class="step-actions" style="margin-top:14px">
-          <button class="btn-next" onclick="nextStep('details')">Continue &#8594;</button>
-          <button class="btn-skip" onclick="skipStep('details')">Skip</button>
-        </div>
-      </div>
-
-      <!-- STEP 5: CONTENT (sub-page) OR INTRO (main) -->
-      <div class="step hidden" id="step-content">
-        <div class="step-q" id="content-q">Paste your page content here</div>
-        <div class="step-hint" id="content-hint">Copy and paste from Word, email or any document. Don&#8217;t worry about formatting &#8212; our AI will structure it, create headings, and highlight any important notices automatically. Your exact words will be kept.</div>
+      <!-- STEP 4: CONTENT -->
+      <div class="step hidden" id="step-content" data-step="3">
+        <div class="step-q" id="content-q">Paste your page content</div>
+        <div class="step-hint" id="content-hint">Copy and paste from Word, email, or any document. Don&#8217;t worry about formatting &#8212; the AI will structure it, create headings, and highlight important notices automatically. Your exact words will be kept.</div>
         <div class="fl">
-          <textarea id="f-content" rows="12" placeholder="Paste everything here &#8212; your intro, all your section content, any important notices...&#10;&#10;The AI will organise it for you."></textarea>
+          <textarea id="f-content" rows="10" placeholder="Paste all your content here&#10;&#10;The AI will organise it into sections, add headings, and create notice boxes for anything important."></textarea>
         </div>
         <div class="step-actions">
+          <button class="btn-back" onclick="goBack('content')">&#8592; Back</button>
           <button class="btn-next" onclick="nextStep('content')">Continue &#8594;</button>
-          <button class="btn-skip" onclick="skipStep('content')">Skip for now</button>
+          <button class="btn-skip" onclick="skipStep('content')">Skip</button>
         </div>
       </div>
 
-      <!-- STEP 6A: RESOURCE LINKS (sub-page) -->
-      <div class="step hidden" id="step-links">
-        <div class="step-q">Any links to add? <span style="font-size:13px;font-weight:400;color:var(--ink3)">(optional)</span></div>
-        <div class="step-hint">If your page has specific links (e.g. &#8220;Access Scootle&#8221;, &#8220;Book a Room&#8221;), add them here. Group them under headings if needed.</div>
-        <div class="sections-list" id="link-sections-list"></div>
+      <!-- STEP 5A: LINKS (sub-page) -->
+      <div class="step hidden" id="step-links" data-step="4">
+        <div class="step-q">Any specific links to add? <span style="font-size:13px;font-weight:400;color:var(--ink3)">(optional)</span></div>
+        <div class="step-hint">Add any links that need to appear on the page &#8212; e.g. &#8220;Access Scootle&#8221;, &#8220;Book a Room&#8221;, &#8220;Enrol Now&#8221;. Group them under a heading if needed.</div>
+        <div class="lsec-list" id="lsec-list"></div>
         <button class="add-row-btn" onclick="addLinkSection()">+ Add a group of links</button>
         <div class="step-actions" style="margin-top:14px">
-          <button class="btn-next" onclick="nextStep('links')">Continue &#8594;</button>
-          <button class="btn-skip" onclick="skipStep('links')">No links, skip</button>
+          <button class="btn-back" onclick="goBack('links')">&#8592; Back</button>
+          <button class="btn-next" onclick="nextStep('links')">All done &#8594;</button>
+          <button class="btn-skip" onclick="skipStep('links')">Skip</button>
         </div>
       </div>
 
-      <!-- STEP 6B: TILES (main page) -->
-      <div class="step hidden" id="step-tiles">
+      <!-- STEP 5B: TILES (main page) -->
+      <div class="step hidden" id="step-tiles" data-step="4">
         <div class="step-q">Add your clickable tiles</div>
-        <div class="step-hint">Each tile is a button that links to a sub-page or website. Add a logo if you have one.</div>
+        <div class="step-hint">Each tile links to a sub-page or website. The name and link are required &mdash; logo is optional.</div>
         <div class="fl">
           <label>Heading above the tiles <span class="opt">(optional)</span></label>
           <input type="text" id="f-tiles-heading" placeholder="e.g. For more information, click on the tiles below:">
@@ -297,202 +338,305 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         <div class="tile-list" id="tile-list"></div>
         <button class="add-row-btn" onclick="addTile()">+ Add a tile</button>
         <div class="step-actions" style="margin-top:14px">
+          <button class="btn-back" onclick="goBack('tiles')">&#8592; Back</button>
           <button class="btn-next" onclick="nextStep('tiles')">All done &#8594;</button>
         </div>
       </div>
 
-      <!-- DONE STATE -->
+      <!-- DONE -->
       <div class="step hidden" id="step-done" style="border-color:var(--green);background:var(--green-lt)">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
           <span style="font-size:22px">&#9989;</span>
           <span style="font-size:15px;font-weight:700;color:#065F46">Everything looks good!</span>
         </div>
-        <div style="font-size:13px;color:#047857;line-height:1.6">Click <strong>&#8220;Build my page&#8221;</strong> above to generate your HTML. It takes about 15 seconds.</div>
+        <div style="font-size:13px;color:#047857;line-height:1.6">Ready to generate your page. Click the button below or the one in the top right corner.</div>
       </div>
 
     </div>
+
+    <!-- GENERATE BOTTOM -->
+    <div id="gen-bottom">
+      <div class="gen-bottom-hint" id="gen-hint">Fill in your details above, then build your page.</div>
+      <button id="btn-gen-bottom" onclick="generate()">&#10024; Build my page</button>
+    </div>
+
   </div>
 
   <!-- RIGHT: PREVIEW -->
   <div id="preview-panel">
     <div id="prev-bar">
-      <span class="prev-lbl">Page preview</span>
+      <span class="prev-lbl">Preview</span>
+      <span class="edit-notice" id="edit-notice">&#9998; Click any text to edit it</span>
       <div class="vtog">
-        <button class="vbtn on" id="vv" onclick="sv('vis')">Preview</button>
-        <button class="vbtn" id="vc" onclick="sv('code')">HTML</button>
+        <button class="vbtn on" id="vbtn-preview" onclick="setView('preview')">Preview</button>
+        <button class="vbtn" id="vbtn-edit" onclick="setView('edit')">Edit text</button>
+        <button class="vbtn" id="vbtn-code" onclick="setView('code')">HTML</button>
       </div>
     </div>
-    <div id="prevscroll">
-      <div id="prev-card">
-        <div class="prev-tag"><span class="ptag-dot"></span>What your page will look like in SharePoint</div>
-        <div id="loading-area">
-          <div class="spinner"></div>
-          <div class="load-t">Building your page&#8230;</div>
-          <div class="load-s">AI is reading your content and structuring it &#8212; about 15 seconds</div>
-        </div>
-        <div id="err-box"></div>
-        <div id="prev-empty">
-          <div class="pe-ico">&#10024;</div>
-          <div class="pe-t">Your preview will appear here</div>
-          <div class="pe-s">Answer the questions on the left, then click <strong>&#8220;Build my page&#8221;</strong>.</div>
-        </div>
-        <div id="iframe-wrap">
-          <iframe id="prev-iframe" sandbox="allow-same-origin" scrolling="no"></iframe>
+
+    <!-- WYSIWYG TOOLBAR -->
+    <div id="wysiwyg-toolbar">
+      <button class="tb-btn" onclick="fmt('bold')" title="Bold"><strong>B</strong></button>
+      <button class="tb-btn" onclick="fmt('italic')" title="Italic"><em>I</em></button>
+      <button class="tb-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+      <div class="tb-divider"></div>
+      <button class="tb-btn" onclick="fmt('insertUnorderedList')" title="Bullet list">&#8226; List</button>
+      <button class="tb-btn" onclick="fmt('removeFormat')" title="Clear formatting">Clear</button>
+      <div class="tb-divider"></div>
+      <button class="tb-btn" onclick="fmtSize('larger')" title="Bigger text">A+</button>
+      <button class="tb-btn" onclick="fmtSize('smaller')" title="Smaller text">A-</button>
+      <span class="tb-hint">Click any text to edit &mdash; changes update automatically</span>
+    </div>
+
+    <div id="prev-content">
+      <div id="prevscroll">
+        <div id="prev-card">
+          <div class="prev-tag"><span class="ptag-dot"></span>What your page will look like in SharePoint</div>
+          <div id="loading-area">
+            <div class="spinner"></div>
+            <div class="load-t">Building your page&hellip;</div>
+            <div class="load-s">AI is reading your content and structuring it. This takes about 15 seconds.</div>
+          </div>
+          <div id="err-box"></div>
+          <div id="prev-empty">
+            <div class="pe-ico">&#10024;</div>
+            <div class="pe-t">Your preview appears here</div>
+            <div class="pe-s">Answer the questions on the left, then click <strong>&#8220;Build my page&#8221;</strong>.</div>
+          </div>
+          <div id="iframe-wrap">
+            <iframe id="prev-iframe" sandbox="allow-same-origin" scrolling="no"></iframe>
+          </div>
+          <div id="wysiwyg-wrap">
+            <div id="wysiwyg-editor" contenteditable="true" oninput="onEditorChange()"></div>
+          </div>
         </div>
       </div>
+      <div id="codeview"><pre id="code-out"></pre></div>
     </div>
-    <div id="codeview"><pre id="code-out"></pre></div>
+
     <div id="paste-guide">
-      <span style="font-size:16px">&#9989;</span>
-      <span class="pg-t"><strong>Your page is ready!</strong> Click <strong>&#8220;Copy my HTML&#8221;</strong> above, then in SharePoint: Edit page &#8594; <strong>+ Add a web part</strong> &#8594; search <span class="pg-code">Embed</span> &#8594; paste your HTML &#8594; <strong>Republish</strong>.</span>
+      <span style="font-size:15px">&#9989;</span>
+      <span class="pg-t"><strong>Your page is ready!</strong> Click <strong>&#8220;Copy HTML&#8221;</strong> above, then in SharePoint: Edit page &#8594; <strong>+ Add a web part</strong> &#8594; search <span class="pg-code">Embed</span> &#8594; paste &#8594; <strong>Republish</strong>.</span>
     </div>
   </div>
+
 </div>
 
 <script>
-// ── CONFIG ─────────────────────────────────────────────────
-var SCHOOL_NAME      = "Western Cape College";
-var PRIMARY_COLOR    = "#1a3a6b";
-var ACCENT_COLOR     = "#f07f24";
-var WORKER_URL       = "https://schoolpage-api.webmaster-349.workers.dev";
-var CLOUDINARY_CLOUD  = "dewljixlc";   // e.g. "dxyz123abc"
-var CLOUDINARY_PRESET = "pvsbmdmd"; // e.g. "schoolpage"
-// ───────────────────────────────────────────────────────────
+// ── CONFIG ───────────────────────────────────────────────────
+var SCHOOL_NAME       = "Western Cape College";
+var PRIMARY_COLOR     = "#1a3a6b";
+var ACCENT_COLOR      = "#f07f24";
+var WORKER_URL        = "https://schoolpage-api.webmaster-349.workers.dev";
+var CLOUDINARY_CLOUD  = "dewljixlc";
+var CLOUDINARY_PRESET = "pvsbmdmd";
+// ─────────────────────────────────────────────────────────────
 
 var pageType = '';
 var heroImageUrl = '';
-var kvItems = [];
 var tileItems = [];
 var linkSections = [];
 var skipped = {};
 var genHTML = '';
 var ic = 0;
+var currentView = 'preview';
+
+// ── STEP DEFINITIONS ──
+var STEPS_MAIN = [
+  {id:'type',   label:'Page type'},
+  {id:'title',  label:'Title'},
+  {id:'photo',  label:'Photo'},
+  {id:'content',label:'Content'},
+  {id:'tiles',  label:'Tiles'}
+];
+var STEPS_SUB = [
+  {id:'type',    label:'Page type'},
+  {id:'title',   label:'Title'},
+  {id:'photo',   label:'Photo'},
+  {id:'content', label:'Content'},
+  {id:'links',   label:'Links'}
+];
 
 function g(id){return document.getElementById(id);}
 function gv(id){return g(id)?g(id).value:'';}
 
+// ── INIT ──
 window.addEventListener('DOMContentLoaded', function(){
   g('school-label').textContent = SCHOOL_NAME;
   g('c-pri').value = PRIMARY_COLOR;
   g('c-sec').value = ACCENT_COLOR;
   g('d-pri').style.background = PRIMARY_COLOR;
   g('d-sec').style.background = ACCENT_COLOR;
-  // Add default KV items
-  addKV('Email', '');
-  addKV('Opening Hours', '');
-  // Add default tile
-  addTile();
+  loadSaved();
+  renderProgress(null, 0);
+  addTile(); // default tile
 });
 
-function onColor(k){g('d-'+k).style.background=gv('c-'+k);}
+function onColor(k){
+  g('d-'+k).style.background = gv('c-'+k);
+  save();
+}
+
+// ── SAVE / RESTORE ──
+function save(){
+  try{
+    localStorage.setItem('spb_data', JSON.stringify({
+      pageType: pageType,
+      title: gv('f-title'),
+      sub: gv('f-sub'),
+      bannerColor: gv('f-banner-color'),
+      content: gv('f-content'),
+      tilesHeading: gv('f-tiles-heading'),
+      pri: gv('c-pri'),
+      sec: gv('c-sec')
+    }));
+  }catch(e){}
+}
+
+function loadSaved(){
+  try{
+    var d = JSON.parse(localStorage.getItem('spb_data'));
+    if(!d)return;
+    if(d.pri){g('c-pri').value=d.pri;g('d-pri').style.background=d.pri;}
+    if(d.sec){g('c-sec').value=d.sec;g('d-sec').style.background=d.sec;}
+  }catch(e){}
+}
+
+// ── PROGRESS ──
+function renderProgress(steps, activeIdx){
+  if(!steps){steps=[{label:'Page type'},{label:'Title'},{label:'Photo'},{label:'Content'},{label:'Links/Tiles'}];}
+  var stepsEl = g('prog-steps');
+  stepsEl.innerHTML = '';
+  steps.forEach(function(s,i){
+    var dot = document.createElement('div');
+    dot.className = 'prog-dot' + (i<activeIdx?' done':i===activeIdx?' active':'');
+    dot.textContent = i<activeIdx ? '✓' : (i+1);
+    stepsEl.appendChild(dot);
+    if(i<steps.length-1){
+      var line = document.createElement('div');
+      line.className = 'prog-line' + (i<activeIdx?' done':'');
+      stepsEl.appendChild(line);
+    }
+  });
+  var labelEl = g('prog-label');
+  if(activeIdx >= 0 && activeIdx < steps.length){
+    labelEl.textContent = 'Step '+(activeIdx+1)+' of '+steps.length+' \u2014 '+steps[activeIdx].label;
+    labelEl.className = 'prog-label active-label';
+  }
+}
 
 // ── PAGE TYPE ──
 function selectType(type){
   pageType = type;
   document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('selected');});
   event.currentTarget.classList.add('selected');
+  var steps = type==='main' ? STEPS_MAIN : STEPS_SUB;
   if(type==='main'){
     g('content-q').textContent = 'Write a brief introduction';
-    g('content-hint').textContent = 'A short paragraph or two introducing this section to students and families. Paste from Word or type here.';
-    g('f-content').placeholder = 'e.g. Western Cape College offers a diverse range of extra-curricular academic opportunities designed to extend and enrich student learning...';
+    g('content-hint').textContent = 'A short paragraph or two introducing this section. Paste from Word or type here.';
+    g('f-content').placeholder = 'e.g. Western Cape College offers a diverse range of extra-curricular opportunities...';
     g('f-content').rows = 6;
+  } else {
+    g('content-q').textContent = 'Paste your page content';
+    g('content-hint').textContent = 'Copy and paste from Word or any document. The AI will structure it, create headings, and automatically highlight important notices. Your exact words are kept.';
+    g('f-content').placeholder = 'Paste all your content here \u2014 the AI will organise it for you.';
+    g('f-content').rows = 10;
   }
   setTimeout(function(){
     g('step-type').classList.remove('active');
-    activateStep('step-title');
-    var inp = g('f-title');
-    if(inp) setTimeout(function(){inp.focus();},300);
+    showStep('title');
+    renderProgress(steps, 1);
   },250);
+  save();
 }
 
-// ── STEP FLOW ──
-var STEPS_MAIN = ['title','photo','content','tiles'];
-var STEPS_SUB  = ['title','photo','details','content','links'];
-
+// ── STEP NAVIGATION ──
 function getSteps(){return pageType==='main'?STEPS_MAIN:STEPS_SUB;}
 
-function activateStep(id){
-  var el=g(id);
+function stepIndex(name){
+  return getSteps().findIndex(function(s){return s.id===name;});
+}
+
+function showStep(name){
+  var el = g('step-'+name);
   if(!el)return;
   el.classList.remove('hidden');
   el.classList.add('active');
   setTimeout(function(){
     el.scrollIntoView({behavior:'smooth',block:'nearest'});
-    var inp=el.querySelector('input:not([type=file]):not([type=color]),textarea');
-    if(inp)inp.focus();
+    var inp = el.querySelector('input:not([type=file]):not([type=color]),textarea');
+    if(inp) inp.focus();
   },200);
 }
 
+function hideStep(name){
+  var el = g('step-'+name);
+  if(el){el.classList.remove('active');}
+}
+
 function nextStep(name){
-  var el=g('step-'+name);
-  if(el)el.classList.remove('active');
-  var steps=getSteps();
-  var idx=steps.indexOf(name);
-  for(var i=idx+1;i<steps.length;i++){
-    var next=steps[i];
-    if(!skipped[next]){
-      activateStep('step-'+next);
+  hideStep(name);
+  save();
+  var steps = getSteps();
+  var idx = stepIndex(name);
+  for(var i=idx+1; i<steps.length; i++){
+    if(!skipped[steps[i].id]){
+      showStep(steps[i].id);
+      renderProgress(steps, i);
       return;
     }
   }
   // All done
-  activateStep('step-done');
+  g('step-done').classList.remove('hidden');
+  g('step-done').scrollIntoView({behavior:'smooth',block:'nearest'});
+  renderProgress(steps, steps.length);
+  g('gen-hint').textContent = 'Your page is ready to generate!';
 }
 
 function skipStep(name){
-  skipped[name]=true;
+  skipped[name] = true;
   nextStep(name);
 }
 
-// ── IMAGE UPLOAD ──
-async function uploadToCloudinary(file){
-  var fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CLOUDINARY_PRESET);
-  var res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload',{method:'POST',body:fd});
-  var data = await res.json();
-  if(!data.secure_url)throw new Error('Upload failed');
-  return data.secure_url;
+function goBack(name){
+  hideStep(name);
+  var steps = getSteps();
+  var idx = stepIndex(name);
+  for(var i=idx-1; i>=0; i--){
+    var el = g('step-'+steps[i].id);
+    if(el){
+      el.classList.remove('hidden');
+      el.classList.add('active');
+      el.scrollIntoView({behavior:'smooth',block:'nearest'});
+      renderProgress(steps, i);
+      return;
+    }
+  }
 }
 
+// ── HERO IMAGE ──
 async function handleHeroUpload(input){
   var file = input.files[0];
   if(!file)return;
   g('hero-uploading').classList.add('show');
   try{
-    heroImageUrl = await uploadToCloudinary(file);
-    g('hero-preview-img').src = heroImageUrl;
-    g('hero-preview-wrap').classList.add('show');
-    g('hero-upload-area').classList.add('has-image');
-    g('hero-upload-area').querySelector('.img-upload-t').textContent = 'Photo uploaded ✓';
+    heroImageUrl = await uploadCloudinary(file);
+    g('hero-prev-img').src = heroImageUrl;
+    g('hero-prev').classList.add('show');
+    g('hero-upload-area').classList.add('has-img');
+    g('hero-upload-area').querySelector('.img-upload-t').textContent = 'Photo uploaded \u2713';
   }catch(e){
-    alert('Image upload failed. Please check your Cloudinary settings in the config.');
+    alert('Image upload failed. Please check your Cloudinary settings.');
     console.error(e);
   }
   g('hero-uploading').classList.remove('show');
 }
-
-function removeHeroImage(){
+function removeHero(){
   heroImageUrl='';
-  g('hero-preview-wrap').classList.remove('show');
-  g('hero-upload-area').classList.remove('has-image');
+  g('hero-prev').classList.remove('show');
+  g('hero-upload-area').classList.remove('has-img');
   g('hero-upload-area').querySelector('.img-upload-t').textContent='Click to choose a photo';
 }
-
-// ── KV ITEMS ──
-function addKV(k,v){
-  k=k||'';v=v||'';
-  var id=++ic;
-  kvItems.push({id:id,k:k,v:v});
-  var list=g('kv-list');
-  var row=document.createElement('div');row.className='kv-row';row.id='kv'+id;
-  row.innerHTML='<input type="text" placeholder="Label (e.g. Email)" value="'+k+'" oninput="updKV('+id+',\'k\',this.value)">'
-    +'<input type="text" placeholder="Information" value="'+v+'" oninput="updKV('+id+',\'v\',this.value)">'
-    +'<button class="xbtn" onclick="removeKV('+id+')">&times;</button>';
-  list.appendChild(row);
-}
-function updKV(id,f,v){var it=kvItems.find(function(i){return i.id===id;});if(it)it[f]=v;}
-function removeKV(id){kvItems=kvItems.filter(function(i){return i.id!==id;});var el=g('kv'+id);if(el)el.remove();}
 
 // ── TILES ──
 function addTile(){
@@ -504,51 +648,47 @@ function addTile(){
     +'<button class="xbtn" onclick="removeTile('+id+')">&times;</button></div>'
     +'<div class="frow">'
     +'<div class="fl"><label>Name</label><input type="text" placeholder="e.g. Brain Bee Challenge" oninput="updTile('+id+',\'label\',this.value)"></div>'
-    +'<div class="fl"><label>Link URL</label><input type="url" placeholder="https://..." oninput="updTile('+id+',\'url\',this.value)"></div>'
+    +'<div class="fl"><label>Where it links to</label><input type="url" placeholder="https://..." oninput="updTile('+id+',\'url\',this.value)"></div>'
     +'</div>'
-    +'<div class="tile-img-row">'
-    +'<img class="tile-img-thumb" id="tile-thumb-'+id+'" src="">'
-    +'<button class="tile-upload-btn"><input type="file" accept="image/*" onchange="handleTileUpload('+id+',this)">&#128247; Add logo or image</button>'
+    +'<div class="tile-logo-row">'
+    +'<img class="tile-thumb" id="tthumb'+id+'" src="">'
+    +'<button class="tile-upload-btn"><input type="file" accept="image/*" onchange="handleTileUpload('+id+',this)">&#128247; Add logo (optional)</button>'
     +'</div>'
-    +'<div class="tile-upload-status" id="tile-status-'+id+'">Uploading&#8230;</div>';
+    +'<div class="tile-upload-ok" id="tok'+id+'">Logo uploaded \u2713</div>';
   list.appendChild(div);
 }
 function updTile(id,f,v){var t=tileItems.find(function(t){return t.id===id;});if(t)t[f]=v;}
 function removeTile(id){tileItems=tileItems.filter(function(t){return t.id!==id;});var el=g('tile'+id);if(el)el.remove();}
-
 async function handleTileUpload(id,input){
   var file=input.files[0];if(!file)return;
-  var status=g('tile-status-'+id);status.classList.add('show');
+  var ok=g('tok'+id);ok.textContent='Uploading\u2026';ok.classList.add('show');
   try{
-    var url=await uploadToCloudinary(file);
+    var url=await uploadCloudinary(file);
     var t=tileItems.find(function(t){return t.id===id;});if(t)t.img=url;
-    var thumb=g('tile-thumb-'+id);thumb.src=url;thumb.classList.add('show');
-    status.textContent='Image uploaded \u2713';
-    setTimeout(function(){status.classList.remove('show');},2000);
-  }catch(e){
-    status.textContent='Upload failed \u2013 check Cloudinary config';
-    console.error(e);
-  }
+    var thumb=g('tthumb'+id);thumb.src=url;thumb.classList.add('show');
+    ok.textContent='Logo uploaded \u2713';
+    setTimeout(function(){ok.classList.remove('show');},2500);
+  }catch(e){ok.textContent='Upload failed';console.error(e);}
 }
 
 // ── LINK SECTIONS ──
 function addLinkSection(){
   var id=++ic;
   linkSections.push({id:id,heading:'',links:[]});
-  var list=g('link-sections-list');
-  var div=document.createElement('div');div.className='section-item';div.id='lsec'+id;
-  div.innerHTML='<div class="section-hd"><span class="section-lbl">Link group</span>'
-    +'<button class="xbtn" onclick="removeLinkSection('+id+')">&times;</button></div>'
+  var list=g('lsec-list');
+  var div=document.createElement('div');div.className='lsec-item';div.id='lsec'+id;
+  div.innerHTML='<div class="lsec-hd"><span class="lsec-lbl">Link group</span>'
+    +'<button class="xbtn" onclick="removeLSec('+id+')">&times;</button></div>'
     +'<div class="fl"><label>Group heading <span class="opt">(optional)</span></label>'
     +'<input type="text" placeholder="e.g. E-Resources, Useful Links" oninput="updLSec('+id+',\'heading\',this.value)"></div>'
     +'<div class="link-list" id="ll'+id+'"></div>'
-    +'<button class="add-row-btn" onclick="addLinkToSection('+id+')">+ Add a link</button>';
+    +'<button class="add-row-btn" onclick="addLink('+id+')">+ Add a link</button>';
   list.appendChild(div);
-  addLinkToSection(id);
+  addLink(id);
 }
-function removeLinkSection(id){linkSections=linkSections.filter(function(s){return s.id!==id;});var el=g('lsec'+id);if(el)el.remove();}
+function removeLSec(id){linkSections=linkSections.filter(function(s){return s.id!==id;});var el=g('lsec'+id);if(el)el.remove();}
 function updLSec(id,f,v){var s=linkSections.find(function(s){return s.id===id;});if(s)s[f]=v;}
-function addLinkToSection(sid){
+function addLink(sid){
   var s=linkSections.find(function(s){return s.id===sid;});if(!s)return;
   var li=s.links.length;s.links.push({t:'',u:''});
   var list=g('ll'+sid);if(!list)return;
@@ -560,24 +700,84 @@ function addLinkToSection(sid){
 }
 function updLink(sid,li,f,v){var s=linkSections.find(function(s){return s.id===sid;});if(s&&s.links[li])s.links[li][f]=v;}
 
-// ── VIEW ──
-function sv(m){
-  var ps=g('prevscroll'),cv=g('codeview');
-  if(m==='vis'){ps.style.display='';cv.style.display='none';g('vv').classList.add('on');g('vc').classList.remove('on');}
-  else{ps.style.display='none';cv.style.display='block';g('vv').classList.remove('on');g('vc').classList.add('on');}
+// ── CLOUDINARY UPLOAD ──
+async function uploadCloudinary(file){
+  var fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',CLOUDINARY_PRESET);
+  var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload',{method:'POST',body:fd});
+  var data=await res.json();
+  if(!data.secure_url)throw new Error('Cloudinary upload failed: '+(data.error&&data.error.message||'unknown'));
+  return data.secure_url;
 }
-function setStatus(msg){g('status').textContent=msg;}
+
+// ── VIEW SWITCHING ──
+function setView(mode){
+  currentView = mode;
+  // Hide all
+  g('prevscroll').style.display = 'none';
+  g('wysiwyg-wrap').style.display = 'none';
+  g('codeview').style.display = 'none';
+  g('wysiwyg-toolbar').classList.remove('show');
+  g('edit-notice').classList.remove('show');
+  document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
+
+  if(mode==='preview'){
+    g('prevscroll').style.display = '';
+    g('vbtn-preview').classList.add('on');
+    // Make iframe non-editable
+    var iw=g('iframe-wrap');if(iw)iw.style.pointerEvents='none';
+  } else if(mode==='edit'){
+    if(!genHTML){setView('preview');return;}
+    // Populate editor with current content
+    g('wysiwyg-editor').innerHTML = genHTML;
+    g('wysiwyg-wrap').style.display = 'block';
+    g('wysiwyg-toolbar').classList.add('show');
+    g('edit-notice').classList.add('show');
+    g('vbtn-edit').classList.add('on');
+    // Also update code view
+    g('code-out').textContent = genHTML;
+  } else if(mode==='code'){
+    g('codeview').style.display = 'block';
+    g('vbtn-code').classList.add('on');
+  }
+}
+
+function onEditorChange(){
+  // Keep genHTML in sync with editor
+  genHTML = g('wysiwyg-editor').innerHTML;
+  g('code-out').textContent = genHTML;
+}
+
+function fmt(cmd){
+  document.execCommand(cmd, false, null);
+  g('wysiwyg-editor').focus();
+  onEditorChange();
+}
+function fmtSize(dir){
+  document.execCommand('fontSize', false, dir==='larger'?'5':'2');
+  g('wysiwyg-editor').focus();
+  onEditorChange();
+}
 
 // ── GENERATE ──
 function generate(){
-  if(!pageType){alert('Please choose a page type first.');return;}
+  if(!pageType){alert('Please choose a page type first (Main page or Content page).');return;}
   if(!gv('f-title').trim()){alert('Please add a page title first.');return;}
-  var btn=g('btn-gen');btn.disabled=true;
+  var btn1=g('btn-gen-top'),btn2=g('btn-gen-bottom');
+  btn1.disabled=true;btn2.disabled=true;
   g('prev-empty').style.display='none';
   g('err-box').classList.remove('show');
   g('loading-area').classList.add('show');
   g('iframe-wrap').style.display='none';
-  setStatus('Building\u2026');
+  g('wysiwyg-wrap').style.display='none';
+  setTbStatus('Building\u2026');
+  // Switch to preview tab while loading
+  g('prevscroll').style.display='';
+  g('wysiwyg-toolbar').classList.remove('show');
+  document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
+  g('vbtn-preview').classList.add('on');
+
   var pri=gv('c-pri'),sec=gv('c-sec');
   fetch(WORKER_URL,{
     method:'POST',
@@ -585,7 +785,7 @@ function generate(){
     body:JSON.stringify({
       model:'claude-sonnet-4-20250514',
       max_tokens:4000,
-      system: buildSystem(),
+      system:buildSystem(),
       messages:[{role:'user',content:buildPrompt(pri,sec)}]
     })
   })
@@ -597,49 +797,51 @@ function generate(){
     showPreview(html);
     g('btn-copy').classList.add('show');
     g('paste-guide').classList.add('show');
-    setStatus('Done! \u2713');
-    setTimeout(function(){setStatus('');},3000);
+    setTbStatus('Done! \u2713');
+    setTimeout(function(){setTbStatus('');},3000);
   })
   .catch(function(err){
     g('err-box').textContent='Something went wrong: '+err.message;
     g('err-box').classList.add('show');
     g('prev-empty').style.display='block';
-    setStatus('');console.error(err);
+    setTbStatus('');console.error(err);
   })
-  .finally(function(){g('loading-area').classList.remove('show');btn.disabled=false;});
+  .finally(function(){
+    g('loading-area').classList.remove('show');
+    btn1.disabled=false;btn2.disabled=false;
+  });
 }
 
 function buildSystem(){
   return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.\n\n'
-    +'OUTPUT RULES (strictly follow):\n'
+    +'OUTPUT RULES:\n'
     +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.\n'
-    +'2. No script tags ever.\n'
+    +'2. No script tags.\n'
     +'3. No external fonts or CDN links.\n'
     +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n'
-    +'5. One <style> block at the very top. All CSS class names prefixed with sp-.\n'
-    +'6. Then your HTML divs.\n'
-    +'7. Output ONLY the HTML. No markdown, no backticks, no explanation.\n\n'
+    +'5. One <style> block at the top. All CSS class names prefixed with sp-.\n'
+    +'6. Output ONLY the HTML. No markdown, no backticks, no explanation.\n\n'
     +'CONTENT RULES:\n'
-    +'- Preserve the school\'s exact wording. Do not rewrite or paraphrase.\n'
-    +'- Structure the content with appropriate headings and sections.\n'
-    +'- If the content contains important notices, warnings, deadlines, or key facts that stand out, automatically format them as styled callout boxes.\n'
-    +'- Split long text blocks into readable paragraphs.\n'
-    +'- Keep the tone professional and appropriate for an Australian school website.';
+    +'- Preserve the school\'s exact wording. Do not rewrite or paraphrase any text.\n'
+    +'- Structure content with appropriate headings and sections based on natural breaks in the text.\n'
+    +'- If you spot important notices, warnings, deadlines, or key facts, format them as styled callout boxes (blue info style).\n'
+    +'- Split long blocks into readable paragraphs.\n'
+    +'- Professional Australian school tone.';
 }
 
 function buildPrompt(pri,sec){
-  var bannerBg = gv('f-banner-color')==='sec'?sec:pri;
-  var lines=['Build a '+( pageType==='main'?'main landing':'detailed content')+' page for '+SCHOOL_NAME+'.'];
+  var bannerBg=gv('f-banner-color')==='sec'?sec:pri;
+  var lines=['Build a '+(pageType==='main'?'main landing':'detailed content')+' page for '+SCHOOL_NAME+'.'];
   lines.push('Brand: Primary='+pri+' | Accent='+sec+' | Text on primary=#fff');
   lines.push('');
-  lines.push('IMPLEMENT THESE BLOCKS IN ORDER:');
+  lines.push('CONTENT BLOCKS \u2014 implement in this exact order:');
   lines.push('');
   var n=1;
 
   // Banner
   lines.push(n+'. HERO BANNER: background:'+bannerBg+'; color:#fff; border-radius:10px; padding:28px 32px.');
-  lines.push('   Title "'+gv('f-title')+'" \u2014 26px bold.');
-  if(gv('f-sub')) lines.push('   Subtitle "'+gv('f-sub')+'" \u2014 15px opacity:.88 margin-top:8px.');
+  lines.push('   Title "'+gv('f-title')+'" \u2014 font-size:26px; font-weight:700.');
+  if(gv('f-sub')) lines.push('   Subtitle "'+gv('f-sub')+'" \u2014 font-size:15px; opacity:.88; margin-top:8px.');
   n++;
 
   // Hero image
@@ -648,43 +850,34 @@ function buildPrompt(pri,sec){
     n++;
   }
 
-  // Key details
-  if(!skipped['details']){
-    var validKV=kvItems.filter(function(i){return i.k&&i.v;});
-    if(validKV.length){
-      lines.push(n+'. INFO BAR: Inline row, bold label + normal value. font-size:13px; padding:12px 0; border-bottom:1px solid #e5e7eb; margin-bottom:16px.');
-      lines.push('   Items: '+validKV.map(function(i){return i.k+': '+i.v;}).join(' | '));
-      n++;
-    }
-  }
-
-  // Content / intro
+  // Content
   var content=gv('f-content');
   if(content&&!skipped['content']){
     if(pageType==='main'){
-      lines.push(n+'. INTRO TEXT: '+content);
-      lines.push('   Format as clean paragraphs. font-size:14px; line-height:1.75; color:#333; margin-bottom:20px.');
-    } else {
-      lines.push(n+'. MAIN CONTENT: The school has provided the following text. Structure it with appropriate headings in colour '+pri+' (20px bold, border-bottom:2px solid '+pri+' margin:24px 0 12px). Split into readable paragraphs (14px #333 line-height:1.7). If you spot important notices, warnings, or key facts, format them as callout boxes (blue info box: background:#DBEAFE border-left:4px solid #93C5FD color:#1E3A8A padding:14px 18px border-radius:0 8px 8px 0 margin:16px 0). Preserve exact wording throughout.');
-      lines.push('   --- BEGIN CONTENT ---');
+      lines.push(n+'. INTRO TEXT: font-size:14px; line-height:1.75; color:#333; margin-bottom:20px. Split on blank lines into <p> tags.');
       lines.push('   '+content);
-      lines.push('   --- END CONTENT ---');
+    } else {
+      lines.push(n+'. MAIN CONTENT: Structure the following text into a professional page.');
+      lines.push('   Rules: (a) Keep exact wording. (b) Add section headings in '+pri+' (20px bold, border-bottom:2px solid '+pri+' margin:24px 0 12px) where the content naturally shifts topic. (c) Format as readable paragraphs (14px #333 line-height:1.7). (d) If you find important notices, warnings, or key facts, wrap them in a callout box (background:#DBEAFE; border-left:4px solid #93C5FD; color:#1E3A8A; border-radius:0 8px 8px 0; padding:14px 18px; margin:16px 0; font-size:13px).');
+      lines.push('   --- CONTENT START ---');
+      lines.push('   '+content);
+      lines.push('   --- CONTENT END ---');
     }
     n++;
   }
 
   // Link sections (sub-page)
   if(pageType==='sub'&&!skipped['links']){
-    linkSections.forEach(function(sec){
-      var validLinks=sec.links.filter(function(l){return l.t;});
+    linkSections.forEach(function(sec_item){
+      var validLinks=sec_item.links.filter(function(l){return l.t;});
       if(!validLinks.length)return;
-      if(sec.heading){
-        lines.push(n+'. SECTION WITH LINKS: Heading "'+sec.heading+'" \u2014 color:'+pri+'; 20px bold; border-bottom:2px solid '+pri+'; padding-bottom:6px; margin:24px 0 12px.');
+      if(sec_item.heading){
+        lines.push(n+'. LINKS SECTION: Heading "'+sec_item.heading+'" \u2014 color:'+pri+'; font-size:20px; font-weight:700; border-bottom:2px solid '+pri+'; padding-bottom:6px; margin:24px 0 12px.');
       } else {
         lines.push(n+'. LINK LIST:');
       }
-      lines.push('   Bullet links (color:'+pri+' no-underline hover:underline font-size:14px): '
-        +validLinks.map(function(l){return '"'+l.t+'" href="'+l.u+'"';}).join(', '));
+      lines.push('   Bullet links: '+validLinks.map(function(l){return '"'+l.t+'" href="'+(l.u||'#')+'"';}).join(', '));
+      lines.push('   Style: color:'+pri+'; font-size:14px; no-underline; hover:underline; line-height:2;');
       n++;
     });
   }
@@ -694,20 +887,21 @@ function buildPrompt(pri,sec){
     var validTiles=tileItems.filter(function(t){return t.label;});
     if(validTiles.length){
       var th=gv('f-tiles-heading');
-      if(th) lines.push(n+'. TILES HEADING: "'+th+'" \u2014 13px bold #333 margin-bottom:12px.');
-      lines.push(n+(th?'b':'')+'. TILE GRID: CSS grid repeat(3,1fr) gap:14px. Responsive: 2-col @540px, 1-col @360px.');
-      lines.push('   Each tile: <a href target="_blank"> flex-col center; padding:20px; border:2px solid '+pri+'; border-radius:10px; text-decoration:none; min-height:120px.');
-      lines.push('   CSS :hover \u2014 border-color:'+sec+'; box-shadow:0 4px 16px rgba(0,0,0,.1); translateY(-2px).');
-      lines.push('   If img: <img> max-height:72px max-width:110px object-fit:contain margin-bottom:10px. Label: 13px bold '+pri+' text-align:center.');
-      validTiles.forEach(function(t,ti){
-        lines.push('   Tile '+(ti+1)+': label="'+t.label+'" href="'+(t.url||'#')+'"'+(t.img?' img="'+t.img+'"':' (no image)'));
+      if(th) lines.push(n+'. TILES HEADING: "'+th+'" \u2014 font-size:13px; font-weight:700; color:#333; margin-bottom:12px.');
+      lines.push(n+(th?'.5':'')+'. TILE GRID: CSS grid repeat(3,1fr) gap:14px. Responsive: 2-col @540px, 1-col @360px.');
+      lines.push('   Each tile: <a href target="_blank"> display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; border:2px solid '+pri+'; border-radius:10px; text-decoration:none; min-height:120px; transition:all .18s;');
+      lines.push('   CSS :hover \u2014 border-color:'+sec+'; box-shadow:0 4px 16px rgba(0,0,0,.1); transform:translateY(-2px).');
+      lines.push('   If img URL: <img> max-height:72px; max-width:110px; object-fit:contain; margin-bottom:10px.');
+      lines.push('   Label: font-size:13px; font-weight:700; color:'+pri+'; text-align:center; line-height:1.3.');
+      validTiles.forEach(function(t,i){
+        lines.push('   Tile '+(i+1)+': label="'+t.label+'" href="'+(t.url||'#')+'"'+(t.img?' img="'+t.img+'"':' (no image \u2014 show label text styled prominently)'));
       });
       n++;
     }
   }
 
   lines.push('');
-  lines.push('DESIGN: Wrap in div max-width:880px. System fonts (Arial/Helvetica/Georgia). No JS. All links target="_blank".');
+  lines.push('DESIGN: Wrap in a div, max-width:880px. System fonts (Arial/Helvetica/Georgia). No JS. All links open target="_blank". Clean professional Australian school look.');
   return lines.join('\n');
 }
 
@@ -717,21 +911,34 @@ function showPreview(html){
   g('iframe-wrap').style.display='block';
   var full='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:16px;line-height:1.5}</style></head><body>'+html+'</body></html>';
   iframe.srcdoc=full;
-  iframe.onload=function(){try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+20)+'px';}catch(e){iframe.style.height='600px';}};
+  iframe.onload=function(){
+    try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+20)+'px';}
+    catch(e){iframe.style.height='600px';}
+  };
   g('code-out').textContent=html;
-  sv('vis');
+  setView('preview');
 }
 
 // ── COPY ──
 function copyHTML(){
+  // If in edit mode, get from editor (catches any edits)
+  if(currentView==='edit'){
+    genHTML = g('wysiwyg-editor').innerHTML;
+  }
   if(!genHTML)return;
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(genHTML).then(function(){setStatus('Copied! \u2713');setTimeout(function(){setStatus('');},2500);});
+    navigator.clipboard.writeText(genHTML).then(function(){
+      setTbStatus('Copied! \u2713');setTimeout(function(){setTbStatus('');},2500);
+    });
   }else{
-    var ta=document.createElement('textarea');ta.value=genHTML;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
-    setStatus('Copied! \u2713');setTimeout(function(){setStatus('');},2500);
+    var ta=document.createElement('textarea');ta.value=genHTML;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
+    setTbStatus('Copied! \u2713');setTimeout(function(){setTbStatus('');},2500);
   }
 }
+
+function setTbStatus(msg){g('tb-status').textContent=msg;}
 </script>
 </body>
 </html>
