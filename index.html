@@ -8,111 +8,128 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F5F4F0;--white:#fff;--surface:#FAFAF8;
-  --border:#E4E1D9;--border2:#CCC9BF;
-  --ink:#1C1C1C;--ink2:#4B4B4B;--ink3:#9A9A9A;
-  --blue:#2B5CE6;--blue-lt:#EEF2FF;
+  --bg:#F0EEE9;--white:#fff;--surface:#F8F7F4;
+  --border:#E2DED6;--border2:#C8C4BB;
+  --ink:#1A1A1A;--ink2:#4A4A4A;--ink3:#9A9A9A;
+  --blue:#2B5CE6;--blue-lt:#EEF2FF;--blue-mid:#DBEAFE;
   --green:#1A9E5C;--green-lt:#ECFDF5;
-  --red:#DC2626;--amber-lt:#FFFBEB;
-  --r:12px;--rs:8px;
-  --shadow:0 1px 4px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --red:#DC2626;--yellow-lt:#FFFBEB;
+  --r:14px;--rs:10px;
+  --shadow:0 2px 8px rgba(0,0,0,.07),0 8px 24px rgba(0,0,0,.05);
   --shadow-sm:0 1px 3px rgba(0,0,0,.06);
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
 
-/* TOP BAR */
-#topbar{height:56px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;box-shadow:var(--shadow-sm)}
-.top-logo{font-size:16px;font-weight:700;color:var(--ink)}
-.top-logo span{color:var(--blue)}
-.top-sep{width:1px;height:20px;background:var(--border)}
-.top-school{font-size:14px;font-weight:600;color:var(--ink2)}
-.top-colors{display:flex;gap:8px}
-.top-color{display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--ink3);background:var(--surface);cursor:pointer}
-.top-color:hover{border-color:var(--border2)}
-.mini-swatch{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.1);overflow:hidden;flex-shrink:0}
-.mini-swatch input[type=color]{width:26px;height:26px;margin:-6px;border:none;cursor:pointer;background:none}
-.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-#top-status{font-size:12px;color:var(--ink3)}
-#btn-copy{padding:9px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px;transition:opacity .15s}
-#btn-copy:hover{opacity:.88}
+/* ── TOP BAR ── */
+#topbar{height:54px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;box-shadow:var(--shadow-sm)}
+.logo{font-size:16px;font-weight:700;color:var(--ink)}.logo em{color:var(--blue);font-style:normal}
+.sep{width:1px;height:18px;background:var(--border)}
+.school-label{font-size:13px;font-weight:600;color:var(--ink2)}
+.color-pills{display:flex;gap:7px}
+.cpill{display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink3);background:var(--surface);cursor:pointer;transition:border-color .12s}
+.cpill:hover{border-color:var(--border2)}
+.cdot{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.12);overflow:hidden;flex-shrink:0}
+.cdot input[type=color]{width:27px;height:27px;margin:-6px;border:none;cursor:pointer;background:none}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+#status{font-size:12px;color:var(--ink3)}
+#btn-copy{padding:9px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:6px}
 #btn-copy.show{display:flex}
-#btn-gen{padding:10px 22px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
-#btn-gen:hover{background:#1D4ED8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(43,92,230,.25)}
+#btn-copy:hover{opacity:.88}
+#btn-gen{padding:10px 22px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+#btn-gen:hover{background:#1D4ED8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(43,92,230,.3)}
 #btn-gen:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 
-/* LAYOUT */
-#app{display:flex;height:calc(100vh - 56px);overflow:hidden}
+/* ── LAYOUT ── */
+#app{display:flex;height:calc(100vh - 54px);overflow:hidden}
 
-/* LEFT PANEL */
-#left{width:420px;min-width:380px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-#bscroll{flex:1;overflow-y:auto;padding:12px}
-#bscroll::-webkit-scrollbar{width:4px}
-#bscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-#bempty{padding:40px 24px;text-align:center}
-.be-ico{font-size:36px;opacity:.2;margin-bottom:12px}
-.be-t{font-size:15px;font-weight:600;color:var(--ink2);margin-bottom:6px}
-.be-s{font-size:13px;color:var(--ink3);line-height:1.6}
+/* ── LEFT: FORM ── */
+#form-panel{width:480px;min-width:420px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+#form-scroll{flex:1;overflow-y:auto;padding:24px 24px 32px}
+#form-scroll::-webkit-scrollbar{width:4px}
+#form-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-/* ADD STRIP */
-#add-strip{flex-shrink:0;border-top:1px solid var(--border);padding:12px 14px;background:var(--surface)}
-.add-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:9px}
-.block-picker{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.pick-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--white);cursor:pointer;text-align:left;transition:all .15s;font-family:inherit}
-.pick-btn:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
-.pick-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.pick-t{flex:1;min-width:0}
-.pick-name{font-size:12px;font-weight:700;color:var(--ink);display:block}
-.pick-desc{font-size:10px;color:var(--ink3);display:block;margin-top:1px}
+/* ── STEP CARDS ── */
+.step-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:14px;transition:border-color .15s,box-shadow .15s}
+.step-card.active{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(43,92,230,.08),var(--shadow-sm)}
+.step-card.done{border-color:var(--border);background:var(--surface)}
+.step-card.hidden{display:none}
+.step-q{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.3}
+.step-hint{font-size:12px;color:var(--ink3);margin-bottom:14px;line-height:1.5}
+.step-done-summary{font-size:13px;color:var(--ink2);line-height:1.5}
+.step-edit{font-size:11px;color:var(--blue);cursor:pointer;margin-top:6px;display:inline-block;font-weight:600}
+.step-edit:hover{text-decoration:underline}
 
-/* BLOCK CARDS */
-.bc{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:9px;overflow:hidden;box-shadow:var(--shadow-sm);transition:border-color .12s,box-shadow .12s}
-.bc:hover{border-color:var(--border2);box-shadow:var(--shadow)}
-.bc-hd{display:flex;align-items:center;gap:10px;padding:11px 12px 11px 16px;cursor:pointer;position:relative}
-.bc-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
-.bc-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.bc-info{flex:1;min-width:0}
-.bc-name{font-size:12px;font-weight:700;color:var(--ink);display:block}
-.bc-prev{font-size:11px;color:var(--ink3);display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bc-acts{display:flex;gap:4px;flex-shrink:0}
-.bc-del{background:none;border:none;color:var(--ink3);font-size:18px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;padding:0;font-family:inherit;transition:all .12s}
-.bc-del:hover{background:#fee2e2;color:var(--red)}
-.bc-chev{color:var(--ink3);font-size:12px;transition:transform .15s;flex-shrink:0}
-.bc.open .bc-chev{transform:rotate(90deg)}
-.bc-body{display:none;padding:0 12px 12px 16px;border-top:1px solid var(--border)}
-.bc.open .bc-body{display:block}
+/* PAGE TYPE CARDS */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.type-card{border:2px solid var(--border);border-radius:var(--r);padding:18px 16px;cursor:pointer;transition:all .15s;text-align:left;background:var(--white);font-family:inherit}
+.type-card:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.type-card.selected{border-color:var(--blue);background:var(--blue-lt)}
+.type-ico{font-size:28px;margin-bottom:10px;display:block}
+.type-name{font-size:14px;font-weight:700;color:var(--ink);display:block;margin-bottom:4px}
+.type-desc{font-size:12px;color:var(--ink3);line-height:1.5;display:block}
 
 /* FIELDS */
-.fsec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);margin:12px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
-.fsec:first-child{margin-top:10px}
-.fl{margin-bottom:9px}
+.fl{margin-bottom:10px}
 .fl:last-child{margin-bottom:0}
-.fl label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.fl label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
 .fl label .opt{font-weight:400;color:var(--ink3);font-size:11px}
-.fl input,.fl textarea,.fl select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;transition:border-color .12s;background:var(--surface);line-height:1.4}
-.fl input:focus,.fl textarea:focus,.fl select:focus{border-color:var(--blue);background:var(--white)}
-.fl textarea{resize:vertical;min-height:68px}
-.fhint{font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.5}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.kv-list,.link-list,.sub-list,.tile-list{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
-.kv-row,.link-row{display:flex;gap:4px;align-items:center}
-.kv-row input:first-child{flex:0 0 110px}
-.kv-row input:last-of-type,.link-row input{flex:1}
-.xbtn{background:var(--surface);border:1px solid var(--border);border-radius:5px;width:24px;height:24px;padding:0;color:var(--ink3);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:inherit}
-.xbtn:hover{background:#fee2e2;color:var(--red);border-color:#fca5a5}
-.addbtn{display:flex;align-items:center;justify-content:center;gap:4px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);padding:6px 10px;width:100%;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;font-family:inherit;transition:all .12s;margin-top:5px}
-.addbtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.sub-item,.tile-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:5px}
-.sub-item:last-child,.tile-item:last-child{margin-bottom:0}
-.item-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.item-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+.fl input,.fl textarea,.fl select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--white);line-height:1.5}
+.fl input:focus,.fl textarea:focus,.fl select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.07)}
+.fl textarea{resize:vertical;min-height:90px}
+.fhint{font-size:11px;color:var(--ink3);margin-top:5px;line-height:1.5}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
-/* RIGHT PANEL */
-#right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* SKIP ROW */
+.skip-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.btn-next{padding:9px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.btn-next:hover{background:#1D4ED8}
+.btn-skip{padding:9px 14px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink3);cursor:pointer;transition:all .12s}
+.btn-skip:hover{border-color:var(--border2);color:var(--ink2)}
+
+/* KV / LINK / TILES / SECTIONS */
+.kv-list,.link-list,.sections-list,.tile-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.kv-row,.link-row{display:flex;gap:6px;align-items:center}
+.kv-row input:first-child{flex:0 0 120px}
+.kv-row input:last-of-type,.link-row input{flex:1}
+.xbtn{background:var(--surface);border:1px solid var(--border);border-radius:6px;width:26px;height:26px;padding:0;color:var(--ink3);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:inherit;transition:all .12s}
+.xbtn:hover{background:#fee2e2;color:var(--red);border-color:#fca5a5}
+.add-row-btn{display:flex;align-items:center;gap:5px;padding:8px 12px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;width:100%}
+.add-row-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+
+/* SECTION ITEMS */
+.section-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:6px}
+.section-item:last-child{margin-bottom:0}
+.section-item-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.section-item-lbl{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+.tile-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:6px}
+.tile-item:last-child{margin-bottom:0}
+.tile-item-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.tile-item-lbl{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+
+/* ADD MORE SECTION AT BOTTOM */
+#add-more{margin-top:6px}
+.add-more-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin-bottom:10px}
+.extras-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.extra-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--white);cursor:pointer;font-family:inherit;text-align:left;transition:all .12s}
+.extra-btn:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-1px)}
+.extra-ico{font-size:18px;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.extra-t{flex:1}
+.extra-name{font-size:12px;font-weight:700;color:var(--ink);display:block}
+.extra-desc{font-size:10px;color:var(--ink3);display:block}
+
+/* EXTRA BLOCKS */
+.extra-block{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;margin-top:12px}
+.extra-block-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.extra-block-title{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+.extra-block-title span{font-size:18px}
+
+/* ── RIGHT: PREVIEW ── */
+#preview-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #prev-bar{height:44px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
 .prev-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3)}
 .vtog{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:2px;gap:2px;margin-left:auto}
-.vbtn{padding:4px 13px;border-radius:6px;background:none;border:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
+.vbtn{padding:4px 13px;border-radius:7px;background:none;border:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
 .vbtn.on{background:var(--white);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
 #prevscroll{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
 #prevscroll::-webkit-scrollbar{width:5px}
@@ -120,8 +137,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 #prev-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
 .prev-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);padding:9px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:6px}
 .ptag-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
-#prev-empty{padding:64px 32px;text-align:center}
-.pe-ico{font-size:40px;margin-bottom:14px;opacity:.18}
+#prev-empty{padding:60px 32px;text-align:center}
+.pe-ico{font-size:40px;opacity:.18;margin-bottom:14px}
 .pe-t{font-size:16px;font-weight:700;color:var(--ink2);margin-bottom:8px}
 .pe-s{font-size:13px;color:var(--ink3);line-height:1.7;max-width:280px;margin:0 auto}
 #loading-area{display:none;flex-direction:column;align-items:center;gap:14px;padding:48px}
@@ -136,37 +153,26 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 #prev-iframe{width:100%;border:none;display:block}
 #codeview{display:none;flex:1;overflow-y:auto;background:#0D1117;padding:20px}
 #codeview pre{font-family:'Courier New',monospace;font-size:11px;color:#8B949E;white-space:pre-wrap;word-break:break-all;line-height:1.7}
-#paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:12px 20px;flex-shrink:0;align-items:center;gap:10px;flex-wrap:wrap}
+#paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:12px 20px;flex-shrink:0;align-items:center;gap:10px}
 #paste-guide.show{display:flex}
 .pg-t{font-size:12px;color:#065F46;line-height:1.5;flex:1}
-.pg-t strong{font-weight:700}
-.pg-code{background:rgba(0,0,0,.08);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px}
+.pg-code{background:rgba(0,0,0,.07);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:11px}
 </style>
 </head>
 <body>
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <div class="top-logo">School<span>Page</span></div>
-  <div class="top-sep"></div>
-  <div class="top-school" id="top-school">Western Cape College</div>
-  <div class="top-sep"></div>
-  <div class="top-colors">
-    <div class="top-color">
-      <div class="mini-swatch" id="ms-pri" style="background:#1a3a6b">
-        <input type="color" id="c-pri" value="#1a3a6b" oninput="onColor('pri')">
-      </div>
-      Main colour
-    </div>
-    <div class="top-color">
-      <div class="mini-swatch" id="ms-sec" style="background:#f07f24">
-        <input type="color" id="c-sec" value="#f07f24" oninput="onColor('sec')">
-      </div>
-      Accent colour
-    </div>
+  <div class="logo">School<em>Page</em></div>
+  <div class="sep"></div>
+  <div class="school-label" id="school-label">Western Cape College</div>
+  <div class="sep"></div>
+  <div class="color-pills">
+    <div class="cpill"><div class="cdot" id="d-pri" style="background:#1a3a6b"><input type="color" id="c-pri" value="#1a3a6b" oninput="onColor('pri')"></div>Main colour</div>
+    <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor('sec')"></div>Accent</div>
   </div>
-  <div class="top-right">
-    <span id="top-status"></span>
+  <div class="tb-right">
+    <span id="status"></span>
     <button id="btn-copy" onclick="copyHTML()">&#10003; Copy my HTML</button>
     <button id="btn-gen" onclick="generate()">&#10024; Build my page</button>
   </div>
@@ -174,78 +180,167 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
 <div id="app">
 
-  <!-- LEFT: EDITOR -->
-  <div id="left">
-    <div id="bscroll">
-      <div id="blist"></div>
-      <div id="bempty">
-        <div class="be-ico">&#128196;</div>
-        <div class="be-t">Your page is empty</div>
-        <div class="be-s">Use the buttons below to start adding content. Start with a <strong>Page title</strong>.</div>
-      </div>
-    </div>
+  <!-- LEFT: CONVERSATIONAL FORM -->
+  <div id="form-panel">
+    <div id="form-scroll">
 
-    <div id="add-strip">
-      <div class="add-lbl">Add content to your page</div>
-      <div class="block-picker">
-        <button class="pick-btn" onclick="ab('banner')">
-          <div class="pick-ico" style="background:#EFF6FF">&#128243;</div>
-          <div class="pick-t"><span class="pick-name">Page title</span><span class="pick-desc">Coloured heading box</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('image')">
-          <div class="pick-ico" style="background:#F5F3FF">&#128247;</div>
-          <div class="pick-t"><span class="pick-name">Photo</span><span class="pick-desc">Full-width image</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('infobar')">
-          <div class="pick-ico" style="background:#F0FDFA">&#128203;</div>
-          <div class="pick-t"><span class="pick-name">Key details</span><span class="pick-desc">Email, phone, hours</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('text')">
-          <div class="pick-ico" style="background:#F9FAFB">&#128221;</div>
-          <div class="pick-t"><span class="pick-name">Paragraphs</span><span class="pick-desc">Body text</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('section')">
-          <div class="pick-ico" style="background:#FFFBEB">&#128204;</div>
-          <div class="pick-t"><span class="pick-name">Heading + text</span><span class="pick-desc">Named section</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('subsections')">
-          <div class="pick-ico" style="background:#ECFDF5">&#128209;</div>
-          <div class="pick-t"><span class="pick-name">Topics with links</span><span class="pick-desc">Multiple sub-topics</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('tiles')">
-          <div class="pick-ico" style="background:#FDF2F8">&#127183;</div>
-          <div class="pick-t"><span class="pick-name">Clickable tiles</span><span class="pick-desc">Programs grid</span></div>
-        </button>
-        <button class="pick-btn" onclick="ab('callout')">
-          <div class="pick-ico" style="background:#FFF7ED">&#128226;</div>
-          <div class="pick-t"><span class="pick-name">Notice box</span><span class="pick-desc">Highlighted message</span></div>
-        </button>
+      <!-- STEP 1: PAGE TYPE -->
+      <div class="step-card active" id="step-type">
+        <div class="step-q">What kind of page are you building?</div>
+        <div class="step-hint">This helps us ask the right questions.</div>
+        <div class="type-grid">
+          <button class="type-card" onclick="selectType('main')">
+            <span class="type-ico">&#128196;</span>
+            <span class="type-name">Main page</span>
+            <span class="type-desc">Has a brief intro and clickable tiles linking to sub-pages</span>
+          </button>
+          <button class="type-card" onclick="selectType('sub')">
+            <span class="type-ico">&#128209;</span>
+            <span class="type-name">Content page</span>
+            <span class="type-desc">A detailed page with text, sections, photos and links</span>
+          </button>
+        </div>
       </div>
-    </div>
-  </div>
+
+      <!-- STEP 2: PAGE TITLE -->
+      <div class="step-card hidden" id="step-title">
+        <div class="step-q">What&#8217;s this page called?</div>
+        <div class="step-hint">This will appear as the big heading at the top of the page.</div>
+        <div class="fl">
+          <input type="text" id="f-title" placeholder="e.g. Resource Centre, Academic, Sports..." oninput="updateSummary('title')">
+        </div>
+        <div class="fl">
+          <label>Short tagline <span class="opt">(optional — one line below the heading)</span></label>
+          <input type="text" id="f-sub" placeholder="e.g. Extend and enrich your learning beyond the classroom">
+        </div>
+        <div class="fl">
+          <label>Banner background colour</label>
+          <select id="f-banner-color">
+            <option value="pri">Main school colour</option>
+            <option value="sec">Accent colour</option>
+          </select>
+        </div>
+        <div class="skip-row">
+          <button class="btn-next" onclick="nextStep('title')">Continue &#8594;</button>
+        </div>
+      </div>
+
+      <!-- STEP 3A: PHOTO (sub-page only) -->
+      <div class="step-card hidden" id="step-photo">
+        <div class="step-q">Do you have a photo for this page?</div>
+        <div class="step-hint">A full-width image just below the heading looks great.</div>
+        <div class="fl">
+          <label>Image web address (URL) <span class="opt">(optional)</span></label>
+          <input type="url" id="f-photo" placeholder="https://...">
+          <div class="fhint">&#128161; In SharePoint: right-click your image &#8594; Copy link &#8594; paste here.</div>
+        </div>
+        <div class="skip-row">
+          <button class="btn-next" onclick="nextStep('photo')">Continue &#8594;</button>
+          <button class="btn-skip" onclick="skipStep('photo')">No photo, skip</button>
+        </div>
+      </div>
+
+      <!-- STEP 3B: KEY DETAILS (sub-page only) -->
+      <div class="step-card hidden" id="step-details">
+        <div class="step-q">Any key contact details to show?</div>
+        <div class="step-hint">These appear as a quick-reference bar, e.g. Email, Phone, Opening Hours.</div>
+        <div class="kv-list" id="kv-list"></div>
+        <button class="add-row-btn" onclick="addKV()">+ Add a detail</button>
+        <div class="skip-row" style="margin-top:14px">
+          <button class="btn-next" onclick="nextStep('details')">Continue &#8594;</button>
+          <button class="btn-skip" onclick="skipStep('details')">No details, skip</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: INTRO TEXT -->
+      <div class="step-card hidden" id="step-intro">
+        <div class="step-q" id="intro-q">Write a brief introduction</div>
+        <div class="step-hint" id="intro-hint">This text appears below the heading. Keep it to 1&#8211;3 short paragraphs.</div>
+        <div class="fl">
+          <textarea id="f-intro" rows="5" placeholder="Type or paste your introduction here.&#10;&#10;Press Enter twice to start a new paragraph."></textarea>
+        </div>
+        <div class="skip-row">
+          <button class="btn-next" onclick="nextStep('intro')">Continue &#8594;</button>
+          <button class="btn-skip" onclick="skipStep('intro')">Skip for now</button>
+        </div>
+      </div>
+
+      <!-- STEP 5A: TILES (main page) -->
+      <div class="step-card hidden" id="step-tiles">
+        <div class="step-q">Add your clickable tiles</div>
+        <div class="step-hint">Each tile links to a sub-page or external site. Add a logo or image if you have one.</div>
+        <div class="fl">
+          <label>Heading above the tiles <span class="opt">(optional)</span></label>
+          <input type="text" id="f-tiles-heading" placeholder="e.g. For more information, click on the tiles below:">
+        </div>
+        <div class="tile-list" id="tile-list"></div>
+        <button class="add-row-btn" onclick="addTile()">+ Add a tile</button>
+        <div class="skip-row" style="margin-top:14px">
+          <button class="btn-next" onclick="nextStep('tiles')">Continue &#8594;</button>
+        </div>
+      </div>
+
+      <!-- STEP 5B: SECTIONS (sub-page) -->
+      <div class="step-card hidden" id="step-sections">
+        <div class="step-q">Add your content sections</div>
+        <div class="step-hint">Each section has a heading and content. You can add as many as you need.</div>
+        <div class="sections-list" id="sections-list"></div>
+        <button class="add-row-btn" onclick="addSection()">+ Add a section</button>
+        <div class="skip-row" style="margin-top:14px">
+          <button class="btn-next" onclick="nextStep('sections')">Continue &#8594;</button>
+          <button class="btn-skip" onclick="skipStep('sections')">Skip for now</button>
+        </div>
+      </div>
+
+      <!-- ADD MORE EXTRAS -->
+      <div id="add-more" class="hidden">
+        <div class="add-more-title">Want to add anything else?</div>
+        <div class="extras-grid" id="extras-grid">
+          <button class="extra-btn" onclick="addExtra('callout')" id="extra-callout">
+            <div class="extra-ico" style="background:#FFF7ED">&#128226;</div>
+            <div class="extra-t"><span class="extra-name">Notice box</span><span class="extra-desc">Highlight important info</span></div>
+          </button>
+          <button class="extra-btn" onclick="addExtra('quote')" id="extra-quote">
+            <div class="extra-ico" style="background:#F5F3FF">&#128172;</div>
+            <div class="extra-t"><span class="extra-name">Quote</span><span class="extra-desc">A testimonial or highlight</span></div>
+          </button>
+          <button class="extra-btn" onclick="addExtra('contact')" id="extra-contact">
+            <div class="extra-ico" style="background:#F0FDFA">&#128222;</div>
+            <div class="extra-t"><span class="extra-name">Contact info</span><span class="extra-desc">Address, phone, email</span></div>
+          </button>
+          <button class="extra-btn" onclick="addExtra('links')" id="extra-links">
+            <div class="extra-ico" style="background:#ECFDF5">&#128279;</div>
+            <div class="extra-t"><span class="extra-name">Useful links</span><span class="extra-desc">A list of helpful links</span></div>
+          </button>
+        </div>
+        <div id="extras-container"></div>
+      </div>
+
+    </div><!-- /form-scroll -->
+  </div><!-- /form-panel -->
 
   <!-- RIGHT: PREVIEW -->
-  <div id="right">
+  <div id="preview-panel">
     <div id="prev-bar">
       <span class="prev-lbl">Page preview</span>
       <div class="vtog">
         <button class="vbtn on" id="vv" onclick="sv('vis')">Preview</button>
-        <button class="vbtn" id="vc" onclick="sv('code')">HTML code</button>
+        <button class="vbtn" id="vc" onclick="sv('code')">HTML</button>
       </div>
     </div>
     <div id="prevscroll">
       <div id="prev-card">
-        <div class="prev-tag"><span class="ptag-dot"></span> What your page will look like in SharePoint</div>
+        <div class="prev-tag"><span class="ptag-dot"></span>What your page will look like in SharePoint</div>
         <div id="loading-area">
           <div class="spinner"></div>
-          <div class="load-t">Building your page&hellip;</div>
+          <div class="load-t">Building your page&#8230;</div>
           <div class="load-s">This usually takes about 15 seconds</div>
         </div>
         <div id="err-box"></div>
         <div id="prev-empty">
           <div class="pe-ico">&#10024;</div>
-          <div class="pe-t">Ready when you are</div>
-          <div class="pe-s">Add your content using the buttons on the left, then click <strong>&#8220;Build my page&#8221;</strong>.</div>
+          <div class="pe-t">Your preview will appear here</div>
+          <div class="pe-s">Answer the questions on the left, then click <strong>&#8220;Build my page&#8221;</strong>.</div>
         </div>
         <div id="iframe-wrap">
           <iframe id="prev-iframe" sandbox="allow-same-origin" scrolling="no"></iframe>
@@ -255,243 +350,316 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     <div id="codeview"><pre id="code-out"></pre></div>
     <div id="paste-guide">
       <span style="font-size:16px">&#9989;</span>
-      <span class="pg-t"><strong>Your page is ready!</strong> Click <strong>&#8220;Copy my HTML&#8221;</strong> above, then in SharePoint: Edit page &rarr; <strong>+ Add a web part</strong> &rarr; search <span class="pg-code">Embed</span> &rarr; paste your HTML &rarr; <strong>Republish</strong>.</span>
+      <span class="pg-t"><strong>Your page is ready!</strong> Click <strong>&#8220;Copy my HTML&#8221;</strong> above, then in SharePoint: Edit page &#8594; <strong>+ Add a web part</strong> &#8594; search <span class="pg-code">Embed</span> &#8594; paste your HTML &#8594; <strong>Republish</strong>.</span>
     </div>
   </div>
 </div>
 
 <script>
-// ── CONFIG — change these for each school during testing ──────
+// ── CONFIG ──────────────────────────────────────────────────
 var SCHOOL_NAME   = "Western Cape College";
 var PRIMARY_COLOR = "#1a3a6b";
 var ACCENT_COLOR  = "#f07f24";
-// Replace with your Anthropic API key — REMOVE before going live
-var API_KEY = "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";
-// ─────────────────────────────────────────────────────────────
+// API key is securely stored in the Cloudflare Worker
+// ────────────────────────────────────────────────────────────
 
-var blocks = [], ic = 0, genHTML = '';
-
-var BD = {
-  banner:      {bar:'#3B82F6',bg:'#EFF6FF',n:'Page title'},
-  image:       {bar:'#8B5CF6',bg:'#F5F3FF',n:'Photo'},
-  infobar:     {bar:'#0D9488',bg:'#F0FDFA',n:'Key details'},
-  text:        {bar:'#6B7280',bg:'#F9FAFB',n:'Paragraphs'},
-  section:     {bar:'#D97706',bg:'#FFFBEB',n:'Heading + text'},
-  subsections: {bar:'#059669',bg:'#ECFDF5',n:'Topics with links'},
-  tiles:       {bar:'#DB2777',bg:'#FDF2F8',n:'Clickable tiles'},
-  callout:     {bar:'#EA580C',bg:'#FFF7ED',n:'Notice box'}
-};
+var pageType = '';
+var kvItems = [];
+var tileItems = [];
+var sectionItems = [];
+var extraBlocks = [];
+var skipped = {};
+var genHTML = '';
+var ic = 0;
 
 function g(id){return document.getElementById(id);}
-function gv(id){return g(id).value;}
+function gv(id){return g(id)?g(id).value:'';}
+function show(id){var el=g(id);if(el)el.classList.remove('hidden');}
+function hide(id){var el=g(id);if(el)el.classList.add('hidden');}
+function setActive(id){var el=g(id);if(el){el.classList.remove('hidden');el.classList.add('active');}}
 
 window.addEventListener('DOMContentLoaded', function(){
-  g('top-school').textContent = SCHOOL_NAME;
+  g('school-label').textContent = SCHOOL_NAME;
   g('c-pri').value = PRIMARY_COLOR;
   g('c-sec').value = ACCENT_COLOR;
-  g('ms-pri').style.background = PRIMARY_COLOR;
-  g('ms-sec').style.background = ACCENT_COLOR;
-  loadDefaults();
+  g('d-pri').style.background = PRIMARY_COLOR;
+  g('d-sec').style.background = ACCENT_COLOR;
+  // Start first tile and KV
+  addKV('Email', 'info@school.edu.au');
+  addTile('', '', '');
 });
 
-function onColor(key){
-  g('ms-'+key).style.background = gv('c-'+key);
+function onColor(key){g('d-'+key).style.background = gv('c-'+key);}
+
+// ── PAGE TYPE SELECTION ──
+function selectType(type){
+  pageType = type;
+  document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('selected');});
+  event.currentTarget.classList.add('selected');
+
+  // Set wording based on type
+  if(type==='main'){
+    g('intro-q').textContent = 'Write a brief introduction';
+    g('intro-hint').textContent = 'A short paragraph introducing this section to students and families.';
+  } else {
+    g('intro-q').textContent = 'Write your introduction';
+    g('intro-hint').textContent = 'This appears at the top of the page. Keep it to 1\u20133 short paragraphs.';
+  }
+
+  // Animate to next step
+  setTimeout(function(){
+    g('step-type').classList.remove('active');
+    setActive('step-title');
+    g('step-title').querySelector('input').focus();
+  }, 250);
 }
 
-function loadDefaults(){
-  ab('banner',{title:'Resource Centre',sub:'Your modern, accessible learning space'});
-  ab('image',{url:'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=900&q=80'});
-  ab('infobar',{items:[{k:'Email',v:'library@school.edu.au'},{k:'Opening Hours',v:'7:45am \u2013 3:15pm (most days)'}]});
-  ab('text',{body:'The Resource Centre is located at the Weipa Campus and is a modern, accessible learning space for students of all year levels, staff and community.\n\nThe Resource Centre aims to be a school and community hub, supporting differentiated teaching and learning and encouraging a lifelong love of reading.'});
-  ab('section',{heading:'Physical Resources',body:'The Resource Centre has an extensive range of physical resources including Junior Fiction, Non-Fiction, Young Adults, Graphic Novels, Teacher Reference and STEM Resources, class sets of books, Laptops, Desktop Computers, Reading Resources and Maps/Globes.'});
-  ab('subsections',{heading:'E-Resources',subs:[
-    {title:'Ebooks Digital (Sora)',body:'Access thousands of eBooks via the Overdrive platform for staff and students.',links:[{t:'Access the Digital Library',u:'#'},{t:'Getting Started with OverDrive',u:'#'}]},
-    {title:'Scootle',body:'National digital learning repository with curriculum-aligned resources by year level and learning area.',links:[{t:'Scootle Login',u:'#'}]},
-    {title:'Clickview',body:'Copyright-safe video platform — a schoolwide subscription.',links:[{t:'Clickview',u:'#'}]}
-  ]});
+// ── STEP NAVIGATION ──
+var stepOrder = {
+  main: ['title','intro','tiles'],
+  sub:  ['title','photo','details','intro','sections']
+};
+
+function getSteps(){return stepOrder[pageType]||[];}
+
+function currentStepIndex(stepName){return getSteps().indexOf(stepName);}
+
+function nextStep(stepName){
+  var steps = getSteps();
+  var idx = steps.indexOf(stepName);
+  var card = g('step-'+stepName);
+  if(card) card.classList.remove('active');
+
+  // Find next visible step
+  for(var i=idx+1;i<steps.length;i++){
+    var nextName = steps[i];
+    var nextCard = g('step-'+nextName);
+    if(nextCard){
+      setActive('step-'+nextName);
+      nextCard.scrollIntoView({behavior:'smooth',block:'center'});
+      // Focus first input in next step
+      var firstInput = nextCard.querySelector('input,textarea');
+      if(firstInput) setTimeout(function(){firstInput.focus();},300);
+      return;
+    }
+  }
+  // All steps done — show "add more"
+  showAddMore();
 }
 
-// ── BLOCK RENDERING ──
-function ab(type,data){
-  data=data||{};
-  var id=++ic;
-  blocks.push({id:id,type:type,data:data});
-  var def=BD[type];
-  var d=document.createElement('div');
-  d.className='bc open';d.id='bc'+id;
-  d.innerHTML=
-    '<div class="bc-hd" onclick="tog('+id+')">'
-    +'<div class="bc-bar" style="background:'+def.bar+'"></div>'
-    +'<div class="bc-ico" style="background:'+def.bg+'">'+ico(type)+'</div>'
-    +'<div class="bc-info"><span class="bc-name">'+def.n+'</span><span class="bc-prev" id="bp'+id+'">'+pv(type,data)+'</span></div>'
-    +'<div class="bc-acts">'
-    +'<button class="bc-del" onclick="event.stopPropagation();rm('+id+')" title="Remove">&times;</button>'
-    +'<span class="bc-chev">&#9656;</span>'
-    +'</div></div>'
-    +'<div class="bc-body">'+bf(id,type,data)+'</div>';
-  g('blist').appendChild(d);
-  g('bempty').style.display='none';
+function skipStep(stepName){
+  skipped[stepName] = true;
+  nextStep(stepName);
 }
 
-function ico(t){var m={banner:'&#128243;',image:'&#128247;',infobar:'&#128203;',text:'&#128221;',section:'&#128204;',subsections:'&#128209;',tiles:'&#127183;',callout:'&#128226;'};return m[t]||'&#128196;';}
-
-function tog(id){g('bc'+id).classList.toggle('open');}
-
-function rm(id){
-  if(!confirm('Remove this block?'))return;
-  blocks=blocks.filter(function(b){return b.id!==id;});
-  var el=g('bc'+id);if(el)el.remove();
-  if(!blocks.length)g('bempty').style.display='block';
+function showAddMore(){
+  var addMore = g('add-more');
+  addMore.classList.remove('hidden');
+  addMore.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function pv(t,d){
-  if(t==='banner')return d.title||'No title yet';
-  if(t==='image')return d.url?'Image added \u2713':'No image URL yet';
-  if(t==='infobar')return(d.items||[]).map(function(i){return i.k;}).filter(Boolean).join(' \u00b7 ')||'No items yet';
-  if(t==='text')return(d.body||'').substring(0,60)||'No content yet';
-  if(t==='section'||t==='subsections')return d.heading||'No heading yet';
-  if(t==='tiles')return(d.tiles||[]).length+' tile'+(((d.tiles||[]).length)!==1?'s':'')+' added';
-  if(t==='callout')return(d.text||'').substring(0,55)||'No message yet';
-  return '';
+function updateSummary(field){}
+
+// ── KV ITEMS (key details) ──
+function addKV(k, v){
+  k = k||''; v = v||'';
+  var id = ++ic;
+  kvItems.push({id:id, k:k, v:v});
+  var list = g('kv-list');
+  var row = document.createElement('div');
+  row.className = 'kv-row'; row.id = 'kv'+id;
+  row.innerHTML = '<input type="text" placeholder="Label (e.g. Email)" value="'+k+'" oninput="updKV('+id+',\'k\',this.value)">'
+    +'<input type="text" placeholder="Information" value="'+v+'" oninput="updKV('+id+',\'v\',this.value)">'
+    +'<button class="xbtn" onclick="removeKV('+id+')">&times;</button>';
+  list.appendChild(row);
+}
+function updKV(id,f,v){var it=kvItems.find(function(i){return i.id===id;});if(it)it[f]=v;}
+function removeKV(id){kvItems=kvItems.filter(function(i){return i.id!==id;});var el=g('kv'+id);if(el)el.remove();}
+
+// ── TILES ──
+function addTile(label, url, img){
+  label=label||''; url=url||''; img=img||'';
+  var id = ++ic;
+  tileItems.push({id:id, label:label, url:url, img:img});
+  var list = g('tile-list');
+  var div = document.createElement('div');
+  div.className = 'tile-item'; div.id = 'tile'+id;
+  div.innerHTML = '<div class="tile-item-hd"><span class="tile-item-lbl">Tile '+tileItems.length+'</span>'
+    +'<button class="xbtn" onclick="removeTile('+id+')">&times;</button></div>'
+    +'<div class="frow">'
+    +'<div class="fl"><label>Name</label><input type="text" placeholder="e.g. Brain Bee Challenge" value="'+label+'" oninput="updTile('+id+',\'label\',this.value)"></div>'
+    +'<div class="fl"><label>Where it links to</label><input type="url" placeholder="https://..." value="'+url+'" oninput="updTile('+id+',\'url\',this.value)"></div>'
+    +'</div>'
+    +'<div class="fl" style="margin:0"><label>Logo or image <span class="opt">(optional \u2014 paste image URL)</span></label>'
+    +'<input type="url" placeholder="https://..." value="'+img+'" oninput="updTile('+id+',\'img\',this.value)"></div>';
+  list.appendChild(div);
+}
+function updTile(id,f,v){var t=tileItems.find(function(t){return t.id===id;});if(t)t[f]=v;}
+function removeTile(id){tileItems=tileItems.filter(function(t){return t.id!==id;});var el=g('tile'+id);if(el)el.remove();}
+
+// ── SECTIONS ──
+var sectionTypes = [
+  {val:'text',    label:'Text only'},
+  {val:'sublist', label:'Topics with links (like E-Resources)'},
+  {val:'tiles',   label:'Clickable tiles grid'}
+];
+
+function addSection(){
+  var id = ++ic;
+  var sec = {id:id, type:'text', heading:'', body:'', subs:[]};
+  sectionItems.push(sec);
+  var list = g('sections-list');
+  var div = document.createElement('div');
+  div.className = 'section-item'; div.id = 'sec'+id;
+  div.innerHTML = '<div class="section-item-hd">'
+    +'<span class="section-item-lbl">Section '+sectionItems.length+'</span>'
+    +'<button class="xbtn" onclick="removeSection('+id+')">&times;</button>'
+    +'</div>'
+    +'<div class="fl"><label>Section type</label>'
+    +'<select onchange="changeSectionType('+id+',this.value)">'
+    +'<option value="text">Text only</option>'
+    +'<option value="sublist">Topics with links</option>'
+    +'</select></div>'
+    +'<div class="fl"><label>Section heading</label>'
+    +'<input type="text" placeholder="e.g. Physical Resources" oninput="updSec('+id+',\'heading\',this.value)"></div>'
+    +'<div class="sec-body-text-'+id+'">'
+    +'<div class="fl"><label>Content</label>'
+    +'<textarea rows="4" placeholder="Type your content here..." oninput="updSec('+id+',\'body\',this.value)"></textarea></div>'
+    +'</div>'
+    +'<div class="sec-body-sub-'+id+'" style="display:none">'
+    +'<div class="fl"><label>Topics</label>'
+    +'<div class="kv-list" id="subslist'+id+'"></div>'
+    +'<button class="add-row-btn" onclick="addSubTopic('+id+')">+ Add a topic</button>'
+    +'</div></div>';
+  list.appendChild(div);
 }
 
-function upd(id,f,v){var b=blocks.find(function(b){return b.id===id;});if(b){b.data[f]=v;g('bp'+id).textContent=pv(b.type,b.data);}}
-function updKV(id,i,f,v){var b=blocks.find(function(b){return b.id===id;});if(b){b.data.items=b.data.items||[];b.data.items[i]=b.data.items[i]||{};b.data.items[i][f]=v;}}
-function updS(sid,si,f,v){var b=blocks.find(function(b){return b.id===sid;});if(b){b.data.subs=b.data.subs||[];b.data.subs[si]=b.data.subs[si]||{};b.data.subs[si][f]=v;}}
-function updSL(sid,si,li,f,v){var b=blocks.find(function(b){return b.id===sid;});if(!b||!b.data.subs||!b.data.subs[si])return;b.data.subs[si].links=b.data.subs[si].links||[];b.data.subs[si].links[li]=b.data.subs[si].links[li]||{};b.data.subs[si].links[li][f]=v;}
-function updT(bid,ti,f,v){var b=blocks.find(function(b){return b.id===bid;});if(b){b.data.tiles=b.data.tiles||[];b.data.tiles[ti]=b.data.tiles[ti]||{};b.data.tiles[ti][f]=v;g('bp'+bid).textContent=pv('tiles',b.data);}}
+function changeSectionType(id, type){
+  var sec = sectionItems.find(function(s){return s.id===id;});
+  if(sec) sec.type = type;
+  var textArea = document.querySelector('.sec-body-text-'+id);
+  var subArea  = document.querySelector('.sec-body-sub-'+id);
+  if(type==='sublist'){
+    if(textArea) textArea.style.display='none';
+    if(subArea)  subArea.style.display='block';
+  } else {
+    if(textArea) textArea.style.display='block';
+    if(subArea)  subArea.style.display='none';
+  }
+}
 
-function addKV(id){
-  var b=blocks.find(function(b){return b.id===id;});if(!b)return;
+function updSec(id,f,v){var s=sectionItems.find(function(s){return s.id===id;});if(s)s[f]=v;}
+function removeSection(id){sectionItems=sectionItems.filter(function(s){return s.id!==id;});var el=g('sec'+id);if(el)el.remove();}
+
+function addSubTopic(secId){
+  var id = ++ic;
+  var sec = sectionItems.find(function(s){return s.id===secId;});
+  if(!sec)return;
+  sec.subs = sec.subs||[];
+  var si = sec.subs.length;
+  sec.subs.push({id:id, title:'', body:'', links:[]});
+  var list = g('subslist'+secId);
+  if(!list)return;
+  var div = document.createElement('div');
+  div.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px';
+  div.id = 'subtopic'+id;
+  div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+    +'<span style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">Topic '+(si+1)+'</span>'
+    +'<button class="xbtn" onclick="this.closest(\'div[id]\').remove()">&times;</button></div>'
+    +'<div class="fl"><label>Heading</label><input type="text" placeholder="e.g. Scootle" oninput="updSubTopic('+secId+','+si+',\'title\',this.value)"></div>'
+    +'<div class="fl"><label>Description</label><textarea rows="2" placeholder="Brief description..." oninput="updSubTopic('+secId+','+si+',\'body\',this.value)"></textarea></div>'
+    +'<div class="fl"><label>Links <span class="opt">(optional)</span></label>'
+    +'<div class="link-list" id="sublinks'+id+'"></div>'
+    +'<button class="add-row-btn" style="margin-top:4px" onclick="addSubLink('+secId+','+si+',\'sublinks'+id+'\')">+ Add a link</button></div>';
+  list.appendChild(div);
+}
+
+function updSubTopic(secId,si,f,v){
+  var sec=sectionItems.find(function(s){return s.id===secId;});
+  if(sec&&sec.subs&&sec.subs[si])sec.subs[si][f]=v;
+}
+
+function addSubLink(secId,si,listId){
+  var sec=sectionItems.find(function(s){return s.id===secId;});
+  if(!sec||!sec.subs||!sec.subs[si])return;
+  var li=sec.subs[si].links.length;
+  sec.subs[si].links.push({t:'',u:''});
+  var list=g(listId);if(!list)return;
+  var row=document.createElement('div');row.className='link-row';
+  row.innerHTML='<input type="text" placeholder="Link name" oninput="updSubLink('+secId+','+si+','+li+',\'t\',this.value)">'
+    +'<input type="url" placeholder="https://..." oninput="updSubLink('+secId+','+si+','+li+',\'u\',this.value)">'
+    +'<button class="xbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button>';
+  list.appendChild(row);
+}
+function updSubLink(secId,si,li,f,v){var sec=sectionItems.find(function(s){return s.id===secId;});if(sec&&sec.subs&&sec.subs[si])sec.subs[si].links[li][f]=v;}
+
+// ── EXTRA BLOCKS ──
+var extraDefs = {
+  callout:{icon:'&#128226;',bg:'#FFF7ED',title:'Notice box'},
+  quote:  {icon:'&#128172;',bg:'#F5F3FF',title:'Quote'},
+  contact:{icon:'&#128222;',bg:'#F0FDFA',title:'Contact info'},
+  links:  {icon:'&#128279;',bg:'#ECFDF5',title:'Useful links'}
+};
+
+function addExtra(type){
+  // Hide the button so it can't be added twice
+  var btn = g('extra-'+type);
+  if(btn) btn.style.display='none';
+
+  var id = ++ic;
+  var def = extraDefs[type];
+  extraBlocks.push({id:id, type:type, data:{}});
+  var container = g('extras-container');
+  var div = document.createElement('div');
+  div.className = 'extra-block'; div.id = 'extra-block-'+id;
+  var inner = '';
+  if(type==='callout'){
+    inner='<div class="fl"><label>Message</label><textarea rows="3" placeholder="Type your notice or important message..." oninput="updExtra('+id+',\'text\',this.value)"></textarea></div>'
+      +'<div class="fl"><label>Box colour</label><select onchange="updExtra('+id+',\'style\',this.value)"><option value="info">Blue \u2014 general info</option><option value="warn">Yellow \u2014 warning</option><option value="ok">Green \u2014 good news</option></select></div>';
+  } else if(type==='quote'){
+    inner='<div class="fl"><label>Quote text</label><textarea rows="3" placeholder="Type the quote here..." oninput="updExtra('+id+',\'text\',this.value)"></textarea></div>'
+      +'<div class="fl"><label>Who said it <span class="opt">(optional)</span></label><input type="text" placeholder="e.g. Jane Smith, Parent" oninput="updExtra('+id+',\'attr\',this.value)"></div>';
+  } else if(type==='contact'){
+    inner='<div class="kv-list" id="contact-kv-'+id+'"></div>'
+      +'<button class="add-row-btn" onclick="addContactKV('+id+')">+ Add a detail</button>';
+  } else if(type==='links'){
+    inner='<div class="fl"><label>Heading <span class="opt">(optional)</span></label><input type="text" placeholder="e.g. Useful Links" oninput="updExtra('+id+',\'heading\',this.value)"></div>'
+      +'<div class="link-list" id="extra-links-'+id+'"></div>'
+      +'<button class="add-row-btn" onclick="addExtraLink('+id+')">+ Add a link</button>';
+  }
+  div.innerHTML = '<div class="extra-block-hd">'
+    +'<div class="extra-block-title"><span>'+def.icon+'</span> '+def.title+'</div>'
+    +'<button class="xbtn" onclick="removeExtra('+id+',\''+type+'\')">&times;</button>'
+    +'</div>'+inner;
+  container.appendChild(div);
+}
+
+function updExtra(id,f,v){var b=extraBlocks.find(function(b){return b.id===id;});if(b)b.data[f]=v;}
+function removeExtra(id,type){
+  extraBlocks=extraBlocks.filter(function(b){return b.id!==id;});
+  var el=g('extra-block-'+id);if(el)el.remove();
+  var btn=g('extra-'+type);if(btn)btn.style.display='';
+}
+
+function addContactKV(bid){
+  var b=extraBlocks.find(function(b){return b.id===bid;});if(!b)return;
   b.data.items=b.data.items||[];var i=b.data.items.length;b.data.items.push({k:'',v:''});
-  var l=g('kv'+id);if(!l)return;
-  var r=document.createElement('div');r.className='kv-row';
-  r.innerHTML='<input type="text" placeholder="Label (e.g. Phone)" oninput="updKV('+id+','+i+',\'k\',this.value)"><input type="text" placeholder="Value" oninput="updKV('+id+','+i+',\'v\',this.value)"><button class="xbtn" onclick="this.closest(\'.kv-row\').remove()">&times;</button>';
-  l.appendChild(r);
+  var list=g('contact-kv-'+bid);if(!list)return;
+  var row=document.createElement('div');row.className='kv-row';
+  row.innerHTML='<input type="text" placeholder="Label" oninput="updContactKV('+bid+','+i+',\'k\',this.value)"><input type="text" placeholder="Value" oninput="updContactKV('+bid+','+i+',\'v\',this.value)"><button class="xbtn" onclick="this.closest(\'.kv-row\').remove()">&times;</button>';
+  list.appendChild(row);
 }
+function updContactKV(bid,i,f,v){var b=extraBlocks.find(function(b){return b.id===bid;});if(b){b.data.items=b.data.items||[];b.data.items[i]=b.data.items[i]||{};b.data.items[i][f]=v;}}
 
-function addSub(sid){
-  var b=blocks.find(function(b){return b.id===sid;});if(!b)return;
-  b.data.subs=b.data.subs||[];var si=b.data.subs.length;b.data.subs.push({title:'',body:'',links:[]});
-  var c=g('subs'+sid);if(!c)return;
-  var div=document.createElement('div');div.className='sub-item';
-  div.innerHTML='<div class="item-hd"><span class="item-lbl">Topic '+(si+1)+'</span><button class="xbtn" onclick="this.closest(\'.sub-item\').remove()">&times;</button></div>'
-    +'<div class="fl"><label>Topic heading</label><input type="text" placeholder="e.g. Scootle" oninput="updS('+sid+','+si+',\'title\',this.value)"></div>'
-    +'<div class="fl"><label>Description</label><textarea rows="2" placeholder="Brief description..." oninput="updS('+sid+','+si+',\'body\',this.value)"></textarea></div>'
-    +'<div class="fl"><label>Links <span class="opt">(optional)</span></label><div class="link-list" id="ll'+sid+'x'+si+'"></div><button class="addbtn" onclick="addSL('+sid+','+si+')">+ Add a link</button></div>';
-  c.appendChild(div);
+function addExtraLink(bid){
+  var b=extraBlocks.find(function(b){return b.id===bid;});if(!b)return;
+  b.data.links=b.data.links||[];var i=b.data.links.length;b.data.links.push({t:'',u:''});
+  var list=g('extra-links-'+bid);if(!list)return;
+  var row=document.createElement('div');row.className='link-row';
+  row.innerHTML='<input type="text" placeholder="Link name" oninput="updExtraLink('+bid+','+i+',\'t\',this.value)"><input type="url" placeholder="https://..." oninput="updExtraLink('+bid+','+i+',\'u\',this.value)"><button class="xbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button>';
+  list.appendChild(row);
 }
-
-function addSL(sid,si){
-  var b=blocks.find(function(b){return b.id===sid;});if(!b)return;
-  b.data.subs=b.data.subs||[];b.data.subs[si]=b.data.subs[si]||{};b.data.subs[si].links=b.data.subs[si].links||[];
-  var li=b.data.subs[si].links.length;b.data.subs[si].links.push({t:'',u:''});
-  var l=g('ll'+sid+'x'+si);if(!l)return;
-  var r=document.createElement('div');r.className='link-row';
-  r.innerHTML='<input type="text" placeholder="Link name" oninput="updSL('+sid+','+si+','+li+',\'t\',this.value)"><input type="url" placeholder="https://..." oninput="updSL('+sid+','+si+','+li+',\'u\',this.value)"><button class="xbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button>';
-  l.appendChild(r);
-}
-
-function addTile(bid){
-  var b=blocks.find(function(b){return b.id===bid;});if(!b)return;
-  b.data.tiles=b.data.tiles||[];var ti=b.data.tiles.length;b.data.tiles.push({label:'',url:'',img:''});
-  var c=g('tiles'+bid);if(!c)return;
-  var div=document.createElement('div');div.className='tile-item';
-  div.innerHTML='<div class="item-hd"><span class="item-lbl">Tile '+(ti+1)+'</span><button class="xbtn" onclick="this.closest(\'.tile-item\').remove()">&times;</button></div>'
-    +'<div class="frow"><div class="fl"><label>Name</label><input type="text" placeholder="e.g. Brain Bee Challenge" oninput="updT('+bid+','+ti+',\'label\',this.value)"></div>'
-    +'<div class="fl"><label>Where it links to</label><input type="url" placeholder="https://..." oninput="updT('+bid+','+ti+',\'url\',this.value)"></div></div>'
-    +'<div class="fl" style="margin:0"><label>Logo or image URL <span class="opt">(optional)</span></label><input type="url" placeholder="https://..." oninput="updT('+bid+','+ti+',\'img\',this.value)"></div>';
-  c.appendChild(div);
-}
-
-function bf(id,type,d){
-  if(type==='banner') return ''
-    +'<div class="fsec">Page heading</div>'
-    +'<div class="fl"><label>Title</label><input type="text" value="'+(d.title||'')+'" placeholder="e.g. Resource Centre" oninput="upd('+id+',\'title\',this.value)"></div>'
-    +'<div class="fl"><label>Short description <span class="opt">(optional)</span></label><input type="text" value="'+(d.sub||'')+'" placeholder="e.g. Your modern, accessible learning space" oninput="upd('+id+',\'sub\',this.value)"></div>'
-    +'<div class="fl"><label>Background colour</label><select onchange="upd('+id+',\'cm\',this.value)"><option value="pri">Main school colour</option><option value="sec">Accent colour</option></select></div>';
-
-  if(type==='image') return ''
-    +'<div class="fsec">Photo</div>'
-    +'<div class="fl"><label>Image web address (URL)</label><input type="url" value="'+(d.url||'')+'" placeholder="https://..." oninput="upd('+id+',\'url\',this.value)"></div>'
-    +'<p class="fhint">&#128161; In SharePoint: right-click your image &rarr; Copy link &rarr; paste here. Or use any public image URL.</p>';
-
-  if(type==='infobar'){
-    var items=d.items||[];
-    var rows=items.map(function(it,i){
-      return '<div class="kv-row">'
-        +'<input type="text" value="'+(it.k||'')+'" placeholder="Label" oninput="updKV('+id+','+i+',\'k\',this.value)">'
-        +'<input type="text" value="'+(it.v||'')+'" placeholder="Information" oninput="updKV('+id+','+i+',\'v\',this.value)">'
-        +'<button class="xbtn" onclick="this.closest(\'.kv-row\').remove()">&times;</button>'
-        +'</div>';
-    }).join('');
-    return '<div class="fsec">Key information</div>'
-      +'<p class="fhint" style="margin-bottom:8px">Each row shows as <strong>Label:</strong> Information</p>'
-      +'<div class="kv-list" id="kv'+id+'">'+rows+'</div>'
-      +'<button class="addbtn" onclick="addKV('+id+')">+ Add an item</button>';
-  }
-
-  if(type==='text') return ''
-    +'<div class="fsec">Your text</div>'
-    +'<div class="fl"><label>Content <span class="opt">&#8212; press Enter twice between paragraphs</span></label>'
-    +'<textarea rows="7" placeholder="Type or paste your text here.\n\nLeave a blank line between paragraphs." oninput="upd('+id+',\'body\',this.value)">'+(d.body||'')+'</textarea></div>';
-
-  if(type==='section') return ''
-    +'<div class="fsec">Section</div>'
-    +'<div class="fl"><label>Section heading</label><input type="text" value="'+(d.heading||'')+'" placeholder="e.g. Physical Resources" oninput="upd('+id+',\'heading\',this.value)"></div>'
-    +'<div class="fl"><label>Content</label><textarea rows="5" placeholder="Type your content here..." oninput="upd('+id+',\'body\',this.value)">'+(d.body||'')+'</textarea></div>';
-
-  if(type==='subsections'){
-    var subs=d.subs||[];
-    var subsHtml=subs.map(function(s,si){
-      var lks=(s.links||[]).map(function(l,li){
-        return '<div class="link-row">'
-          +'<input type="text" value="'+(l.t||'')+'" placeholder="Link name" oninput="updSL('+id+','+si+','+li+',\'t\',this.value)">'
-          +'<input type="url" value="'+(l.u||'')+'" placeholder="https://..." oninput="updSL('+id+','+si+','+li+',\'u\',this.value)">'
-          +'<button class="xbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button>'
-          +'</div>';
-      }).join('');
-      return '<div class="sub-item">'
-        +'<div class="item-hd"><span class="item-lbl">Topic '+(si+1)+'</span><button class="xbtn" onclick="this.closest(\'.sub-item\').remove()">&times;</button></div>'
-        +'<div class="fl"><label>Topic heading</label><input type="text" value="'+(s.title||'')+'" oninput="updS('+id+','+si+',\'title\',this.value)"></div>'
-        +'<div class="fl"><label>Description</label><textarea rows="2" oninput="updS('+id+','+si+',\'body\',this.value)">'+(s.body||'')+'</textarea></div>'
-        +'<div class="fl"><label>Links <span class="opt">(optional)</span></label>'
-        +'<div class="link-list" id="ll'+id+'x'+si+'">'+lks+'</div>'
-        +'<button class="addbtn" onclick="addSL('+id+','+si+')">+ Add a link</button></div>'
-        +'</div>';
-    }).join('');
-    return '<div class="fsec">Topics section</div>'
-      +'<div class="fl"><label>Section heading</label><input type="text" value="'+(d.heading||'')+'" placeholder="e.g. E-Resources" oninput="upd('+id+',\'heading\',this.value)"></div>'
-      +'<div class="sub-list" id="subs'+id+'">'+subsHtml+'</div>'
-      +'<button class="addbtn" onclick="addSub('+id+')">+ Add a topic</button>';
-  }
-
-  if(type==='tiles'){
-    var tiles=d.tiles||[];
-    var th=tiles.map(function(t,ti){
-      return '<div class="tile-item">'
-        +'<div class="item-hd"><span class="item-lbl">Tile '+(ti+1)+'</span><button class="xbtn" onclick="this.closest(\'.tile-item\').remove()">&times;</button></div>'
-        +'<div class="frow"><div class="fl"><label>Name</label><input type="text" value="'+(t.label||'')+'" oninput="updT('+id+','+ti+',\'label\',this.value)"></div>'
-        +'<div class="fl"><label>Where it links to</label><input type="url" value="'+(t.url||'')+'" oninput="updT('+id+','+ti+',\'url\',this.value)"></div></div>'
-        +'<div class="fl" style="margin:0"><label>Logo or image URL <span class="opt">(optional)</span></label>'
-        +'<input type="url" value="'+(t.img||'')+'" oninput="updT('+id+','+ti+',\'img\',this.value)"></div>'
-        +'</div>';
-    }).join('');
-    return '<div class="fsec">Clickable tiles</div>'
-      +'<div class="fl"><label>Heading above tiles <span class="opt">(optional)</span></label>'
-      +'<input type="text" value="'+(d.heading||'')+'" placeholder="e.g. Click on the tiles below:" oninput="upd('+id+',\'heading\',this.value)"></div>'
-      +'<div class="tile-list" id="tiles'+id+'">'+th+'</div>'
-      +'<button class="addbtn" onclick="addTile('+id+')">+ Add a tile</button>'
-      +'<p class="fhint" style="margin-top:8px">&#128161; For logos: right-click the logo image &rarr; Copy image address &rarr; paste here.</p>';
-  }
-
-  if(type==='callout') return ''
-    +'<div class="fsec">Notice or highlight box</div>'
-    +'<div class="fl"><label>Message</label><textarea rows="3" placeholder="Type your notice or important information here..." oninput="upd('+id+',\'text\',this.value)">'+(d.text||'')+'</textarea></div>'
-    +'<div class="fl"><label>Box colour</label><select onchange="upd('+id+',\'style\',this.value)"><option value="info">Blue &#8212; general information</option><option value="warn">Yellow &#8212; warning or caution</option><option value="ok">Green &#8212; good news or tip</option></select></div>';
-
-  return '';
-}
+function updExtraLink(bid,i,f,v){var b=extraBlocks.find(function(b){return b.id===bid;});if(b){b.data.links=b.data.links||[];b.data.links[i]=b.data.links[i]||{};b.data.links[i][f]=v;}}
 
 // ── VIEW ──
 function sv(m){
@@ -499,14 +667,15 @@ function sv(m){
   if(m==='vis'){ps.style.display='';cv.style.display='none';g('vv').classList.add('on');g('vc').classList.remove('on');}
   else{ps.style.display='none';cv.style.display='block';g('vv').classList.remove('on');g('vc').classList.add('on');}
 }
-
-function setStatus(msg){g('top-status').textContent=msg;}
+function setStatus(msg){g('status').textContent=msg;}
 
 // ── GENERATE ──
 function generate(){
-  if(!blocks.length){alert('Please add some content blocks first.');return;}
-  var btn=g('btn-gen');
-  btn.disabled=true;
+  if(!pageType){alert('Please choose a page type first.');return;}
+  var title=gv('f-title');
+  if(!title){alert('Please add a page title first.');return;}
+
+  var btn=g('btn-gen'); btn.disabled=true;
   g('prev-empty').style.display='none';
   g('err-box').classList.remove('show');
   g('loading-area').classList.add('show');
@@ -515,18 +684,15 @@ function generate(){
 
   var pri=gv('c-pri'), sec=gv('c-sec');
 
-  fetch('https://api.anthropic.com/v1/messages',{
+  fetch('https://schoolpage-api.webmaster-349.workers.dev',{
     method:'POST',
     headers:{
-      'Content-Type':'application/json',
-      'x-api-key': API_KEY,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
+      'Content-Type':'application/json'
     },
     body:JSON.stringify({
-      model:'claude-opus-4-5',
+      model:'claude-sonnet-4-20250514',
       max_tokens:4000,
-      system:'You generate HTML fragments for SharePoint Embed web parts.\nRULES: (1) Raw HTML only — no DOCTYPE, html, head, or body tags. (2) No script tags. (3) No external fonts or CDN links. (4) System fonts only: Arial, Helvetica, Georgia, sans-serif. (5) One <style> block at the top, all CSS class names prefixed with sp-. (6) Output ONLY the HTML. No markdown, no backticks, no explanation.',
+      system:'You generate HTML fragments for SharePoint Embed web parts.\nRULES: (1) Raw HTML only \u2014 no DOCTYPE, html, head, or body tags. (2) No script tags. (3) No external fonts or CDN links. (4) System fonts only: Arial, Helvetica, Georgia, sans-serif. (5) One <style> block at the top with all CSS, all class names prefixed with sp-. (6) Output ONLY the HTML. No markdown, no backticks, no explanation.',
       messages:[{role:'user',content:buildPrompt(pri,sec)}]
     })
   })
@@ -557,67 +723,110 @@ function generate(){
   });
 }
 
-function buildPrompt(pri,sec){
-  var lines=[
-    'Build a professional content page for '+SCHOOL_NAME+', an Australian school.',
-    'Brand \u2014 Primary colour: '+pri+' | Accent colour: '+sec+' | Text on primary: #ffffff',
+function buildPrompt(pri, sec){
+  var bannerBg = gv('f-banner-color')==='sec' ? sec : pri;
+  var lines = [
+    'Build a professional '+( pageType==='main'?'main landing':'content')+' page for '+SCHOOL_NAME+', an Australian school.',
+    'Brand \u2014 Primary: '+pri+' | Accent: '+sec+' | Text on primary: #fff',
     '',
-    'CONTENT BLOCKS (implement in order):',
+    'CONTENT BLOCKS \u2014 implement in this exact order:',
     ''
   ];
-  blocks.forEach(function(b,idx){
-    var d=b.data||{}, n=idx+1;
-    if(b.type==='banner'){
-      var bg=(d.cm==='sec')?sec:pri;
-      lines.push(n+'. HERO BANNER: background:'+bg+'; color:#fff; border-radius:10px; padding:28px 32px; margin-bottom:0.');
-      lines.push('   Title "'+( d.title||'Page Title')+'" \u2014 font-size:26px; font-weight:700.');
-      if(d.sub)lines.push('   Subtitle "'+d.sub+'" \u2014 font-size:15px; opacity:0.88; margin-top:8px.');
-    }
-    else if(b.type==='image'&&d.url){
-      lines.push(n+'. HERO IMAGE: <img src="'+d.url+'"> \u2014 width:100%; max-height:320px; object-fit:cover; display:block.');
-    }
-    else if(b.type==='infobar'){
-      var kvs=(d.items||[]).filter(function(i){return i.k;}).map(function(i){return i.k+': '+i.v;}).join(' | ');
-      lines.push(n+'. INFO BAR: One row, bold label + normal value. font-size:13px; padding:12px 0; border-bottom:1px solid #e5e7eb; margin-bottom:16px. Items: '+kvs);
-    }
-    else if(b.type==='text'){
-      lines.push(n+'. BODY TEXT: Split on blank lines into <p> tags. font-size:14px; line-height:1.75; color:#333; margin-bottom:20px.');
-      lines.push('   '+d.body);
-    }
-    else if(b.type==='section'){
-      lines.push(n+'. SECTION: Heading "'+d.heading+'" \u2014 color:'+pri+'; font-size:20px; font-weight:700; border-bottom:2px solid '+pri+'; padding-bottom:6px; margin:24px 0 12px.');
-      lines.push('   Body \u2014 font-size:14px; line-height:1.7; color:#333. Content: '+d.body);
-    }
-    else if(b.type==='subsections'){
-      lines.push(n+'. SECTION WITH TOPICS: Main heading "'+d.heading+'" \u2014 color:'+pri+'; font-size:20px; font-weight:700; border-bottom:2px solid '+pri+'; margin:24px 0 16px.');
-      (d.subs||[]).forEach(function(s,si){
-        var lks=(s.links||[]).filter(function(l){return l.t;}).map(function(l){return '"'+l.t+'" href="'+(l.u||'#')+'"';}).join(', ');
-        lines.push('   Topic '+(si+1)+': heading "'+s.title+'" bold 14px #111; body "'+s.body+'" 13px #444 line-height:1.65; margin-bottom:20px.');
-        if(lks)lines.push('   Bullet links (color:'+pri+'; hover:underline): '+lks);
-      });
-    }
-    else if(b.type==='tiles'){
-      lines.push(n+'. TILE GRID:'+(d.heading?' Heading "'+d.heading+'" 13px bold #333 margin-bottom:12px.':''));
+  var n=1;
+
+  // Banner
+  var title = gv('f-title')||'Page Title';
+  var sub   = gv('f-sub');
+  lines.push(n+'. HERO BANNER: background:'+bannerBg+'; color:#fff; border-radius:10px; padding:28px 32px.');
+  lines.push('   Title "'+title+'" \u2014 font-size:26px; font-weight:700.');
+  if(sub) lines.push('   Subtitle "'+sub+'" \u2014 font-size:15px; opacity:0.88; margin-top:8px.');
+  n++;
+
+  // Photo (sub-page)
+  var photo = gv('f-photo');
+  if(photo&&!skipped['photo']){
+    lines.push(n+'. HERO IMAGE: <img src="'+photo+'"> \u2014 width:100%; max-height:320px; object-fit:cover; display:block.');
+    n++;
+  }
+
+  // Key details
+  var validKV = kvItems.filter(function(i){return i.k&&!skipped['details'];});
+  if(validKV.length){
+    lines.push(n+'. INFO BAR: One row, bold label + normal value. font-size:13px; padding:12px 0; border-bottom:1px solid #e5e7eb; margin-bottom:16px.');
+    lines.push('   Items: '+validKV.map(function(i){return i.k+': '+i.v;}).join(' | '));
+    n++;
+  }
+
+  // Intro text
+  var intro = gv('f-intro');
+  if(intro&&!skipped['intro']){
+    lines.push(n+'. BODY TEXT: Split on blank lines into <p> tags. font-size:14px; line-height:1.75; color:#333; margin-bottom:20px.');
+    lines.push('   '+intro);
+    n++;
+  }
+
+  // Tiles (main page)
+  if(pageType==='main'&&!skipped['tiles']){
+    var validTiles = tileItems.filter(function(t){return t.label;});
+    if(validTiles.length){
+      var th = gv('f-tiles-heading');
+      lines.push(n+'. TILE GRID:'+(th?' Heading "'+th+'" 13px bold #333 margin-bottom:12px.':''));
       lines.push('   CSS grid: repeat(3,1fr); gap:14px. Responsive: 2-col under 540px, 1-col under 360px.');
       lines.push('   Each tile: <a href target="_blank"> flex-col center; padding:20px; border:2px solid '+pri+'; border-radius:10px; text-decoration:none; min-height:120px.');
       lines.push('   CSS :hover \u2014 border-color:'+sec+'; box-shadow:0 4px 16px rgba(0,0,0,0.1); transform:translateY(-2px).');
       lines.push('   If img URL: <img> max-height:70px; max-width:110px; object-fit:contain; margin-bottom:10px. Label: 13px bold '+pri+' text-align:center.');
-      (d.tiles||[]).forEach(function(t,ti){
-        lines.push('   Tile '+(ti+1)+': label="'+(t.label||'')+'" href="'+(t.url||'#')+'"'+(t.img?' img="'+t.img+'"':' (no image \u2014 show styled label text)'));
+      validTiles.forEach(function(t,ti){
+        lines.push('   Tile '+(ti+1)+': label="'+t.label+'" href="'+(t.url||'#')+'"'+(t.img?' img="'+t.img+'"':' (no image)'));
       });
+      n++;
     }
-    else if(b.type==='callout'){
+  }
+
+  // Sections (sub-page)
+  if(pageType==='sub'&&!skipped['sections']){
+    sectionItems.forEach(function(sec_item){
+      if(!sec_item.heading&&!sec_item.body) return;
+      if(sec_item.type==='sublist'){
+        lines.push(n+'. SECTION WITH TOPICS: Heading "'+sec_item.heading+'" \u2014 color:'+pri+'; font-size:20px; font-weight:700; border-bottom:2px solid '+pri+'; margin:24px 0 16px.');
+        (sec_item.subs||[]).forEach(function(sub,si){
+          var lks=(sub.links||[]).filter(function(l){return l.t;}).map(function(l){return '"'+l.t+'" href="'+(l.u||'#')+'"';}).join(', ');
+          lines.push('   Topic '+(si+1)+': bold heading "'+sub.title+'" 14px #111; body "'+sub.body+'" 13px #444 line-height:1.65; margin-bottom:20px.');
+          if(lks) lines.push('   Bullet links (color:'+pri+'; hover:underline): '+lks);
+        });
+      } else {
+        lines.push(n+'. SECTION: Heading "'+sec_item.heading+'" \u2014 color:'+pri+'; font-size:20px; font-weight:700; border-bottom:2px solid '+pri+'; padding-bottom:6px; margin:24px 0 12px.');
+        lines.push('   Body \u2014 font-size:14px; line-height:1.7; color:#333. Content: '+sec_item.body);
+      }
+      n++;
+    });
+  }
+
+  // Extra blocks
+  extraBlocks.forEach(function(b){
+    var d=b.data;
+    if(b.type==='callout'){
       var cs={info:{bg:'#DBEAFE',bl:'#93C5FD',c:'#1E3A8A'},warn:{bg:'#FEF9C3',bl:'#FDE047',c:'#713F12'},ok:{bg:'#DCFCE7',bl:'#86EFAC',c:'#14532D'}}[d.style||'info'];
-      lines.push(n+'. NOTICE BOX: background:'+cs.bg+'; border-left:4px solid '+cs.bl+'; color:'+cs.c+'; border-radius:0 8px 8px 0; padding:14px 18px; font-size:13px; line-height:1.6; margin:16px 0.');
-      lines.push('   Text: "'+d.text+'"');
+      lines.push(n+'. NOTICE BOX: background:'+cs.bg+'; border-left:4px solid '+cs.bl+'; color:'+cs.c+'; border-radius:0 8px 8px 0; padding:14px 18px; font-size:13px; margin:16px 0. Text: "'+d.text+'"');
     }
+    else if(b.type==='quote'){
+      lines.push(n+'. QUOTE: Large styled blockquote. Text: "'+d.text+'"'+(d.attr?' Attribution: "'+d.attr+'"':'')+'. Style: font-size:18px italic color:#333 border-left:4px solid '+pri+' padding:16px 24px margin:24px 0. Attribution: 13px color:'+pri+' font-weight:600 margin-top:8px.');
+    }
+    else if(b.type==='contact'){
+      var kvStr=(d.items||[]).filter(function(i){return i.k;}).map(function(i){return i.k+': '+i.v;}).join(' | ');
+      lines.push(n+'. CONTACT INFO: Clean contact block with icon bullets. font-size:14px; color:#333. Items: '+kvStr);
+    }
+    else if(b.type==='links'){
+      var lks=(d.links||[]).filter(function(l){return l.t;}).map(function(l){return '"'+l.t+'" href="'+(l.u||'#')+'"';}).join(', ');
+      lines.push(n+'. USEFUL LINKS: '+(d.heading?'Heading "'+d.heading+'". ':'')+' Bullet list of links. color:'+pri+'; hover:underline. Links: '+lks);
+    }
+    n++;
   });
+
   lines.push('');
-  lines.push('DESIGN: Wrap in div max-width:880px. System fonts (Arial/Helvetica/Georgia). No JS. All links target="_blank". Clean, professional Australian school website look.');
+  lines.push('DESIGN: Wrap all content in a div, max-width:880px. System fonts (Arial/Helvetica/Georgia). No JS. All links target="_blank". Clean, professional Australian school look.');
   return lines.join('\n');
 }
 
-// ── PREVIEW ──
 function showPreview(html){
   var iframe=g('prev-iframe');
   g('iframe-wrap').style.display='block';
@@ -631,17 +840,16 @@ function showPreview(html){
   sv('vis');
 }
 
-// ── COPY ──
 function copyHTML(){
   if(!genHTML)return;
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(genHTML).then(function(){
       setStatus('Copied! \u2713');setTimeout(function(){setStatus('');},2500);
     });
-  }else{
-    var ta=document.createElement('textarea');
-    ta.value=genHTML;document.body.appendChild(ta);ta.select();
-    document.execCommand('copy');document.body.removeChild(ta);
+  } else {
+    var ta=document.createElement('textarea');ta.value=genHTML;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');
+    document.body.removeChild(ta);
     setStatus('Copied! \u2713');setTimeout(function(){setStatus('');},2500);
   }
 }
