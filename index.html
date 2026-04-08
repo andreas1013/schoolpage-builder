@@ -1,268 +1,980 @@
-// ============================================================
-//  SchoolPage Builder — Cloudflare Worker
-//  Routes:
-//    POST /          → Anthropic API proxy
-//    POST /scrape    → Scrape a Queensland school website page
-//    POST /scrape-page → Scrape a single page for full content
-// ============================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SchoolPage Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0EEE9;--white:#fff;--surface:#F8F7F4;
+  --border:#E2DED6;--border2:#C8C4BB;
+  --ink:#1A1A1A;--ink2:#4A4A4A;--ink3:#9A9A9A;
+  --blue:#2B5CE6;--blue-lt:#EEF2FF;
+  --green:#1A9E5C;--green-lt:#ECFDF5;
+  --amber:#D97706;--amber-lt:#FFFBEB;
+  --red:#DC2626;--red-lt:#FEF2F2;
+  --purple:#7C3AED;--purple-lt:#F5F3FF;
+  --r:12px;--rs:8px;
+  --shadow:0 2px 8px rgba(0,0,0,.07),0 8px 24px rgba(0,0,0,.05);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5}
 
-const ANTHROPIC_API_KEY = "YOUR_KEY_HERE";
+/* ── TOP BAR ── */
+#topbar{height:54px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;box-shadow:var(--shadow-sm);z-index:10}
+.logo{font-size:15px;font-weight:700}.logo em{color:var(--blue);font-style:normal}
+.tb-sep{width:1px;height:18px;background:var(--border)}
+.school-name-input{border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink2);outline:none;width:200px}
+.school-name-input:focus{background:var(--surface);border-radius:6px;padding:0 6px}
+.color-pills{display:flex;gap:6px}
+.cpill{display:flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink3);background:var(--surface);cursor:pointer}
+.cpill:hover{border-color:var(--border2)}
+.cdot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.1);overflow:hidden;flex-shrink:0}
+.cdot input[type=color]{width:28px;height:28px;margin:-6px;border:none;cursor:pointer;background:none}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.progress-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--ink2)}
+.progress-pill .prog-num{color:var(--green);font-weight:700}
+#btn-zip{padding:8px 14px;background:var(--purple);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:5px}
+#btn-zip.show{display:flex}#btn-zip:hover{opacity:.88}
+#btn-new-scrape{padding:8px 14px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px}
+#btn-new-scrape:hover{border-color:var(--border2);color:var(--ink)}
 
-export default {
-  async fetch(request) {
+/* ── LAYOUT ── */
+#app{display:flex;height:calc(100vh - 54px);overflow:hidden}
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: cors() });
-    }
+/* ── LEFT: PAGE LIST ── */
+#pagelist-panel{width:300px;min-width:260px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+#pagelist-header{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+#pagelist-header h3{font-size:13px;font-weight:700;margin-bottom:2px}
+#pagelist-header p{font-size:11px;color:var(--ink3)}
+#pagelist-scroll{flex:1;overflow-y:auto}
+#pagelist-scroll::-webkit-scrollbar{width:3px}
+#pagelist-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.page-row{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.page-row:hover{background:var(--surface)}
+.page-row.selected{background:var(--blue-lt);border-right:3px solid var(--blue)}
+.page-row.selected .page-row-title{color:var(--blue)}
+.page-row-icon{flex-shrink:0;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.page-row-info{flex:1;min-width:0}
+.page-row-title{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.page-row-url{font-size:10px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;font-family:monospace}
+.status-badge{flex-shrink:0;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.sb-pending{background:var(--surface);color:var(--ink3);border:1px solid var(--border)}
+.sb-generating{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.sb-ready{background:var(--amber-lt);color:var(--amber);border:1px solid #FDE68A}
+.sb-approved{background:var(--green-lt);color:var(--green);border:1px solid #A7F3D0}
+.sb-edited{background:var(--purple-lt);color:var(--purple);border:1px solid #DDD6FE}
 
-    const url = new URL(request.url);
+/* LEFT FOOTER */
+#pagelist-footer{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+#btn-generate-all{width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+#btn-generate-all:hover{background:#1D4ED8;transform:translateY(-1px)}
+#btn-generate-all:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.gen-hint{font-size:10px;color:var(--ink3);text-align:center;margin-bottom:7px}
 
-    // ── ROUTE: POST / → Anthropic proxy ──
-    if (url.pathname === "/" && request.method === "POST") {
-      return handleAnthropic(request);
-    }
+/* ── MIDDLE: WELCOME / SCRAPE ── */
+#welcome-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center}
+.welcome-logo{font-size:48px;margin-bottom:20px;opacity:.2}
+.welcome-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.welcome-sub{font-size:14px;color:var(--ink3);line-height:1.7;max-width:440px;margin:0 auto 32px}
+.scrape-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:28px;width:100%;max-width:520px;box-shadow:var(--shadow);text-align:left}
+.scrape-box h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.scrape-box p{font-size:12px;color:var(--ink3);margin-bottom:16px;line-height:1.6}
+.scrape-url-row{display:flex;gap:8px}
+.scrape-url-row input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s}
+.scrape-url-row input:focus{border-color:var(--blue)}
+#btn-find-pages{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s}
+#btn-find-pages:hover{background:#1D4ED8}
+#btn-find-pages:disabled{opacity:.4;cursor:not-allowed}
+.scrape-status{margin-top:12px;font-size:12px;color:var(--blue);display:none;align-items:center;gap:7px}
+.scrape-status.show{display:flex}
+.mini-spin{width:14px;height:14px;border:2px solid #BFDBFE;border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scrape-err{margin-top:10px;padding:10px 12px;background:var(--red-lt);border:1px solid #FCA5A5;border-radius:var(--rs);font-size:12px;color:#991B1B;display:none}
+.scrape-err.show{display:block}
 
-    // ── ROUTE: POST /scrape → Fetch nav + page list from school homepage ──
-    if (url.pathname === "/scrape" && request.method === "POST") {
-      return handleScrape(request);
-    }
+/* PAGE SELECTOR (after scraping) */
+#page-selector{width:100%;max-width:520px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);display:none}
+#page-selector.show{display:block}
+.ps-header{padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ps-header-left{font-size:12px;font-weight:700;color:var(--ink2)}
+.ps-select-all{font-size:11px;font-weight:600;color:var(--blue);cursor:pointer}
+.ps-select-all:hover{text-decoration:underline}
+.ps-list{max-height:320px;overflow-y:auto}
+.ps-list::-webkit-scrollbar{width:3px}
+.ps-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.ps-item{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.ps-item:hover{background:var(--surface)}
+.ps-item:last-child{border-bottom:none}
+.ps-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--blue);cursor:pointer;flex-shrink:0}
+.ps-item-info{flex:1;min-width:0}
+.ps-item-title{font-size:12px;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-item-url{font-size:10px;color:var(--ink3);font-family:monospace;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ps-count{flex:1;font-size:11px;color:var(--ink3)}
+#btn-start-redesign{padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+#btn-start-redesign:hover{opacity:.88}
+#btn-start-redesign:disabled{opacity:.4;cursor:not-allowed}
 
-    // ── ROUTE: POST /scrape-page → Fetch full content of one page ──
-    if (url.pathname === "/scrape-page" && request.method === "POST") {
-      return handleScrapePage(request);
-    }
+/* ── RIGHT: PREVIEW PANEL ── */
+#preview-panel{flex:1;display:none;flex-direction:column;overflow:hidden}
+#preview-panel.show{display:flex}
+#preview-topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
+.preview-page-title{font-size:13px;font-weight:700;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-actions{display:flex;align-items:center;gap:6px}
+#btn-approve{padding:7px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+#btn-approve:hover{opacity:.88}
+#btn-approve.approved{background:var(--surface);color:var(--green);border:1.5px solid var(--green)}
+#btn-regenerate{padding:7px 12px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink2);cursor:pointer}
+#btn-regenerate:hover{border-color:var(--border2)}
+#btn-copy-page{padding:7px 12px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink2);cursor:pointer}
+#btn-copy-page:hover{border-color:var(--border2)}
+.vtog{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:2px;gap:2px}
+.vbtn{padding:4px 11px;border-radius:6px;background:none;border:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer}
+.vbtn.on{background:var(--white);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
 
-    return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: cors() });
-  }
+/* WYSIWYG TOOLBAR */
+#wysiwyg-toolbar{display:none;padding:5px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;align-items:center;gap:4px;flex-wrap:wrap}
+#wysiwyg-toolbar.show{display:flex}
+.tb-btn{padding:4px 8px;background:var(--white);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--ink2)}
+.tb-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.tb-div{width:1px;height:16px;background:var(--border);margin:0 3px}
+
+/* PREVIEW CONTENT */
+#preview-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#prev-scroll{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
+#prev-scroll::-webkit-scrollbar{width:5px}
+#prev-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+#prev-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;min-height:200px}
+.prev-card-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:6px}
+.pct-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+#prev-generating{padding:48px;text-align:center;display:none;flex-direction:column;align-items:center;gap:12px}
+#prev-generating.show{display:flex}
+.gen-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
+.gen-t{font-size:14px;font-weight:600;color:var(--ink2)}
+.gen-s{font-size:12px;color:var(--ink3)}
+#prev-iframe{width:100%;border:none;display:block;min-height:100px}
+#wysiwyg-wrap{display:none;padding:16px;background:var(--white)}
+#wysiwyg-editor{outline:none;min-height:300px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
+#prev-err{display:none;padding:20px;background:var(--red-lt);margin:14px;border-radius:var(--rs);font-size:12px;color:#991B1B;border:1px solid #FCA5A5}
+#prev-err.show{display:block}
+#code-view{display:none;flex:1;overflow-y:auto;background:#0D1117;padding:16px}
+#code-view pre{font-family:monospace;font-size:11px;color:#8B949E;white-space:pre-wrap;word-break:break-all;line-height:1.7}
+
+/* EMPTY PREVIEW */
+#prev-empty{padding:64px 32px;text-align:center}
+.pe-ico{font-size:40px;opacity:.18;margin-bottom:12px}
+.pe-t{font-size:15px;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.pe-s{font-size:12px;color:var(--ink3);line-height:1.7;max-width:260px;margin:0 auto}
+
+/* PASTE GUIDE */
+#paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:10px 16px;flex-shrink:0;align-items:center;gap:8px}
+#paste-guide.show{display:flex}
+.pg-t{font-size:11px;color:#065F46;line-height:1.5;flex:1}
+.pg-code{background:rgba(0,0,0,.07);border-radius:3px;padding:1px 4px;font-family:monospace;font-size:10px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">School<em>Page</em></div>
+  <div class="tb-sep"></div>
+  <input class="school-name-input" id="school-name" type="text" value="Western Cape College" oninput="saveProject()" placeholder="School name">
+  <div class="tb-sep"></div>
+  <div class="color-pills">
+    <div class="cpill"><div class="cdot" id="d-pri" style="background:#1a3a6b"><input type="color" id="c-pri" value="#1a3a6b" oninput="onColor()"></div>Main</div>
+    <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor()"></div>Accent</div>
+  </div>
+  <div class="tb-right">
+    <div class="progress-pill" id="progress-pill" style="display:none">
+      <span class="prog-num" id="prog-approved">0</span><span>/ <span id="prog-total">0</span> approved</span>
+    </div>
+    <button id="btn-zip" onclick="downloadZip()">&#128230; Download all as ZIP</button>
+    <button id="btn-new-scrape" onclick="resetToScrape()">&#128269; New project</button>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- LEFT: PAGE LIST -->
+  <div id="pagelist-panel" style="display:none">
+    <div id="pagelist-header">
+      <h3 id="pagelist-title">Pages</h3>
+      <p id="pagelist-sub">Click a page to preview it</p>
+    </div>
+    <div id="pagelist-scroll"></div>
+    <div id="pagelist-footer">
+      <div class="gen-hint" id="gen-hint-text">Select a page to start reviewing</div>
+      <button id="btn-generate-all" onclick="generateNext()" style="display:none">
+        &#10024; Generate next page
+      </button>
+    </div>
+  </div>
+
+  <!-- WELCOME / SCRAPE -->
+  <div id="welcome-panel">
+    <div class="welcome-logo">&#127979;</div>
+    <div class="welcome-title">Redesign your school website</div>
+    <div class="welcome-sub">Paste your school's website URL. We'll find all your pages, redesign them with your branding, and you review and approve each one.</div>
+
+    <div class="scrape-box">
+      <h3>&#128269; Step 1 — Find your pages</h3>
+      <p>Enter your school's website address below. We'll scan it and show you all the pages we find.</p>
+      <div class="scrape-url-row">
+        <input type="url" id="scrape-url" placeholder="https://westernCapecollege.eq.edu.au" oninput="onUrlChange()">
+        <button id="btn-find-pages" onclick="findPages()">Find pages</button>
+      </div>
+      <div class="scrape-status" id="scrape-status">
+        <div class="mini-spin"></div>
+        <span id="scrape-status-msg">Scanning your website...</span>
+      </div>
+      <div class="scrape-err" id="scrape-err"></div>
+    </div>
+
+    <!-- PAGE SELECTOR -->
+    <div id="page-selector" style="margin-top:14px">
+      <div class="ps-header">
+        <span class="ps-header-left" id="ps-count-label">0 pages found</span>
+        <span class="ps-select-all" onclick="psToggleAll()">Select all</span>
+      </div>
+      <div class="ps-list" id="ps-list"></div>
+      <div class="ps-footer">
+        <span class="ps-count" id="ps-selected-count">0 selected</span>
+        <button id="btn-start-redesign" onclick="startRedesign()" disabled>&#10024; Redesign selected pages</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PREVIEW PANEL -->
+  <div id="preview-panel">
+    <div id="preview-topbar">
+      <div class="preview-page-title" id="preview-page-title">Select a page</div>
+      <div class="preview-actions">
+        <button id="btn-copy-page" onclick="copyPage()">&#128203; Copy HTML</button>
+        <button id="btn-regenerate" onclick="regeneratePage()">&#8635; Regenerate</button>
+        <button id="btn-approve" onclick="toggleApprove()">&#10003; Approve</button>
+        <div class="tb-sep"></div>
+        <div class="vtog">
+          <button class="vbtn on" id="vbtn-preview" onclick="setView('preview')">Preview</button>
+          <button class="vbtn" id="vbtn-edit" onclick="setView('edit')">Edit text</button>
+          <button class="vbtn" id="vbtn-code" onclick="setView('code')">HTML</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WYSIWYG TOOLBAR -->
+    <div id="wysiwyg-toolbar">
+      <button class="tb-btn" onclick="fmt('bold')"><strong>B</strong></button>
+      <button class="tb-btn" onclick="fmt('italic')"><em>I</em></button>
+      <button class="tb-btn" onclick="fmt('underline')"><u>U</u></button>
+      <div class="tb-div"></div>
+      <button class="tb-btn" onclick="fmt('insertUnorderedList')">&#8226; List</button>
+      <button class="tb-btn" onclick="fmt('removeFormat')">Clear</button>
+      <div class="tb-div"></div>
+      <button class="tb-btn" onclick="fmt('fontSize','5')">A+</button>
+      <button class="tb-btn" onclick="fmt('fontSize','2')">A-</button>
+      <span style="margin-left:auto;font-size:10px;color:var(--ink3)">Click any text in the editor to edit it</span>
+    </div>
+
+    <div id="preview-content">
+      <div id="prev-scroll">
+        <div id="prev-card">
+          <div class="prev-card-tag"><span class="pct-dot"></span>SharePoint embed zone preview</div>
+          <div id="prev-generating">
+            <div class="gen-spinner"></div>
+            <div class="gen-t" id="gen-t-msg">Redesigning this page...</div>
+            <div class="gen-s">Using AI to structure and style your content</div>
+          </div>
+          <div id="prev-err"></div>
+          <div id="prev-empty">
+            <div class="pe-ico">&#127917;</div>
+            <div class="pe-t">Select a page to preview</div>
+            <div class="pe-s">Click any page in the list on the left to see its redesigned preview.</div>
+          </div>
+          <iframe id="prev-iframe" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe>
+          <div id="wysiwyg-wrap"><div id="wysiwyg-editor" contenteditable="true" oninput="onEditorChange()"></div></div>
+        </div>
+      </div>
+      <div id="code-view"><pre id="code-out"></pre></div>
+    </div>
+
+    <div id="paste-guide">
+      <span style="font-size:14px">&#9989;</span>
+      <span class="pg-t">In SharePoint: Edit your page &#8594; <strong>+ Add a web part</strong> &#8594; search <span class="pg-code">Embed</span> &#8594; paste HTML &#8594; <strong>Republish</strong></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+var WORKER_URL        = "https://schoolpage-api.webmaster-349.workers.dev";
+var CLOUDINARY_CLOUD  = "dewljixlc";
+var CLOUDINARY_PRESET = "pvsbmdmd";
+// ─────────────────────────────────────────────────────────
+
+// ── PROJECT STATE ──
+var project = {
+  schoolName: "Western Cape College",
+  siteUrl: "",
+  primaryColor: "#1a3a6b",
+  accentColor: "#f07f24",
+  pages: []     // {id, url, title, scrapedText, scrapedLinks, generatedHTML, status, approved}
 };
+var selectedPageId = null;
+var currentView = 'preview';
+var psAllSelected = false;
+var scrapedNavPages = []; // raw pages from scrape before selection
+var isGenerating = false;
 
-// ── ANTHROPIC PROXY ──
-async function handleAnthropic(request) {
-  let body;
-  try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+function g(id){return document.getElementById(id);}
+function gv(id){return g(id)?g(id).value:'';}
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify(body),
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', function(){
+  loadProject();
+  if(project.pages.length > 0){
+    showProjectUI();
+  }
+});
+
+function onColor(){
+  project.primaryColor = gv('c-pri');
+  project.accentColor  = gv('c-sec');
+  g('d-pri').style.background = project.primaryColor;
+  g('d-sec').style.background = project.accentColor;
+  saveProject();
+}
+
+// ── SAVE / LOAD ──
+function saveProject(){
+  project.schoolName = gv('school-name') || project.schoolName;
+  try{ localStorage.setItem('spb_project', JSON.stringify(project)); }catch(e){}
+}
+function loadProject(){
+  try{
+    var saved = localStorage.getItem('spb_project');
+    if(!saved) return;
+    var p = JSON.parse(saved);
+    project = p;
+    g('school-name').value = project.schoolName || '';
+    g('c-pri').value = project.primaryColor || '#1a3a6b';
+    g('c-sec').value = project.accentColor  || '#f07f24';
+    g('d-pri').style.background = project.primaryColor;
+    g('d-sec').style.background = project.accentColor;
+  }catch(e){}
+}
+
+function resetToScrape(){
+  if(!confirm('Start a new project? This will clear your current pages.')) return;
+  project.pages = [];
+  project.siteUrl = '';
+  saveProject();
+  scrapedNavPages = [];
+  selectedPageId = null;
+  g('welcome-panel').style.display = '';
+  g('pagelist-panel').style.display = 'none';
+  g('preview-panel').classList.remove('show');
+  g('page-selector').classList.remove('show');
+  g('scrape-url').value = '';
+  g('ps-list').innerHTML = '';
+  g('progress-pill').style.display = 'none';
+  g('btn-zip').classList.remove('show');
+  g('btn-new-scrape').style.display = 'none';
+  updateProgress();
+}
+
+// ── SCRAPING ──
+function onUrlChange(){
+  g('scrape-err').classList.remove('show');
+  g('page-selector').classList.remove('show');
+  scrapedNavPages = [];
+}
+
+async function findPages(){
+  var url = gv('scrape-url').trim();
+  if(!url){ alert('Please enter a website URL.'); return; }
+  if(!url.startsWith('http')) url = 'https://' + url;
+
+  g('btn-find-pages').disabled = true;
+  g('scrape-status-msg').textContent = 'Scanning ' + url + '...';
+  g('scrape-status').classList.add('show');
+  g('scrape-err').classList.remove('show');
+  g('page-selector').classList.remove('show');
+
+  try{
+    var res = await fetch(WORKER_URL + '/scrape', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url: url })
+    });
+    var data = await res.json();
+    if(!data.success) throw new Error(data.error || 'Could not load website.');
+    scrapedNavPages = data.nav || [];
+    if(scrapedNavPages.length === 0) throw new Error('No pages found. The site may block automated access.');
+    project.siteUrl = url;
+    renderPageSelector(scrapedNavPages);
+  }catch(e){
+    g('scrape-err').textContent = e.message;
+    g('scrape-err').classList.add('show');
+  }finally{
+    g('btn-find-pages').disabled = false;
+    g('scrape-status').classList.remove('show');
+  }
+}
+
+function renderPageSelector(pages){
+  var list = g('ps-list');
+  list.innerHTML = '';
+  pages.forEach(function(page, i){
+    var item = document.createElement('div');
+    item.className = 'ps-item';
+    item.innerHTML = '<input type="checkbox" id="psc-'+i+'" onchange="psUpdateCount()">'
+      +'<div class="ps-item-info" onclick="g(\'psc-'+i+'\').click();psUpdateCount()">'
+      +'<span class="ps-item-title">'+esc(page.title)+'</span>'
+      +'<span class="ps-item-url">'+esc(page.url)+'</span>'
+      +'</div>';
+    list.appendChild(item);
+  });
+  g('ps-count-label').textContent = pages.length + ' pages found';
+  g('page-selector').classList.add('show');
+  psUpdateCount();
+}
+
+function psToggleAll(){
+  psAllSelected = !psAllSelected;
+  for(var i=0; i<scrapedNavPages.length; i++){
+    var chk = g('psc-'+i);
+    if(chk) chk.checked = psAllSelected;
+  }
+  psUpdateCount();
+}
+
+function psUpdateCount(){
+  var count = 0;
+  for(var i=0; i<scrapedNavPages.length; i++){
+    var chk = g('psc-'+i);
+    if(chk && chk.checked) count++;
+  }
+  g('ps-selected-count').textContent = count + ' page' + (count!==1?'s':'') + ' selected';
+  g('btn-start-redesign').disabled = count === 0;
+}
+
+// ── START REDESIGN ──
+function startRedesign(){
+  var selected = [];
+  for(var i=0; i<scrapedNavPages.length; i++){
+    var chk = g('psc-'+i);
+    if(chk && chk.checked) selected.push(scrapedNavPages[i]);
+  }
+  if(selected.length === 0) return;
+
+  // Add to project pages (preserve any already processed)
+  var existingUrls = project.pages.map(function(p){return p.url;});
+  var nextId = project.pages.length;
+
+  selected.forEach(function(page){
+    if(existingUrls.indexOf(page.url) === -1){
+      project.pages.push({
+        id: nextId++,
+        url: page.url,
+        title: page.title,
+        scrapedText: '',
+        scrapedLinks: [],
+        generatedHTML: '',
+        status: 'pending',  // pending → scraping → generating → ready → approved
+        approved: false
+      });
+    }
   });
 
-  const data = await res.json();
-  return json(data, res.status);
+  saveProject();
+  showProjectUI();
+  // Auto-start processing first pending page
+  processNextPage();
 }
 
-// ── SCRAPE HOMEPAGE: get nav structure ──
-async function handleScrape(request) {
-  let body;
-  try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+function showProjectUI(){
+  g('welcome-panel').style.display = 'none';
+  g('pagelist-panel').style.display = 'flex';
+  g('preview-panel').classList.add('show');
+  g('progress-pill').style.display = '';
+  g('btn-new-scrape').style.display = '';
+  renderPageList();
+  updateProgress();
 
-  const siteUrl = body.url;
-  if (!siteUrl) return json({ error: "No URL provided" }, 400);
+  // Select first ready/pending page
+  var first = project.pages.find(function(p){ return p.status === 'ready' || p.status === 'approved'; });
+  if(!first) first = project.pages[0];
+  if(first) selectPage(first.id);
+}
 
-  // Validate it's a Queensland school or reasonable education URL
-  let parsedUrl;
-  try { parsedUrl = new URL(siteUrl); } catch { return json({ error: "Invalid URL" }, 400); }
+// ── PAGE LIST ──
+function renderPageList(){
+  var scroll = g('pagelist-scroll');
+  scroll.innerHTML = '';
+  g('pagelist-title').textContent = project.schoolName + ' — ' + project.pages.length + ' pages';
+  g('pagelist-sub').textContent = 'Click a page to review it';
 
-  try {
-    const res = await fetch(siteUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; SchoolPageBuilder/1.0)",
-        "Accept": "text/html"
-      },
-      redirect: "follow"
-    });
+  project.pages.forEach(function(page){
+    var row = document.createElement('div');
+    row.className = 'page-row' + (page.id === selectedPageId ? ' selected' : '');
+    row.id = 'prow-' + page.id;
+    row.onclick = function(){ selectPage(page.id); };
 
-    if (!res.ok) return json({ error: "Could not fetch site (status " + res.status + ")" }, 400);
+    var statusHtml = getStatusBadge(page.status);
+    row.innerHTML = '<div class="page-row-icon" style="background:'+getStatusBg(page.status)+'">'+getStatusIcon(page.status)+'</div>'
+      +'<div class="page-row-info">'
+      +'<span class="page-row-title">'+esc(page.title)+'</span>'
+      +'<span class="page-row-url">'+esc(shortenUrl(page.url))+'</span>'
+      +'</div>'
+      +'<span class="status-badge '+getStatusClass(page.status)+'">'+statusHtml+'</span>';
+    scroll.appendChild(row);
+  });
 
-    const html = await res.text();
-    const nav = extractNav(html, parsedUrl.origin);
+  updateGenerateButton();
+}
 
-    return json({ success: true, nav: nav, origin: parsedUrl.origin });
+function updatePageRow(pageId){
+  var page = project.pages.find(function(p){return p.id===pageId;});
+  if(!page) return;
+  var row = g('prow-'+pageId);
+  if(!row) return;
+  row.innerHTML = '<div class="page-row-icon" style="background:'+getStatusBg(page.status)+'">'+getStatusIcon(page.status)+'</div>'
+    +'<div class="page-row-info">'
+    +'<span class="page-row-title">'+esc(page.title)+'</span>'
+    +'<span class="page-row-url">'+esc(shortenUrl(page.url))+'</span>'
+    +'</div>'
+    +'<span class="status-badge '+getStatusClass(page.status)+'">'+getStatusBadge(page.status)+'</span>';
+}
 
-  } catch (e) {
-    return json({ error: "Failed to fetch: " + e.message }, 500);
+function getStatusBadge(s){ return {pending:'Pending',generating:'Generating...',ready:'Ready',approved:'Approved',edited:'Edited',error:'Error'}[s]||s; }
+function getStatusClass(s){ return {pending:'sb-pending',generating:'sb-generating',ready:'sb-ready',approved:'sb-approved',edited:'sb-edited',error:'sb-pending'}[s]||'sb-pending'; }
+function getStatusBg(s){ return {pending:'#F5F5F4',generating:'#EFF6FF',ready:'#FFFBEB',approved:'#ECFDF5',edited:'#F5F3FF',error:'#FEF2F2'}[s]||'#F5F5F4'; }
+function getStatusIcon(s){ return {pending:'&#9675;',generating:'&#9651;',ready:'&#9733;',approved:'&#10003;',edited:'&#9998;',error:'&#10005;'}[s]||''; }
+
+function updateGenerateButton(){
+  var pending = project.pages.filter(function(p){return p.status==='pending';});
+  var genBtn = g('btn-generate-all');
+  var hint = g('gen-hint-text');
+  if(pending.length > 0 && !isGenerating){
+    genBtn.style.display = 'flex';
+    genBtn.textContent = '✨ Generate next (' + pending.length + ' pending)';
+    hint.textContent = pending.length + ' page' + (pending.length!==1?'s':'') + ' waiting to be generated';
+  } else if(isGenerating){
+    genBtn.style.display = 'flex';
+    genBtn.textContent = '⏳ Generating...';
+    genBtn.disabled = true;
+    hint.textContent = 'Please wait...';
+  } else {
+    genBtn.style.display = 'none';
+    hint.textContent = 'All pages processed';
   }
 }
 
-// ── SCRAPE SINGLE PAGE: get full content ──
-async function handleScrapePage(request) {
-  let body;
-  try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+function updateProgress(){
+  var approved = project.pages.filter(function(p){return p.approved;}).length;
+  var total = project.pages.length;
+  g('prog-approved').textContent = approved;
+  g('prog-total').textContent = total;
+  if(approved > 0) g('btn-zip').classList.add('show');
+}
 
-  const pageUrl = body.url;
-  if (!pageUrl) return json({ error: "No URL provided" }, 400);
+// ── SELECT & VIEW PAGE ──
+function selectPage(id){
+  selectedPageId = id;
+  var page = project.pages.find(function(p){return p.id===id;});
+  if(!page) return;
 
-  try {
-    const res = await fetch(pageUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; SchoolPageBuilder/1.0)",
-        "Accept": "text/html"
-      },
-      redirect: "follow"
-    });
+  // Update selected state in list
+  document.querySelectorAll('.page-row').forEach(function(r){r.classList.remove('selected');});
+  var row = g('prow-'+id);
+  if(row){row.classList.add('selected');row.scrollIntoView({block:'nearest'});}
 
-    if (!res.ok) return json({ error: "Could not fetch page (status " + res.status + ")" }, 400);
+  g('preview-page-title').textContent = page.title;
 
-    const html = await res.text();
-    const data = extractPageContent(html, pageUrl);
+  // Approve button state
+  var approveBtn = g('btn-approve');
+  if(page.approved){
+    approveBtn.textContent = '✓ Approved';
+    approveBtn.classList.add('approved');
+  } else {
+    approveBtn.textContent = '✓ Approve';
+    approveBtn.classList.remove('approved');
+  }
 
-    return json({ success: true, ...data });
+  // Show appropriate state
+  g('prev-empty').style.display = 'none';
+  g('prev-err').classList.remove('show');
 
-  } catch (e) {
-    return json({ error: "Failed to fetch page: " + e.message }, 500);
+  if(page.status === 'pending'){
+    showEmptyState('&#9675;', 'Waiting to generate', 'This page hasn\'t been redesigned yet. Click "Generate next" to process it.');
+  } else if(page.status === 'generating' || page.status === 'scraping'){
+    showGenerating(page.status === 'scraping' ? 'Importing content from your website...' : 'Redesigning this page with AI...');
+  } else if(page.status === 'error'){
+    g('prev-err').textContent = page.error || 'Something went wrong generating this page.';
+    g('prev-err').classList.add('show');
+    g('prev-iframe').style.display = 'none';
+    g('wysiwyg-wrap').style.display = 'none';
+    g('prev-generating').classList.remove('show');
+  } else if(page.generatedHTML){
+    setView('preview');
+    renderIframe(page.generatedHTML);
+    g('paste-guide').classList.add('show');
   }
 }
 
-// ── HTML PARSER HELPERS ──
+function showEmptyState(ico, title, sub){
+  g('prev-generating').classList.remove('show');
+  g('prev-iframe').style.display = 'none';
+  g('wysiwyg-wrap').style.display = 'none';
+  var empty = g('prev-empty');
+  empty.innerHTML = '<div class="pe-ico">'+ico+'</div><div class="pe-t">'+title+'</div><div class="pe-s">'+sub+'</div>';
+  empty.style.display = 'block';
+}
 
-// Extract navigation structure from the HTML
-function extractNav(html, origin) {
-  const pages = [];
-  const seen = new Set();
+function showGenerating(msg){
+  g('gen-t-msg').textContent = msg || 'Redesigning this page...';
+  g('prev-generating').classList.add('show');
+  g('prev-iframe').style.display = 'none';
+  g('wysiwyg-wrap').style.display = 'none';
+  g('prev-empty').style.display = 'none';
+}
 
-  // Queensland DET school sites (Squiz Matrix) patterns
-  // Top nav
-  const topNavPatterns = [
-    /<nav[^>]*(?:id|class)="[^"]*(?:top|global|main|primary|site)[^"]*"[^>]*>([\s\S]*?)<\/nav>/gi,
-    /<ul[^>]*(?:id|class)="[^"]*(?:top|global|main|primary|nav|menu)[^"]*"[^>]*>([\s\S]*?)<\/ul>/gi,
-    /<div[^>]*(?:id|class)="[^"]*(?:top-nav|main-nav|primary-nav|navigation)[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
-  ];
+function renderIframe(html){
+  var iframe = g('prev-iframe');
+  iframe.style.display = 'block';
+  g('prev-generating').classList.remove('show');
+  g('prev-empty').style.display = 'none';
+  var full = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:16px;line-height:1.5}</style></head><body>'+html+'</body></html>';
+  iframe.srcdoc = full;
+  iframe.onload = function(){
+    try{ var h=iframe.contentDocument.body.scrollHeight; if(h>50)iframe.style.height=(h+20)+'px'; }catch(e){ iframe.style.height='600px'; }
+  };
+}
 
-  // Left sidebar nav (common on QLD school sites)
-  const sideNavPatterns = [
-    /<(?:nav|ul|div)[^>]*(?:id|class)="[^"]*(?:side|left|local|section|sub)[^"]*nav[^"]*"[^>]*>([\s\S]*?)<\/(?:nav|ul|div)>/gi,
-    /<(?:nav|ul|div)[^>]*(?:id|class)="[^"]*nav[^"]*(?:side|left|local|section|sub)[^"]*"[^>]*>([\s\S]*?)<\/(?:nav|ul|div)>/gi,
-  ];
+// ── PROCESS PAGES ──
+async function processNextPage(){
+  var page = project.pages.find(function(p){ return p.status==='pending'; });
+  if(!page){ isGenerating=false; updateGenerateButton(); return; }
+  isGenerating = true;
+  updateGenerateButton();
 
-  // Also grab all internal links as fallback
-  const allPatterns = [...topNavPatterns, ...sideNavPatterns];
+  // Step 1: Scrape the page content
+  page.status = 'scraping';
+  saveProject();
+  renderPageList();
+  if(selectedPageId === page.id) showGenerating('Importing content from your website...');
 
-  for (const pattern of allPatterns) {
-    let match;
-    while ((match = pattern.exec(html)) !== null) {
-      const section = match[1] || match[0];
-      extractLinksFromHtml(section, origin, seen, pages);
+  try{
+    var scrapeRes = await fetch(WORKER_URL + '/scrape-page', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url: page.url })
+    });
+    var scrapeData = await scrapeRes.json();
+    if(scrapeData.success){
+      page.scrapedText = scrapeData.text || '';
+      page.scrapedLinks = scrapeData.links || [];
+      if(scrapeData.title && scrapeData.title !== page.title) page.title = scrapeData.title;
     }
-    pattern.lastIndex = 0;
+  }catch(e){
+    // Scrape failed — continue with empty content
+    page.scrapedText = '';
+    page.scrapedLinks = [];
   }
 
-  // If nothing found, grab ALL internal links from the page
-  if (pages.length === 0) {
-    extractLinksFromHtml(html, origin, seen, pages);
+  // Step 2: Generate redesigned HTML
+  page.status = 'generating';
+  saveProject();
+  updatePageRow(page.id);
+  if(selectedPageId === page.id) showGenerating('Redesigning with AI...');
+
+  try{
+    var html = await generatePage(page);
+    page.generatedHTML = html;
+    page.status = 'ready';
+    page.error = '';
+  }catch(e){
+    page.status = 'error';
+    page.error = e.message;
   }
 
-  // Sort and deduplicate
-  return pages
-    .filter(p => p.url && p.title)
-    .slice(0, 60); // cap at 60 pages
+  saveProject();
+  updatePageRow(page.id);
+  if(selectedPageId === page.id) selectPage(page.id);
+  updateProgress();
+
+  // Small pause then process next
+  isGenerating = false;
+  updateGenerateButton();
 }
 
-function extractLinksFromHtml(html, origin, seen, pages) {
-  const linkPattern = /<a[^>]+href="([^"#]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m;
-  while ((m = linkPattern.exec(html)) !== null) {
-    let href = m[1].trim();
-    let rawTitle = m[2].replace(/<[^>]+>/g, '').trim();
-    if (!rawTitle || rawTitle.length < 2) continue;
-    if (rawTitle.length > 80) continue; // skip long link texts
+async function generatePage(page){
+  var pri = project.primaryColor;
+  var sec = project.accentColor;
+  var prompt = buildPagePrompt(page, pri, sec);
 
-    // Resolve relative URLs
-    try {
-      if (href.startsWith('/')) href = origin + href;
-      else if (!href.startsWith('http')) href = origin + '/' + href;
-      const u = new URL(href);
-      // Only include internal links
-      if (!href.startsWith(origin) && u.hostname !== new URL(origin).hostname) continue;
-      // Skip non-page links
-      if (/\.(pdf|doc|docx|xls|xlsx|jpg|jpeg|png|gif|mp4|zip)$/i.test(href)) continue;
-      if (seen.has(href)) continue;
-      seen.add(href);
-      pages.push({ url: href, title: rawTitle });
-    } catch (e) { continue; }
-  }
+  var res = await fetch(WORKER_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5',
+      max_tokens: 3000,
+      system: buildSystem(),
+      messages: [{ role:'user', content: prompt }]
+    })
+  });
+  if(!res.ok) throw new Error('API error ' + res.status);
+  var data = await res.json();
+  var html = (data.content&&data.content[0]&&data.content[0].text) || '';
+  if(!html) throw new Error('No content returned');
+  return html;
 }
 
-// Extract content from a single page
-function extractPageContent(html, pageUrl) {
-  // Page title
-  let title = '';
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  if (titleMatch) title = titleMatch[1].replace(/\s*[-|]\s*.+$/, '').trim();
+function buildSystem(){
+  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.\n\n'
+    +'RULES:\n'
+    +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.\n'
+    +'2. No script tags.\n'
+    +'3. No external fonts or CDN links.\n'
+    +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n'
+    +'5. One <style> block at the top, all CSS prefixed with sp-.\n'
+    +'6. Output ONLY the HTML fragment. No markdown, no backticks, no explanation.\n\n'
+    +'CONTENT:\n'
+    +'- Preserve the school\'s exact wording. Do not rewrite or paraphrase.\n'
+    +'- Structure content with headings and sections based on natural topic breaks.\n'
+    +'- Format important notices, warnings, or deadlines as styled callout boxes.\n'
+    +'- Split long text into readable paragraphs.\n\n'
+    +'ACCESSIBILITY — WCAG 2.1 AA:\n'
+    +'- Every img must have a descriptive alt attribute.\n'
+    +'- Use semantic heading hierarchy (h2 for sections, h3 for sub-sections).\n'
+    +'- Descriptive link text — never "click here".\n'
+    +'- Visible :focus styles on all links.\n'
+    +'- Semantic HTML lists (<ul>/<li>).\n'
+    +'- Add role="region" and aria-label to major sections.\n'
+    +'- Tile links must have aria-label attributes.';
+}
 
-  // h1 as a better title
-  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-  if (h1Match) title = h1Match[1].replace(/<[^>]+>/g, '').trim() || title;
-
-  // Main content area — try common patterns
-  let contentHtml = '';
-  const contentPatterns = [
-    /<main[^>]*>([\s\S]*?)<\/main>/i,
-    /<div[^>]*(?:id|class)="[^"]*(?:main-content|page-content|content-area|content-body|entry-content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-    /<article[^>]*>([\s\S]*?)<\/article>/i,
-    /<div[^>]*(?:id|class)="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+function buildPagePrompt(page, pri, sec){
+  var lines = [
+    'Redesign this page for ' + project.schoolName + ', an Australian school. It will be embedded in their SharePoint website.',
+    'Brand: Primary=' + pri + ' | Accent=' + sec + ' | Text on primary=#fff',
+    '',
+    'PAGE: ' + page.title,
+    'URL: ' + page.url,
+    ''
   ];
 
-  for (const p of contentPatterns) {
-    const m = html.match(p);
-    if (m && m[1] && m[1].length > 200) { contentHtml = m[1]; break; }
+  // Banner
+  lines.push('1. HERO BANNER: background:' + pri + '; color:#fff; border-radius:10px; padding:28px 32px; margin-bottom:0.');
+  lines.push('   Title "' + page.title + '" — font-size:26px; font-weight:700.');
+  lines.push('');
+
+  // Content
+  if(page.scrapedText && page.scrapedText.trim()){
+    lines.push('2. MAIN CONTENT: Structure the following scraped text into a professional page.');
+    lines.push('   - Keep exact wording.');
+    lines.push('   - Add section headings in ' + pri + ' (20px bold, border-bottom:2px solid ' + pri + ' margin:24px 0 12px) where topics naturally change.');
+    lines.push('   - Paragraphs: 14px #333 line-height:1.7.');
+    lines.push('   - Callout boxes for important notices (background:#DBEAFE; border-left:4px solid #93C5FD; color:#1E3A8A; border-radius:0 8px 8px 0; padding:14px 18px; margin:16px 0).');
+    lines.push('');
+    lines.push('   --- CONTENT ---');
+    lines.push('   ' + page.scrapedText.substring(0, 4000));
+    lines.push('   --- END ---');
+  } else {
+    lines.push('2. INTRO: Create a brief professional placeholder intro for a page called "' + page.title + '" at ' + project.schoolName + '.');
+    lines.push('   font-size:14px; line-height:1.75; color:#333.');
   }
 
-  if (!contentHtml) contentHtml = html; // fallback to full page
-
-  // Extract clean text from content
-  const text = htmlToText(contentHtml);
-
-  // Extract links from content
-  const links = [];
-  const seen = new Set();
-  const lp = /<a[^>]+href="([^"#]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m;
-  while ((m = lp.exec(contentHtml)) !== null) {
-    const href = m[1].trim();
-    const label = m[2].replace(/<[^>]+>/g, '').trim();
-    if (!label || label.length < 2 || seen.has(href)) continue;
-    if (/^(mailto:|tel:|javascript:)/i.test(href)) continue;
-    seen.add(href);
-    links.push({ url: href, label: label });
+  // Links
+  if(page.scrapedLinks && page.scrapedLinks.length > 0){
+    var validLinks = page.scrapedLinks.filter(function(l){return l.label&&l.url;}).slice(0,15);
+    if(validLinks.length){
+      lines.push('');
+      lines.push('3. USEFUL LINKS section (heading "Related Links" in ' + pri + ' 20px bold border-bottom:2px solid ' + pri + ' margin:24px 0 12px):');
+      lines.push('   Bullet list: color:' + pri + '; font-size:14px; line-height:2; hover:underline; target="_blank".');
+      validLinks.forEach(function(l,i){
+        lines.push('   Link ' + (i+1) + ': "' + l.label + '" href="' + l.url + '"');
+      });
+    }
   }
 
-  return { title, text, links: links.slice(0, 30) };
+  lines.push('');
+  lines.push('DESIGN: Wrap in div max-width:880px. System fonts. No JS. Clean professional Australian school look. All links target="_blank".');
+  return lines.join('\n');
 }
 
-function htmlToText(html) {
-  // Remove scripts, styles, nav, header, footer
-  html = html.replace(/<(script|style|nav|header|footer)[^>]*>[\s\S]*?<\/\1>/gi, '');
-  // Replace block elements with newlines
-  html = html.replace(/<\/(p|div|li|h[1-6]|br|tr)>/gi, '\n');
-  html = html.replace(/<br\s*\/?>/gi, '\n');
-  // Remove all remaining tags
-  html = html.replace(/<[^>]+>/g, '');
-  // Decode common entities
-  html = html.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-             .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-  // Clean up whitespace
-  html = html.split('\n').map(l => l.trim()).filter(l => l.length > 0).join('\n');
-  html = html.replace(/\n{3,}/g, '\n\n');
-  return html.trim().substring(0, 8000); // cap at 8000 chars
+// ── PAGE ACTIONS ──
+function generateNext(){
+  if(isGenerating) return;
+  processNextPage();
+}
+
+async function regeneratePage(){
+  var page = project.pages.find(function(p){return p.id===selectedPageId;});
+  if(!page || isGenerating) return;
+  page.status = 'generating';
+  page.generatedHTML = '';
+  saveProject();
+  updatePageRow(page.id);
+  showGenerating('Regenerating with AI...');
+  isGenerating = true;
+  updateGenerateButton();
+  try{
+    var html = await generatePage(page);
+    page.generatedHTML = html;
+    page.status = page.approved ? 'approved' : 'ready';
+    page.error = '';
+  }catch(e){
+    page.status = 'error';
+    page.error = e.message;
+  }
+  isGenerating = false;
+  saveProject();
+  updatePageRow(page.id);
+  selectPage(page.id);
+  updateProgress();
+  updateGenerateButton();
+}
+
+function toggleApprove(){
+  var page = project.pages.find(function(p){return p.id===selectedPageId;});
+  if(!page) return;
+  page.approved = !page.approved;
+  page.status = page.approved ? 'approved' : 'ready';
+  saveProject();
+  updatePageRow(page.id);
+  updateProgress();
+  var btn = g('btn-approve');
+  if(page.approved){
+    btn.textContent = '✓ Approved';
+    btn.classList.add('approved');
+    // Auto-advance to next unapproved page
+    var next = project.pages.find(function(p){ return !p.approved && p.status !== 'pending'; });
+    if(next) setTimeout(function(){ selectPage(next.id); }, 400);
+  } else {
+    btn.textContent = '✓ Approve';
+    btn.classList.remove('approved');
+  }
+}
+
+function copyPage(){
+  var page = project.pages.find(function(p){return p.id===selectedPageId;});
+  if(!page || !page.generatedHTML) return;
+  var html = currentView==='edit' ? g('wysiwyg-editor').innerHTML : page.generatedHTML;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(html).then(function(){
+      var btn = g('btn-copy-page');
+      btn.textContent = '✓ Copied!';
+      setTimeout(function(){ btn.textContent = '📋 Copy HTML'; }, 2000);
+    });
+  }
+}
+
+// ── VIEW ──
+function setView(mode){
+  currentView = mode;
+  g('prev-scroll').style.display = 'none';
+  g('code-view').style.display = 'none';
+  g('wysiwyg-toolbar').classList.remove('show');
+  document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
+  g('wysiwyg-wrap').style.display = 'none';
+  g('prev-iframe').style.display = 'none';
+
+  var page = project.pages.find(function(p){return p.id===selectedPageId;});
+
+  if(mode==='preview'){
+    g('prev-scroll').style.display = '';
+    if(page && page.generatedHTML){ g('prev-iframe').style.display='block'; }
+    g('vbtn-preview').classList.add('on');
+  } else if(mode==='edit'){
+    if(!page || !page.generatedHTML){ setView('preview'); return; }
+    g('prev-scroll').style.display = '';
+    g('wysiwyg-wrap').style.display = 'block';
+    g('wysiwyg-editor').innerHTML = page.generatedHTML;
+    g('wysiwyg-toolbar').classList.add('show');
+    g('vbtn-edit').classList.add('on');
+    setTimeout(function(){ g('wysiwyg-editor').focus(); }, 100);
+  } else if(mode==='code'){
+    g('code-view').style.display = 'block';
+    g('code-out').textContent = page ? (page.generatedHTML||'') : '';
+    g('vbtn-code').classList.add('on');
+  }
+}
+
+function onEditorChange(){
+  var page = project.pages.find(function(p){return p.id===selectedPageId;});
+  if(!page) return;
+  page.generatedHTML = g('wysiwyg-editor').innerHTML;
+  page.status = page.approved ? 'approved' : 'edited';
+  saveProject();
+  updatePageRow(page.id);
+}
+
+function fmt(cmd, val){
+  document.execCommand(cmd, false, val||null);
+  g('wysiwyg-editor').focus();
+  onEditorChange();
+}
+
+// ── ZIP DOWNLOAD ──
+async function downloadZip(){
+  var approved = project.pages.filter(function(p){ return p.approved && p.generatedHTML; });
+  if(approved.length === 0){ alert('No approved pages to download yet. Approve some pages first.'); return; }
+
+  var btn = g('btn-zip');
+  btn.textContent = '⏳ Preparing ZIP...';
+  btn.disabled = true;
+
+  var zip = new JSZip();
+  var folder = zip.folder('sharepoint-pages');
+
+  approved.forEach(function(page){
+    var safeName = page.title.replace(/[^a-z0-9]/gi,'_').toLowerCase() + '.html';
+    var html = '<!-- ' + page.title + ' -->\n<!-- SharePoint Embed web part HTML -->\n<!-- Paste this into the Embed web part code field -->\n\n' + page.generatedHTML;
+    folder.file(safeName, html);
+  });
+
+  // Add a README
+  var readme = 'SchoolPage Builder — Export\n'
+    + '============================\n'
+    + 'School: ' + project.schoolName + '\n'
+    + 'Exported: ' + new Date().toLocaleDateString() + '\n'
+    + 'Pages: ' + approved.length + '\n\n'
+    + 'HOW TO USE:\n'
+    + '1. In SharePoint, edit your page\n'
+    + '2. Click + Add a web part\n'
+    + '3. Search for "Embed" and add it\n'
+    + '4. Click the pencil icon to edit the web part\n'
+    + '5. Paste the HTML from the matching .html file\n'
+    + '6. Click Republish\n\n'
+    + 'PAGES INCLUDED:\n'
+    + approved.map(function(p){ return '- ' + p.title; }).join('\n');
+  folder.file('README.txt', readme);
+
+  try{
+    var content = await zip.generateAsync({ type:'blob' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(content);
+    a.download = (project.schoolName.replace(/[^a-z0-9]/gi,'_').toLowerCase() || 'school') + '_sharepoint_pages.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }catch(e){ alert('ZIP download failed: ' + e.message); }
+
+  btn.textContent = '📦 Download all as ZIP';
+  btn.disabled = false;
 }
 
 // ── HELPERS ──
-function json(data, status) {
-  return new Response(JSON.stringify(data), {
-    status: status || 200,
-    headers: cors()
-  });
-}
-
-function cors() {
-  return {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function shortenUrl(url){ try{ var u=new URL(url); return u.pathname; }catch(e){ return url; } }
+</script>
+</body>
+</html>
