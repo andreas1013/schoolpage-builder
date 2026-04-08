@@ -1,1801 +1,268 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digitalschools Pages — Prototype v7</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#F0EEE9;--white:#fff;--surface:#F8F7F4;
-  --border:#E2DED6;--border2:#C8C4BB;
-  --ink:#1A1A1A;--ink2:#4A4A4A;--ink3:#9A9A9A;
-  --blue:#2B5CE6;--blue-lt:#EEF2FF;--blue-dk:#1D4ED8;
-  --green:#1A9E5C;--green-lt:#ECFDF5;
-  --red:#DC2626;--red-lt:#FEF2F2;
-  --amber:#D97706;--amber-lt:#FFFBEB;
-  --proto:#7C3AED;--proto-lt:#EDE9FE;
-  --sidebar-w:248px;--topbar-h:52px;
-  --r:12px;--rs:8px;
-  --shadow:0 2px 8px rgba(0,0,0,.07),0 8px 24px rgba(0,0,0,.05);
-  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
-}
-html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+// ============================================================
+//  SchoolPage Builder — Cloudflare Worker
+//  Routes:
+//    POST /          → Anthropic API proxy
+//    POST /scrape    → Scrape a Queensland school website page
+//    POST /scrape-page → Scrape a single page for full content
+// ============================================================
 
-/* ─────────────────────────────────────────────
-   ONBOARDING OVERLAY
-───────────────────────────────────────────── */
-#onboarding{
-  display:none;position:fixed;inset:0;z-index:2000;
-  background:var(--bg);overflow-y:auto;
-}
-#onboarding.show{display:block}
+const ANTHROPIC_API_KEY = "YOUR_KEY_HERE";
 
-.ob-wrap{
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  justify-content:flex-start;padding:40px 20px 60px;
-}
+export default {
+  async fetch(request) {
 
-/* Progress */
-.ob-progress{
-  display:flex;align-items:center;gap:0;margin-bottom:40px;width:100%;max-width:540px;
-}
-.ob-step-dot{
-  width:32px;height:32px;border-radius:50%;border:2px solid var(--border);
-  background:var(--white);display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:var(--ink3);flex-shrink:0;transition:all .25s;
-}
-.ob-step-dot.done{background:var(--green);border-color:var(--green);color:#fff}
-.ob-step-dot.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 4px rgba(43,92,230,.15)}
-.ob-prog-line{flex:1;height:2px;background:var(--border);transition:background .25s}
-.ob-prog-line.done{background:var(--green)}
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: cors() });
+    }
 
-/* Cards */
-.ob-card{
-  background:var(--white);border-radius:20px;padding:36px 32px;
-  width:100%;max-width:540px;box-shadow:var(--shadow);
-  display:none;overflow:hidden;
-}
-.ob-card.active{display:block}
-.ob-logo-top{
-  display:flex;align-items:center;gap:8px;margin-bottom:28px;
-}
-.ob-logo-top .logo-text{font-size:15px;font-weight:700}
-.ob-logo-top .logo-text em{color:var(--blue);font-style:normal}
-.ob-logo-top .proto-badge{background:var(--proto-lt);color:var(--proto);border:1px solid #C4B5FD;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;text-transform:uppercase}
-.ob-logo-top .version-badge{background:var(--surface);color:var(--ink3);border:1px solid var(--border);border-radius:20px;font-size:9px;font-weight:700;padding:2px 7px;font-family:monospace}
+    const url = new URL(request.url);
 
-.ob-h{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3}
-.ob-sub{font-size:14px;color:var(--ink3);margin-bottom:28px;line-height:1.6}
-.ob-field{margin-bottom:16px}
-.ob-field label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
-.ob-field label .opt{font-weight:400;color:var(--ink3);font-size:11px}
-.ob-field input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--white)}
-.ob-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.08)}
-.ob-field input.error{border-color:var(--red);background:var(--red-lt)}
-.ob-ferr{font-size:11px;color:var(--red);margin-top:4px;font-weight:600;display:none}
-.ob-ferr.show{display:block}
-.ob-fhint{font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.5}
+    // ── ROUTE: POST / → Anthropic proxy ──
+    if (url.pathname === "/" && request.method === "POST") {
+      return handleAnthropic(request);
+    }
 
-/* Logo preview */
-.ob-logo-preview{
-  margin-top:10px;border:1.5px solid var(--border);border-radius:var(--rs);
-  padding:14px;background:var(--surface);display:none;
-  align-items:center;gap:12px;
-}
-.ob-logo-preview.show{display:flex}
-.ob-logo-preview img{max-height:48px;max-width:160px;object-fit:contain;border-radius:6px}
-.ob-logo-preview-status{font-size:12px;font-weight:600}
-.ob-logo-preview-status.ok{color:var(--green)}
-.ob-logo-preview-status.err{color:var(--red)}
+    // ── ROUTE: POST /scrape → Fetch nav + page list from school homepage ──
+    if (url.pathname === "/scrape" && request.method === "POST") {
+      return handleScrape(request);
+    }
 
-/* Color pickers */
-.ob-colors{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;width:100%}
-.ob-color-card{border:1.5px solid var(--border);border-radius:var(--r);padding:14px;background:var(--surface);min-width:0;overflow:hidden}
-.ob-color-label{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px}
-.ob-color-hint{font-size:11px;color:var(--ink3);margin-top:5px;line-height:1.4}
-.ob-color-row{display:flex;align-items:center;gap:8px;min-width:0}
-.ob-color-swatch{width:34px;height:34px;border-radius:8px;border:1.5px solid rgba(0,0,0,.12);overflow:hidden;flex-shrink:0;cursor:pointer}
-.ob-color-swatch input[type=color]{width:54px;height:54px;margin:-10px;border:none;cursor:pointer;background:none}
-.ob-color-hex{flex:1;min-width:0;padding:7px 8px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:monospace;font-size:12px;color:var(--ink);outline:none;background:var(--white);width:100%}
-.ob-color-hex:focus{border-color:var(--blue)}
+    // ── ROUTE: POST /scrape-page → Fetch full content of one page ──
+    if (url.pathname === "/scrape-page" && request.method === "POST") {
+      return handleScrapePage(request);
+    }
 
-/* Live banner preview */
-.ob-banner-preview{
-  border-radius:10px;padding:18px 22px;margin-top:16px;transition:all .2s;
-}
-.ob-banner-preview-school{font-size:16px;font-weight:700;color:#fff;margin-bottom:3px}
-.ob-banner-preview-tag{font-size:12px;color:#fff;opacity:.85}
-
-/* Template picker (in onboarding) */
-.ob-tpl-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:4px}
-.ob-tpl-card{
-  border:2px solid var(--border);border-radius:var(--r);
-  display:flex;align-items:stretch;gap:0;cursor:pointer;
-  transition:all .15s;overflow:hidden;background:var(--white);
-}
-.ob-tpl-card:hover{border-color:var(--blue);box-shadow:var(--shadow-sm)}
-.ob-tpl-card.selected{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,158,92,.1)}
-.ob-tpl-thumb{
-  width:120px;flex-shrink:0;overflow:hidden;position:relative;
-  background:var(--bg);border-right:1px solid var(--border);cursor:zoom-in;
-}
-.ob-tpl-thumb-inner{width:100%;height:100%;overflow:hidden;position:relative}
-.ob-tpl-thumb iframe{width:220%;height:220%;border:none;display:block;transform:scale(0.455);transform-origin:top left;pointer-events:none}
-.ob-tpl-thumb-overlay{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,0);transition:background .15s;
-}
-.ob-tpl-thumb:hover .ob-tpl-thumb-overlay{background:rgba(0,0,0,.35)}
-.ob-tpl-zoom-icon{
-  font-size:16px;color:#fff;opacity:0;transition:opacity .15s;
-  background:rgba(0,0,0,.5);border-radius:20px;padding:4px 8px;font-size:11px;font-weight:600;
-}
-.ob-tpl-thumb:hover .ob-tpl-zoom-icon{opacity:1}
-.ob-tpl-info{flex:1;padding:14px 16px;display:flex;flex-direction:column;justify-content:center}
-.ob-tpl-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;display:flex;align-items:center;gap:8px}
-.ob-tpl-sel-badge{background:var(--green-lt);color:#065F46;border:1px solid #A7F3D0;border-radius:20px;font-size:9px;font-weight:700;padding:2px 7px;display:none}
-.ob-tpl-card.selected .ob-tpl-sel-badge{display:inline-flex;align-items:center}
-.ob-tpl-desc{font-size:11px;color:var(--ink3);line-height:1.5;margin-bottom:10px}
-.ob-tpl-actions{display:flex;gap:6px}
-.ob-tpl-preview-btn{padding:5px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
-.ob-tpl-preview-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.ob-tpl-select-btn{padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .12s}
-.ob-tpl-select-btn:hover{background:var(--blue-dk)}
-.ob-tpl-select-btn.is-selected{background:var(--green)}
-
-/* Template Lightbox */
-#tpl-lightbox{
-  display:none;position:fixed;inset:0;z-index:3000;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
-  align-items:center;justify-content:center;padding:20px;
-}
-#tpl-lightbox.show{display:flex}
-.tpl-lb-card{
-  background:var(--white);border-radius:20px;
-  width:100%;max-width:860px;max-height:90vh;
-  display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:0 32px 80px rgba(0,0,0,.4);
-}
-.tpl-lb-header{
-  padding:18px 24px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:12px;flex-shrink:0;
-}
-.tpl-lb-title{font-size:17px;font-weight:700;color:var(--ink);flex:1}
-.tpl-lb-desc{font-size:13px;color:var(--ink3)}
-.tpl-lb-close{
-  width:32px;height:32px;border-radius:50%;background:var(--surface);
-  border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;
-  justify-content:center;font-size:16px;color:var(--ink3);flex-shrink:0;
-  font-family:inherit;transition:all .12s;
-}
-.tpl-lb-close:hover{background:#fee2e2;color:var(--red);border-color:#fca5a5}
-.tpl-lb-preview{flex:1;overflow:hidden;background:var(--bg);padding:20px;overflow-y:auto}
-.tpl-lb-preview iframe{
-  width:100%;border:1px solid var(--border);border-radius:var(--r);
-  display:block;background:var(--white);min-height:480px;
-}
-.tpl-lb-footer{
-  padding:16px 24px;border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
-  background:var(--surface);
-}
-.tpl-lb-footer-note{font-size:12px;color:var(--ink3)}
-.tpl-lb-select{
-  padding:11px 28px;background:var(--blue);color:#fff;border:none;
-  border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .15s;
-}
-.tpl-lb-select:hover{background:var(--blue-dk);box-shadow:0 4px 16px rgba(43,92,230,.3)}
-.tpl-lb-select.is-selected{background:var(--green)}
-/* Nav arrows */
-.tpl-lb-nav{display:flex;gap:8px}
-.tpl-lb-arrow{
-  width:36px;height:36px;border-radius:50%;background:var(--white);
-  border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;
-  justify-content:center;font-size:16px;color:var(--ink2);font-family:inherit;
-  transition:all .12s;
-}
-.tpl-lb-arrow:hover{border-color:var(--blue);color:var(--blue)}
-
-/* Page tree builder */
-.ob-tree-note{background:var(--blue-lt);border:1px solid #BFDBFE;border-radius:var(--rs);padding:10px 14px;font-size:12px;color:#1E3A8A;line-height:1.5;margin-bottom:16px}
-.ob-sections{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.ob-section{border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--white)}
-.ob-section-hd{
-  display:flex;align-items:center;gap:8px;padding:10px 14px;
-  background:var(--surface);border-bottom:1px solid var(--border);
-  cursor:pointer;user-select:none;
-}
-.ob-section-label{font-size:12px;font-weight:700;color:var(--ink2);flex:1}
-.ob-section-chevron{font-size:9px;color:var(--ink3);transition:transform .18s}
-.ob-section-chevron.open{transform:rotate(90deg)}
-.ob-section-xbtn{background:none;border:none;color:var(--ink3);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;font-family:inherit}
-.ob-section-xbtn:hover{color:var(--red)}
-.ob-section-pages{padding:6px 10px 10px;display:none}
-.ob-section-pages.open{display:block}
-.ob-page-row{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;transition:background .1s}
-.ob-page-row:hover{background:var(--surface)}
-.ob-page-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0}
-.ob-page-name{font-size:12px;color:var(--ink2);flex:1}
-.ob-page-x{background:none;border:none;color:var(--ink3);font-size:13px;cursor:pointer;padding:0 2px;font-family:inherit;line-height:1;opacity:0;transition:opacity .1s}
-.ob-page-row:hover .ob-page-x{opacity:1}
-.ob-page-x:hover{color:var(--red)}
-.ob-add-page-btn{display:flex;align-items:center;gap:4px;margin-top:6px;padding:5px 8px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;width:100%;transition:all .12s}
-.ob-add-page-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.ob-add-section-btn{display:flex;align-items:center;gap:5px;width:100%;padding:9px 12px;background:none;border:1.5px dashed var(--border2);border-radius:var(--r);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
-.ob-add-section-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-
-/* Summary card */
-.ob-summary{border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
-.ob-summary-banner{padding:20px 24px}
-.ob-summary-school{font-size:18px;font-weight:700;color:#fff}
-.ob-summary-rows{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
-.ob-summary-row{display:flex;align-items:center;gap:12px;font-size:13px}
-.ob-summary-key{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;width:80px;flex-shrink:0}
-.ob-summary-val{color:var(--ink2);font-weight:600;display:flex;align-items:center;gap:8px}
-.ob-summary-logo{max-height:28px;max-width:100px;object-fit:contain;border-radius:4px}
-.ob-summary-swatch{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
-
-/* Actions */
-.ob-actions{display:flex;align-items:center;gap:10px;margin-top:24px}
-.ob-btn-next{flex:1;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
-.ob-btn-next:hover{background:var(--blue-dk);box-shadow:0 4px 16px rgba(43,92,230,.3)}
-.ob-btn-next:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
-.ob-btn-back{padding:13px 18px;background:none;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;color:var(--ink3);cursor:pointer}
-.ob-btn-back:hover{border-color:var(--border2)}
-
-/* ─────────────────────────────────────────────
-   MAIN APP
-───────────────────────────────────────────── */
-#app-shell{display:none;height:100vh;flex-direction:column;overflow:hidden}
-#app-shell.show{display:flex}
-
-/* TOPBAR */
-#topbar{height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px 0 0;gap:10px;flex-shrink:0;box-shadow:var(--shadow-sm);position:relative;z-index:100}
-.tb-logo-zone{width:var(--sidebar-w);display:flex;align-items:center;gap:7px;padding:0 16px;flex-shrink:0;border-right:1px solid var(--border);transition:width .22s cubic-bezier(.4,0,.2,1);overflow:hidden}
-.logo-text{font-size:15px;font-weight:700}.logo-text em{color:var(--blue);font-style:normal}
-.proto-badge{background:var(--proto-lt);color:var(--proto);border:1px solid #C4B5FD;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;text-transform:uppercase}
-.version-badge{background:var(--surface);color:var(--ink3);border:1px solid var(--border);border-radius:20px;font-size:9px;font-weight:700;padding:2px 7px;font-family:monospace}
-.tb-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);flex:1;padding-left:6px}
-.tb-breadcrumb strong{color:var(--ink2);font-weight:600}
-.tb-sep{color:var(--border2)}
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-#tb-status{font-size:12px;color:var(--ink3)}
-#btn-copy-sp{padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:none;gap:5px;align-items:center}
-#btn-copy-sp.show{display:flex}#btn-copy-sp:hover{opacity:.88}
-#btn-save-exit{padding:9px 18px;background:var(--white);color:var(--ink2);border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:none;gap:6px;align-items:center}
-#btn-save-exit.show{display:flex}#btn-save-exit:hover{background:var(--surface)}
-#btn-gen-top{padding:9px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:none;gap:6px;align-items:center}
-#btn-gen-top.show{display:flex}#btn-gen-top:hover{background:var(--blue-dk)}
-#btn-gen-top:disabled{opacity:.4;cursor:not-allowed}
-
-/* LAYOUT */
-#layout{display:flex;flex:1;overflow:hidden}
-
-/* SIDEBAR */
-#sidebar{
-  width:var(--sidebar-w);flex-shrink:0;background:var(--white);
-  border-right:1px solid var(--border);display:flex;flex-direction:column;
-  overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1);
-}
-#sidebar.collapsed{width:52px}
-
-/* Collapse toggle button */
-.sidebar-toggle{
-  display:flex;align-items:center;justify-content:flex-end;
-  padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;
-}
-.sidebar-toggle-btn{
-  width:28px;height:28px;border-radius:6px;background:none;
-  border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;
-  justify-content:center;color:var(--ink3);font-size:14px;font-family:inherit;
-  transition:all .12s;flex-shrink:0;
-}
-.sidebar-toggle-btn:hover{background:var(--surface);color:var(--ink2);border-color:var(--border2)}
-
-/* Hide text labels when collapsed */
-#sidebar.collapsed .sidebar-school-name,
-#sidebar.collapsed .sidebar-template-row,
-#sidebar.collapsed .sidebar-nav-label,
-#sidebar.collapsed #sidebar-scroll,
-#sidebar.collapsed .add-section-wrap{display:none}
-
-/* Collapsed nav items — icon only */
-#sidebar.collapsed .sidebar-nav-item{
-  justify-content:center;padding:10px 0;border-left:none;
-}
-#sidebar.collapsed .sidebar-nav-item.active{
-  background:var(--blue-lt);border-left:none;border-radius:0;
-}
-/* School dot stays visible as branding indicator */
-#sidebar.collapsed .sidebar-school{
-  justify-content:center;padding:10px 0;
-}
-
-/* Sidebar school row text */
-.sidebar-school-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sidebar-school{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:8px;flex-shrink:0}
-.school-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sidebar-template-row{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.sidebar-template-label{font-size:10px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-#sidebar-template-name{font-size:11px;font-weight:700;color:var(--ink2)}
-.sidebar-nav-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:background .1s;border-left:2px solid transparent;color:var(--ink2)}
-.sidebar-nav-item:hover{background:var(--surface)}
-.sidebar-nav-item.active{background:var(--blue-lt);border-left-color:var(--blue);color:var(--blue)}
-.nav-ico{font-size:15px}
-#sidebar-scroll{flex:1;overflow-y:auto;padding:8px 0 16px}
-#sidebar-scroll::-webkit-scrollbar{width:3px}
-#sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.tree-section{margin-bottom:2px}
-.section-header{display:flex;align-items:center;padding:7px 14px;cursor:pointer;font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.3px;text-transform:uppercase;user-select:none;transition:background .1s}
-.section-header:hover{background:var(--surface)}
-.section-chevron{margin-left:auto;font-size:9px;transition:transform .18s;color:var(--ink3)}
-.section-chevron.open{transform:rotate(90deg)}
-.section-pages{overflow:hidden}
-.tree-page{display:flex;align-items:center;gap:8px;padding:7px 14px 7px 22px;cursor:pointer;font-size:13px;color:var(--ink2);transition:background .1s;border-left:2px solid transparent}
-.tree-page:hover{background:var(--surface)}
-.tree-page.active{background:var(--blue-lt);border-left-color:var(--blue);color:var(--blue);font-weight:600}
-.page-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border2)}
-.page-dot.published{background:var(--green)}
-.page-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.add-page-btn{display:flex;align-items:center;gap:5px;padding:6px 14px 6px 22px;font-size:11px;color:var(--ink3);cursor:pointer;font-family:inherit;background:none;border:none;width:100%;text-align:left;transition:color .1s}
-.add-page-btn:hover{color:var(--blue)}
-.add-section-wrap{padding:10px 14px 4px;border-top:1px solid var(--border);margin-top:6px}
-.add-section-btn{display:flex;align-items:center;gap:5px;width:100%;padding:7px 10px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
-.add-section-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-
-/* MAIN */
-#main{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
-.app-view{display:none;flex:1;overflow:hidden}
-.app-view.active{display:flex;flex-direction:column}
-
-/* DASHBOARD */
-#view-dashboard{overflow-y:auto;padding:32px 40px;align-items:flex-start;flex-direction:column}
-.dash-welcome{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.dash-sub{font-size:14px;color:var(--ink3);margin-bottom:28px}
-.dash-stats{display:flex;gap:12px;margin-bottom:32px;width:100%}
-.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 22px;flex:1;text-align:center;box-shadow:var(--shadow-sm)}
-.stat-n{font-size:28px;font-weight:700;color:var(--ink)}
-.stat-l{font-size:12px;color:var(--ink3);margin-top:2px}
-.dash-section{margin-bottom:28px;width:100%}
-.dash-section-t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:12px}
-.recent-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow-sm);margin-bottom:8px}
-.recent-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-1px)}
-.recent-card-name{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px}
-.recent-card-meta{font-size:12px;color:var(--ink3)}
-.empty-dash{background:var(--white);border:1.5px dashed var(--border2);border-radius:var(--r);padding:40px;text-align:center;width:100%}
-.empty-dash-ico{font-size:32px;margin-bottom:12px;opacity:.3}
-.empty-dash-t{font-size:15px;font-weight:700;color:var(--ink2);margin-bottom:6px}
-.empty-dash-s{font-size:13px;color:var(--ink3);line-height:1.7;max-width:320px;margin:0 auto}
-.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
-.status-pill.draft{background:#F3F4F6;color:#6B7280;border:1px solid #D1D5DB}
-.status-pill.published{background:var(--green-lt);color:#065F46;border:1px solid #A7F3D0}
-
-/* TEMPLATES VIEW */
-#view-templates{overflow-y:auto;padding:32px 40px;align-items:flex-start;flex-direction:column}
-.tpl-header{margin-bottom:28px}
-.tpl-header h2{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:6px}
-.tpl-header p{font-size:14px;color:var(--ink3);line-height:1.6;max-width:560px}
-#tpl-rebuild-warn{display:none;background:var(--amber-lt);border:1.5px solid #FCD34D;border-radius:var(--rs);padding:12px 16px;margin-bottom:20px;font-size:13px;color:#92400E;line-height:1.5;align-items:flex-start;gap:10px;width:100%}
-#tpl-rebuild-warn.show{display:flex}
-.tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%}
-.tpl-card{background:var(--white);border:2px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .18s;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
-.tpl-card:hover{border-color:var(--blue-dk);transform:translateY(-2px);box-shadow:var(--shadow)}
-.tpl-card.selected{border-color:var(--green);box-shadow:0 0 0 3px rgba(26,158,92,.12)}
-.tpl-preview{height:200px;overflow:hidden;position:relative;background:var(--bg);border-bottom:1px solid var(--border)}
-.tpl-preview iframe{width:160%;height:160%;border:none;display:block;transform:scale(0.625);transform-origin:top left;pointer-events:none}
-.tpl-info{padding:16px 18px}
-.tpl-name-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.tpl-name{font-size:15px;font-weight:700;color:var(--ink)}
-.tpl-selected-badge{background:var(--green-lt);color:#065F46;border:1px solid #A7F3D0;border-radius:20px;font-size:10px;font-weight:700;padding:2px 9px;display:none}
-.tpl-card.selected .tpl-selected-badge{display:inline-flex;align-items:center;gap:4px}
-.tpl-desc{font-size:12px;color:var(--ink3);line-height:1.6;margin-bottom:14px}
-.tpl-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.tpl-tag{background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:10px;font-weight:600;color:var(--ink3);padding:2px 8px}
-.tpl-select-btn{width:100%;padding:10px;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
-.tpl-select-btn.choose{background:var(--blue);color:#fff}
-.tpl-select-btn.choose:hover{background:var(--blue-dk)}
-.tpl-select-btn.active{background:var(--green-lt);color:#065F46;border:1.5px solid #A7F3D0;cursor:default}
-
-/* SETTINGS VIEW */
-#view-settings{overflow-y:auto;padding:32px 40px;align-items:flex-start;flex-direction:column}
-.settings-header{margin-bottom:28px}
-.settings-header h2{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:6px}
-.settings-header p{font-size:14px;color:var(--ink3);line-height:1.6}
-.settings-section{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px;width:100%;box-shadow:var(--shadow-sm)}
-.settings-section-t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.settings-field{margin-bottom:14px}
-.settings-field:last-child{margin-bottom:0}
-.settings-field label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
-.settings-field input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--white)}
-.settings-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.07)}
-.settings-fhint{font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.5}
-.settings-colors{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.settings-color-row{display:flex;align-items:center;gap:10px}
-.settings-swatch{width:32px;height:32px;border-radius:7px;border:1.5px solid rgba(0,0,0,.12);overflow:hidden;flex-shrink:0;cursor:pointer}
-.settings-swatch input[type=color]{width:50px;height:50px;margin:-9px;border:none;cursor:pointer;background:none}
-.settings-hex{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:monospace;font-size:12px;color:var(--ink);outline:none;background:var(--white)}
-.settings-hex:focus{border-color:var(--blue)}
-.settings-logo-preview{display:none;margin-top:10px;border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;background:var(--surface);align-items:center;gap:10px}
-.settings-logo-preview.show{display:flex}
-.settings-logo-preview img{max-height:40px;max-width:120px;object-fit:contain;border-radius:4px}
-.settings-save-btn{padding:11px 28px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
-.settings-save-btn:hover{background:var(--blue-dk);box-shadow:0 4px 12px rgba(43,92,230,.3)}
-.settings-saved{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s;margin-left:12px}
-.settings-saved.show{opacity:1}
-.settings-banner-preview{border-radius:10px;padding:16px 20px;margin-top:14px;transition:all .2s}
-.settings-banner-school{font-size:15px;font-weight:700;color:#fff}
-.settings-banner-tag{font-size:11px;color:#fff;opacity:.85;margin-top:2px}
-.danger-zone{border-color:#fca5a5;background:#fff5f5}
-.settings-danger-btn{padding:10px 20px;background:var(--red-lt);color:var(--red);border:1.5px solid #fca5a5;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
-.settings-danger-btn:hover{background:#fee2e2}
-
-/* PAGE HOME */
-#view-page-home{overflow-y:auto;padding:32px 40px;align-items:flex-start;flex-direction:column}
-.ph-breadcrumb{font-size:12px;color:var(--ink3);margin-bottom:16px;display:flex;align-items:center;gap:6px}
-.ph-title{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:6px}
-.ph-meta{font-size:12px;color:var(--ink3);margin-bottom:20px}
-.ph-status-row{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.ph-status-label{font-size:13px;font-weight:600;color:var(--ink2)}
-.status-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px;gap:2px}
-.stog-btn{padding:5px 14px;border-radius:18px;background:none;border:none;font-family:inherit;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
-.stog-btn.on.draft{background:var(--white);color:#6B7280;box-shadow:var(--shadow-sm);border:1px solid #D1D5DB}
-.stog-btn.on.published{background:var(--green-lt);color:#065F46;box-shadow:var(--shadow-sm);border:1px solid #A7F3D0}
-.ph-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;width:100%}
-.ph-action-card{background:var(--white);border:2px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;transition:all .15s;text-align:left;display:flex;flex-direction:column;gap:6px;font-family:inherit;width:100%}
-.ph-action-card:hover:not([disabled]){border-color:var(--blue);background:var(--blue-lt);transform:translateY(-1px)}
-.ph-action-card.primary-action{border-color:var(--blue);background:var(--blue-lt)}
-.ph-action-card[disabled]{opacity:.45;cursor:not-allowed}
-.ph-action-ico{font-size:22px}
-.ph-action-name{font-size:14px;font-weight:700;color:var(--ink)}
-.ph-action-desc{font-size:12px;color:var(--ink3);line-height:1.5}
-.ph-preview-section{width:100%;margin-bottom:24px}
-.ph-preview-t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:10px;display:flex;align-items:center;gap:10px}
-.ph-preview-frame{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--white);max-height:320px}
-.ph-preview-frame iframe{width:100%;height:280px;border:none;display:block;pointer-events:none}
-.ph-danger{display:flex;gap:10px;margin-top:8px}
-.danger-link{font-size:12px;color:var(--ink3);cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:none;font-family:inherit;padding:0}
-.danger-link:hover{color:var(--red)}
-
-/* WIZARD */
-#view-wizard{flex-direction:row}
-#wiz-form-panel{width:420px;min-width:380px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-#wiz-progress{flex-shrink:0;padding:12px 20px 0}
-.progress-steps{display:flex;align-items:center;margin-bottom:10px}
-.prog-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink3);flex-shrink:0;transition:all .2s;z-index:1}
-.prog-dot.done{background:var(--green);border-color:var(--green);color:#fff}
-.prog-dot.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 3px rgba(43,92,230,.15)}
-.prog-line{flex:1;height:2px;background:var(--border);margin:0 2px;transition:background .2s}
-.prog-line.done{background:var(--green)}
-.prog-label{font-size:11px;font-weight:600;color:var(--blue);margin-bottom:12px;text-align:center}
-#wiz-scroll{flex:1;overflow-y:auto;padding:12px 20px 20px}
-#wiz-scroll::-webkit-scrollbar{width:3px}
-#wiz-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-#wiz-gen-bottom{flex-shrink:0;padding:12px 20px;border-top:1px solid var(--border);background:var(--white)}
-#btn-gen-bottom{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-#btn-gen-bottom:hover{background:var(--blue-dk);box-shadow:0 4px 16px rgba(43,92,230,.3)}
-#btn-gen-bottom:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
-.gen-hint{font-size:11px;color:var(--ink3);text-align:center;margin-bottom:8px}
-.step{border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:8px;background:var(--surface);transition:all .2s}
-.step.active{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(43,92,230,.07)}
-.step.hidden{display:none}
-.step-q{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;line-height:1.3}
-.step-hint{font-size:11px;color:var(--ink3);margin-bottom:12px;line-height:1.5}
-.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.type-card{border:2px solid var(--border);border-radius:var(--r);padding:14px 12px;cursor:pointer;transition:all .15s;text-align:left;background:var(--white);font-family:inherit;width:100%}
-.type-card:hover{border-color:var(--blue);background:var(--blue-lt)}
-.type-card.selected{border-color:var(--blue);background:var(--blue-lt)}
-.type-ico{font-size:22px;margin-bottom:7px;display:block}
-.type-name{font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:2px}
-.type-desc{font-size:10px;color:var(--ink3);line-height:1.5;display:block}
-.fl{margin-bottom:8px}.fl:last-child{margin-bottom:0}
-.fl label{display:block;font-size:11px;font-weight:600;color:var(--ink2);margin-bottom:3px}
-.fl label .opt{font-weight:400;color:var(--ink3);font-size:10px}
-.fl input,.fl select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--white)}
-.fl input:focus,.fl select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.07)}
-.fl input.error{border-color:var(--red);background:var(--red-lt)}
-.ferr{font-size:11px;color:var(--red);margin-top:3px;font-weight:600;display:none}
-.ferr.show{display:block}
-.fhint{font-size:10px;color:var(--ink3);margin-top:3px;line-height:1.5}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.step-actions{display:flex;align-items:center;gap:6px;margin-top:12px}
-.btn-next{padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
-.btn-next:hover{background:var(--blue-dk)}
-.btn-back{padding:8px 12px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;color:var(--ink3);cursor:pointer}
-.btn-skip{padding:8px 10px;background:none;border:none;font-family:inherit;font-size:11px;color:var(--ink3);cursor:pointer;text-decoration:underline}
-.rich-editor-wrap{border:1.5px solid var(--border);border-radius:var(--rs);background:var(--white);transition:border-color .15s}
-.rich-editor-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.07)}
-.rich-editor-toolbar{display:flex;align-items:center;gap:3px;padding:5px 7px;border-bottom:1px solid var(--border);background:var(--surface);border-radius:var(--rs) var(--rs) 0 0;flex-wrap:wrap}
-.re-btn{padding:3px 7px;background:var(--white);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--ink2);transition:all .12s}
-.re-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
-#f-content-editor{min-height:120px;max-height:200px;overflow-y:auto;padding:8px 10px;font-family:inherit;font-size:12px;color:var(--ink);line-height:1.7;outline:none;border-radius:0 0 var(--rs) var(--rs)}
-#f-content-editor:empty:before{content:attr(data-placeholder);color:var(--ink3);pointer-events:none;font-size:12px}
-#f-content-editor p{margin:0 0 6px}#f-content-editor a{color:var(--blue)}
-.paste-notice{font-size:10px;color:#065F46;background:var(--green-lt);border:1px solid #A7F3D0;border-radius:5px;padding:4px 8px;margin-top:5px;display:none}
-.paste-notice.show{display:block}
-.img-upload-area{border:2px dashed var(--border2);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface);position:relative;overflow:hidden}
-.img-upload-area:hover{border-color:var(--blue);background:var(--blue-lt)}
-.img-upload-area.has-img{border-style:solid;border-color:var(--green);background:var(--green-lt)}
-.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.img-upload-t{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:2px}
-.img-upload-s{font-size:10px;color:var(--ink3)}
-.img-prev{position:relative;margin-top:8px;display:none}
-.img-prev.show{display:block}
-.img-prev img{width:100%;max-height:100px;object-fit:cover;border-radius:var(--rs);display:block}
-.img-prev-rm{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit}
-.tile-item,.lsec-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:5px}
-.tile-hd,.lsec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.tile-lbl,.lsec-lbl{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px}
-.xbtn{background:var(--surface);border:1px solid var(--border);border-radius:4px;width:22px;height:22px;padding:0;color:var(--ink3);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-family:inherit}
-.xbtn:hover{background:#fee2e2;color:var(--red);border-color:#fca5a5}
-.add-row-btn{display:flex;align-items:center;gap:4px;padding:6px 10px;background:none;border:1.5px dashed var(--border2);border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;width:100%;transition:all .12s}
-.add-row-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.link-list,.tile-list,.lsec-list{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
-.link-row{display:flex;gap:4px;align-items:center}
-.link-row input{flex:1;padding:7px 9px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;color:var(--ink);outline:none;background:var(--white)}
-.link-row input:focus{border-color:var(--blue)}
-.tile-logo-row{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
-.tile-thumb{width:30px;height:30px;border-radius:5px;object-fit:contain;border:1px solid var(--border);background:var(--surface);display:none;flex-shrink:0}
-.tile-thumb.show{display:block}
-.tile-upload-btn{flex:1;display:flex;align-items:center;gap:4px;padding:5px 8px;border:1.5px dashed var(--border2);border-radius:var(--rs);background:none;font-family:inherit;font-size:10px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;position:relative;overflow:hidden}
-.tile-upload-btn:hover{border-color:var(--blue);color:var(--blue)}
-.tile-upload-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.tile-upload-ok{font-size:9px;color:var(--green);margin-top:2px;display:none}
-.tile-upload-ok.show{display:block}
-#wiz-preview-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-#wiz-prev-bar{height:40px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
-.prev-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3)}
-.vtog{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:2px;gap:2px;margin-left:auto}
-.vbtn{padding:3px 10px;border-radius:6px;background:none;border:none;font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s}
-.vbtn.on{background:var(--white);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
-#wiz-prev-scroll{flex:1;overflow-y:auto;padding:16px}
-#wiz-prev-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-.prev-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:5px}
-.ptag-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-#wiz-loading{display:none;flex-direction:column;align-items:center;gap:12px;padding:40px}
-#wiz-loading.show{display:flex}
-.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.load-t{font-size:13px;font-weight:600;color:var(--ink2)}
-.load-s{font-size:11px;color:var(--ink3);text-align:center;max-width:220px;line-height:1.5}
-#wiz-err{display:none;margin:12px;padding:10px 12px;background:var(--red-lt);border:1.5px solid #fca5a5;border-radius:var(--rs);font-size:11px;color:#991B1B;line-height:1.5}
-#wiz-err.show{display:block}
-#wiz-empty{padding:48px 24px;text-align:center}
-.pe-ico{font-size:28px;opacity:.18;margin-bottom:10px}
-.pe-t{font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:5px}
-.pe-s{font-size:12px;color:var(--ink3);line-height:1.7;max-width:220px;margin:0 auto}
-#wiz-iframe-wrap{display:none}
-#wiz-iframe{width:100%;border:none;display:block}
-#wiz-codeview{display:none;background:#0D1117;padding:14px;overflow-y:auto}
-#wiz-codeview pre{font-family:'Courier New',monospace;font-size:10px;color:#8B949E;white-space:pre-wrap;word-break:break-all;line-height:1.6}
-#wiz-paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:10px 16px;flex-shrink:0;align-items:center;gap:8px}
-#wiz-paste-guide.show{display:flex}
-.pg-t{font-size:11px;color:#065F46;line-height:1.5;flex:1}
-.pg-code{background:rgba(0,0,0,.07);border-radius:3px;padding:1px 4px;font-family:monospace;font-size:10px}
-#view-editor{flex-direction:column}
-#editor-toolbar{padding:6px 16px;border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.tb-btn{padding:5px 9px;background:var(--white);border:1px solid var(--border);border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;color:var(--ink2);transition:all .12s}
-.tb-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
-.tb-divider{width:1px;height:16px;background:var(--border);margin:0 4px}
-#save-flash{font-size:11px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s;margin-left:auto}
-#save-flash.show{opacity:1}
-#editor-scroll{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
-#editor-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-#wysiwyg-editor{outline:none;min-height:400px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;padding:20px}
-#editor-paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:10px 16px;flex-shrink:0;align-items:center;gap:8px}
-#editor-paste-guide.show{display:flex}
-#view-locked{align-items:center;justify-content:center}
-.locked-card{background:var(--white);border:1.5px solid var(--amber);border-radius:var(--r);padding:36px 40px;text-align:center;max-width:420px;box-shadow:var(--shadow)}
-.locked-ico{font-size:36px;margin-bottom:14px}
-.locked-t{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.locked-s{font-size:13px;color:var(--ink3);line-height:1.7;margin-bottom:20px}
-.locked-btns{display:flex;gap:10px;justify-content:center}
-.locked-back{padding:10px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
-.locked-force{padding:10px 20px;background:var(--amber-lt);border:1.5px solid var(--amber);border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;color:var(--amber);cursor:pointer}
-.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1000;align-items:center;justify-content:center}
-.modal-backdrop.show{display:flex}
-.modal{background:var(--white);border-radius:var(--r);padding:28px 32px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.modal h3{font-size:17px;font-weight:700;margin-bottom:6px}
-.modal p{font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end}
-.modal input{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;margin-bottom:16px}
-.modal input:focus{border-color:var(--blue)}
-.btn-modal-confirm{padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-.btn-modal-confirm.danger{background:var(--red)}
-.btn-modal-cancel{padding:9px 16px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink3);cursor:pointer}
-</style>
-</head>
-<body>
-
-<!-- ═══════════════════════════════════════
-     ONBOARDING OVERLAY
-═══════════════════════════════════════ -->
-<div id="onboarding">
-<div class="ob-wrap">
-
-  <!-- Progress dots -->
-  <div class="ob-progress" id="ob-progress"></div>
-
-  <!-- Screen 1: Welcome -->
-  <div class="ob-card active" id="ob-screen-1">
-    <div class="ob-logo-top">
-      <span class="logo-text">Digital<em>schools</em> Pages</span>
-      <span class="proto-badge">Prototype</span>
-      <span class="version-badge">v7</span>
-    </div>
-    <div class="ob-h">Welcome &#128075; Let&#8217;s set up your school</div>
-    <div class="ob-sub">This takes about 5 minutes. Everything you set here can be changed later in Settings.</div>
-    <div class="ob-field">
-      <label>School name</label>
-      <input type="text" id="ob-school-name" placeholder="e.g. Western Cape College" oninput="clearObErr('ob-err-name','ob-school-name')">
-      <div class="ob-ferr" id="ob-err-name">&#9888; Please enter your school name.</div>
-    </div>
-    <div class="ob-actions">
-      <button class="ob-btn-next" onclick="obNext(1)">Continue &#8594;</button>
-    </div>
-  </div>
-
-  <!-- Screen 2: Brand Colours -->
-  <div class="ob-card" id="ob-screen-2">
-    <div class="ob-h">&#127912; Your school&#8217;s colours</div>
-    <div class="ob-sub">These are applied to every page you build. You can tweak them in Settings any time.</div>
-    <div class="ob-colors">
-      <div class="ob-color-card">
-        <div class="ob-color-label">Main colour</div>
-        <div class="ob-color-row">
-          <div class="ob-color-swatch" id="ob-swatch-pri" style="background:#1a3a6b">
-            <input type="color" id="ob-c-pri" value="#1a3a6b" oninput="onObColor('pri')">
-          </div>
-          <input type="text" class="ob-color-hex" id="ob-hex-pri" value="#1a3a6b" oninput="onObHex('pri')" maxlength="7" placeholder="#000000">
-        </div>
-        <div class="ob-color-hint">Usually the dominant colour on your school letterhead</div>
-      </div>
-      <div class="ob-color-card">
-        <div class="ob-color-label">Accent colour</div>
-        <div class="ob-color-row">
-          <div class="ob-color-swatch" id="ob-swatch-sec" style="background:#f07f24">
-            <input type="color" id="ob-c-sec" value="#f07f24" oninput="onObColor('sec')">
-          </div>
-          <input type="text" class="ob-color-hex" id="ob-hex-sec" value="#f07f24" oninput="onObHex('sec')" maxlength="7" placeholder="#000000">
-        </div>
-        <div class="ob-color-hint">Used for buttons, highlights and tile borders</div>
-      </div>
-    </div>
-    <!-- Live banner preview -->
-    <div class="ob-banner-preview" id="ob-banner-preview" style="background:#1a3a6b">
-      <div class="ob-banner-preview-school" id="ob-banner-school-name">Western Cape College</div>
-      <div class="ob-banner-preview-tag">About Us &mdash; how your pages will look</div>
-    </div>
-    <div class="ob-actions">
-      <button class="ob-btn-back" onclick="obBack(2)">&#8592; Back</button>
-      <button class="ob-btn-next" onclick="obNext(2)">Continue &#8594;</button>
-    </div>
-  </div>
-
-  <!-- Screen 3: Template -->
-  <div class="ob-card" id="ob-screen-3">
-    <div class="ob-h">&#128218; Choose a template</div>
-    <div class="ob-sub">This controls how your pages are laid out in SharePoint. Your colours are always applied. You can change this later.</div>
-    <div class="ob-tpl-grid" id="ob-tpl-grid"></div>
-    <div class="ob-ferr" id="ob-err-tpl" style="margin-top:8px">&#9888; Please choose a template to continue.</div>
-    <div class="ob-actions">
-      <button class="ob-btn-back" onclick="obBack(3)">&#8592; Back</button>
-      <button class="ob-btn-next" onclick="obNext(3)">Continue &#8594;</button>
-    </div>
-  </div>
-
-  <!-- Screen 4: Page Tree -->
-  <div class="ob-card" id="ob-screen-4">
-    <div class="ob-h">&#128196; Set up your pages</div>
-    <div class="ob-sub">We&#8217;ve pre-filled a standard Queensland school structure. Remove what you don&#8217;t need and add anything that&#8217;s missing.</div>
-    <div class="ob-tree-note">&#128161; You can always add, remove or rename pages and sections later from the sidebar.</div>
-    <div class="ob-sections" id="ob-sections"></div>
-    <button class="ob-add-section-btn" onclick="obAddSection()">+ Add a section</button>
-    <div class="ob-actions" style="margin-top:20px">
-      <button class="ob-btn-back" onclick="obBack(4)">&#8592; Back</button>
-      <button class="ob-btn-next" onclick="obNext(4)">Continue &#8594;</button>
-    </div>
-  </div>
-
-  <!-- Screen 5: Summary -->
-  <div class="ob-card" id="ob-screen-5">
-    <div class="ob-h">&#9989; You&#8217;re all set!</div>
-    <div class="ob-sub">Here&#8217;s a summary of your setup. Everything looks good — let&#8217;s start building.</div>
-    <div class="ob-summary" id="ob-summary"></div>
-    <div class="ob-actions">
-      <button class="ob-btn-back" onclick="obBack(5)">&#8592; Back</button>
-      <button class="ob-btn-next" onclick="finishOnboarding()" style="background:var(--green)">Take me to my dashboard &#8594;</button>
-    </div>
-  </div>
-
-</div>
-</div>
-
-<!-- TEMPLATE LIGHTBOX -->
-<div id="tpl-lightbox" onclick="closeTplLightbox(event)">
-  <div class="tpl-lb-card" onclick="event.stopPropagation()">
-    <div class="tpl-lb-header">
-      <div style="flex:1">
-        <div class="tpl-lb-title" id="tpl-lb-title">Classic</div>
-        <div class="tpl-lb-desc" id="tpl-lb-desc"></div>
-      </div>
-      <div class="tpl-lb-nav">
-        <button class="tpl-lb-arrow" onclick="lbNav(-1)" title="Previous">&#8592;</button>
-        <button class="tpl-lb-arrow" onclick="lbNav(1)" title="Next">&#8594;</button>
-      </div>
-      <button class="tpl-lb-close" onclick="closeTplLightbox()">&#10005;</button>
-    </div>
-    <div class="tpl-lb-preview">
-      <iframe id="tpl-lb-iframe" sandbox="allow-same-origin" scrolling="yes" style="width:100%;min-height:480px;border:1px solid var(--border);border-radius:var(--r);display:block;background:#fff"></iframe>
-    </div>
-    <div class="tpl-lb-footer">
-      <span class="tpl-lb-footer-note">Your school colours are always applied &mdash; regardless of template.</span>
-      <button class="tpl-lb-select" id="tpl-lb-select-btn" onclick="selectFromLightbox()">Select this template</button>
-    </div>
-  </div>
-</div>
-<div id="app-shell">
-
-<!-- TOPBAR -->
-<div id="topbar">
-  <div class="tb-logo-zone">
-    <span class="logo-text">Digital<em>schools</em> Pages</span>
-    <span class="proto-badge">Prototype</span>
-    <span class="version-badge">v7</span>
-  </div>
-  <div class="tb-breadcrumb" id="tb-breadcrumb"></div>
-  <div class="tb-right">
-    <span id="tb-status"></span>
-    <span id="save-flash">&#10003; Saved</span>
-    <button id="btn-copy-sp" onclick="copyToSharePoint()">&#10003; Copy to SharePoint</button>
-    <button id="btn-save-exit" onclick="saveAndExit()">&#8592; Save &amp; Exit</button>
-    <button id="btn-gen-top" onclick="generate()">&#10024; Build this page</button>
-  </div>
-</div>
-
-<div id="layout">
-
-  <!-- SIDEBAR -->
-  <div id="sidebar">
-    <!-- Collapse toggle -->
-    <div class="sidebar-toggle">
-      <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar">&#8676;</button>
-    </div>
-
-    <div class="sidebar-school">
-      <div class="school-dot" id="sidebar-color-dot"></div>
-      <span class="sidebar-school-name" id="sidebar-school-name"></span>
-    </div>
-    <div class="sidebar-template-row">
-      <span class="sidebar-template-label">Template</span>
-      <span id="sidebar-template-name">Classic</span>
-    </div>
-    <div class="sidebar-nav-item" id="nav-templates" onclick="openTemplates()">
-      <span class="nav-ico">&#127912;</span><span class="sidebar-nav-label">Templates</span>
-    </div>
-    <div class="sidebar-nav-item" id="nav-settings" onclick="openSettings()">
-      <span class="nav-ico">&#9881;</span><span class="sidebar-nav-label">Settings</span>
-    </div>
-    <div id="sidebar-scroll">
-      <div id="tree-container"></div>
-      <div class="add-section-wrap">
-        <button class="add-section-btn" onclick="showAddSection()">+ Add section</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MAIN -->
-  <div id="main">
-
-    <!-- DASHBOARD -->
-    <div class="app-view active" id="view-dashboard">
-      <div class="dash-welcome" id="dash-welcome">Good morning &#128075;</div>
-      <div class="dash-sub">Welcome to Digitalschools Pages &mdash; <span id="dash-school"></span></div>
-      <div class="dash-stats" id="dash-stats"></div>
-      <div class="dash-section">
-        <div class="dash-section-t">Recently edited</div>
-        <div id="dash-recent"></div>
-      </div>
-    </div>
-
-    <!-- TEMPLATES -->
-    <div class="app-view" id="view-templates">
-      <div class="tpl-header">
-        <h2>&#127912; Templates</h2>
-        <p>Choose how your pages look in SharePoint. Your school colours are always applied. Changing template affects new builds only — existing pages keep their look until you rebuild them.</p>
-      </div>
-      <div id="tpl-rebuild-warn">
-        <span style="font-size:18px;flex-shrink:0">&#9888;</span>
-        <span>Template changed. Existing pages will update next time you rebuild them using the wizard.</span>
-      </div>
-      <div class="tpl-grid" id="tpl-grid"></div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div class="app-view" id="view-settings">
-      <div class="settings-header">
-        <h2>&#9881; Settings</h2>
-        <p>Update your school details, colours and logo. Changes apply to new page builds immediately.</p>
-      </div>
-
-      <!-- School details -->
-      <div class="settings-section">
-        <div class="settings-section-t">School details</div>
-        <div class="settings-field">
-          <label>School name</label>
-          <input type="text" id="set-school-name" oninput="onSettingsPreview()">
-        </div>
-        <div class="settings-field">
-          <label>Logo URL</label>
-          <input type="url" id="set-logo-url" placeholder="https://yourschool.edu.au/logo.png" oninput="onSettingsLogoPreview()">
-          <div class="settings-fhint">Paste the direct link to your school logo image.</div>
-          <div class="settings-logo-preview" id="set-logo-preview">
-            <img id="set-logo-img" src="" alt="School logo">
-            <span style="font-size:12px;font-weight:600;color:var(--green)">&#10003; Logo loaded</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Brand colours -->
-      <div class="settings-section">
-        <div class="settings-section-t">Brand colours</div>
-        <div class="settings-colors">
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:7px">Main colour</div>
-            <div class="settings-color-row">
-              <div class="settings-swatch" id="set-swatch-pri">
-                <input type="color" id="set-c-pri" oninput="onSettingsColor('pri')">
-              </div>
-              <input type="text" class="settings-hex" id="set-hex-pri" maxlength="7" oninput="onSettingsHex('pri')">
-            </div>
-          </div>
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:7px">Accent colour</div>
-            <div class="settings-color-row">
-              <div class="settings-swatch" id="set-swatch-sec">
-                <input type="color" id="set-c-sec" oninput="onSettingsColor('sec')">
-              </div>
-              <input type="text" class="settings-hex" id="set-hex-sec" maxlength="7" oninput="onSettingsHex('sec')">
-            </div>
-          </div>
-        </div>
-        <div class="settings-banner-preview" id="set-banner-preview">
-          <div class="settings-banner-school" id="set-banner-name"></div>
-          <div class="settings-banner-tag">Live preview</div>
-        </div>
-      </div>
-
-      <!-- Save -->
-      <div style="display:flex;align-items:center">
-        <button class="settings-save-btn" onclick="saveSettings()">Save changes</button>
-        <span class="settings-saved" id="settings-saved">&#10003; Saved</span>
-      </div>
-
-      <!-- Danger zone -->
-      <div class="settings-section danger-zone" style="margin-top:28px">
-        <div class="settings-section-t" style="color:var(--red)">Reset onboarding</div>
-        <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6">Clears all school settings and page data. Use this to start fresh or to demo onboarding again. This cannot be undone.</p>
-        <button class="settings-danger-btn" onclick="confirmReset()">&#9888; Reset everything &amp; restart onboarding</button>
-      </div>
-    </div>
-
-    <!-- PAGE HOME -->
-    <div class="app-view" id="view-page-home">
-      <div class="ph-breadcrumb" id="ph-breadcrumb"></div>
-      <div class="ph-title" id="ph-title"></div>
-      <div class="ph-meta" id="ph-meta"></div>
-      <div class="ph-status-row">
-        <span class="ph-status-label">Status</span>
-        <div class="status-toggle">
-          <button class="stog-btn" id="stog-draft" onclick="setPageStatus('draft')">Draft</button>
-          <button class="stog-btn" id="stog-published" onclick="setPageStatus('published')">Published</button>
-        </div>
-      </div>
-      <div class="ph-actions" id="ph-actions"></div>
-      <div class="ph-preview-section" id="ph-preview-section" style="display:none">
-        <div class="ph-preview-t"><span>Current page</span><span id="ph-preview-status-pill"></span></div>
-        <div class="ph-preview-frame"><iframe id="ph-preview-iframe" scrolling="no"></iframe></div>
-      </div>
-      <div class="ph-danger">
-        <button class="danger-link" onclick="renamePage()">Rename page</button>
-        <span style="color:var(--border2)">&#8231;</span>
-        <button class="danger-link" onclick="deletePage()">Delete page</button>
-      </div>
-    </div>
-
-    <!-- WIZARD -->
-    <div class="app-view" id="view-wizard">
-      <div id="wiz-form-panel">
-        <div id="wiz-progress">
-          <div class="progress-steps" id="prog-steps"></div>
-          <div class="prog-label" id="prog-label"></div>
-        </div>
-        <div id="wiz-scroll">
-          <div class="step active" id="step-type">
-            <div class="step-q">What kind of page is this?</div>
-            <div class="step-hint">This shapes the questions we ask next.</div>
-            <div class="type-grid">
-              <button class="type-card" onclick="selectType('main',this)"><span class="type-ico">&#128196;</span><span class="type-name">Main page</span><span class="type-desc">Intro with clickable tiles to sub-pages</span></button>
-              <button class="type-card" onclick="selectType('sub',this)"><span class="type-ico">&#128209;</span><span class="type-name">Content page</span><span class="type-desc">Full text, sections and links</span></button>
-            </div>
-          </div>
-          <div class="step hidden" id="step-title">
-            <div class="step-q">What&#8217;s this page called?</div>
-            <div class="step-hint">The heading shown at the top of the page.</div>
-            <div class="fl"><label>Page title</label><input type="text" id="f-title" placeholder="e.g. Resource Centre..." oninput="clearErr('title-err','f-title')"><div class="ferr" id="title-err">&#9888; Please add a title.</div></div>
-            <div class="fl"><label>Tagline <span class="opt">(optional)</span></label><input type="text" id="f-sub" placeholder="e.g. Learning beyond the classroom"></div>
-            <div class="fl"><label>Banner colour</label><select id="f-banner-color"><option value="pri">Main school colour</option><option value="sec">Accent colour</option></select></div>
-            <div class="frow">
-              <div class="fl"><label>Who is this for?</label><select id="f-audience"><option value="all">Everyone</option><option value="students">Students</option><option value="parents">Parents &amp; families</option><option value="staff">Staff</option></select></div>
-              <div class="fl"><label>School level</label><select id="f-level"><option value="all">All ages</option><option value="primary">Primary</option><option value="secondary">Secondary</option></select></div>
-            </div>
-            <div class="step-actions"><button class="btn-back" onclick="goBack('title')">&#8592;</button><button class="btn-next" onclick="nextStep('title')">Continue &#8594;</button></div>
-          </div>
-          <div class="step hidden" id="step-photo">
-            <div class="step-q">Add a photo <span style="font-size:12px;font-weight:400;color:var(--ink3)">(optional)</span></div>
-            <div class="step-hint">A full-width photo below the heading looks great.</div>
-            <div class="img-upload-area" id="hero-upload-area"><input type="file" accept="image/*" onchange="handleHeroUpload(this)"><div class="img-upload-t">&#128247; Click to choose a photo</div><div class="img-upload-s">JPG, PNG or WEBP</div></div>
-            <div class="img-prev" id="hero-prev"><img id="hero-prev-img" src="" alt=""><button class="img-prev-rm" onclick="removeHero()">&#10005;</button></div>
-            <div class="fl" style="margin-top:8px"><label>Describe this photo <span class="opt">(for accessibility)</span></label><input type="text" id="f-hero-alt" placeholder="e.g. Students studying in the library"></div>
-            <div class="step-actions"><button class="btn-back" onclick="goBack('photo')">&#8592;</button><button class="btn-next" onclick="nextStep('photo')">Continue &#8594;</button><button class="btn-skip" onclick="skipStep('photo')">Skip</button></div>
-          </div>
-          <div class="step hidden" id="step-content">
-            <div class="step-q" id="content-q">Paste your content</div>
-            <div class="step-hint" id="content-hint">Paste from Google Docs or Word &mdash; <strong>formatting and links are preserved</strong>.</div>
-            <div class="fl">
-              <div class="rich-editor-wrap"><div class="rich-editor-toolbar"><button class="re-btn" onclick="reCmd('bold')"><strong>B</strong></button><button class="re-btn" onclick="reCmd('italic')"><em>I</em></button><button class="re-btn" onclick="reCmd('underline')"><u>U</u></button><button class="re-btn" onclick="reCmd('insertUnorderedList')">&#8226; List</button><button class="re-btn" onclick="reCmd('removeFormat')">Clear</button></div>
-              <div id="f-content-editor" contenteditable="true" data-placeholder="Paste your content here..." onpaste="handleRichPaste(event)"></div></div>
-              <div class="paste-notice" id="paste-notice">&#10003; Formatting and links preserved</div>
-            </div>
-            <div class="step-actions"><button class="btn-back" onclick="goBack('content')">&#8592;</button><button class="btn-next" onclick="nextStep('content')">Continue &#8594;</button><button class="btn-skip" onclick="skipStep('content')">Skip</button></div>
-          </div>
-          <div class="step hidden" id="step-links">
-            <div class="step-q">Add links <span style="font-size:12px;font-weight:400;color:var(--ink3)">(optional)</span></div>
-            <div class="step-hint">Group links under a heading.</div>
-            <div class="lsec-list" id="lsec-list"></div>
-            <button class="add-row-btn" onclick="addLinkSection()">+ Add a group of links</button>
-            <div class="step-actions" style="margin-top:12px"><button class="btn-back" onclick="goBack('links')">&#8592;</button><button class="btn-next" onclick="nextStep('links')">All done &#8594;</button><button class="btn-skip" onclick="skipStep('links')">Skip</button></div>
-          </div>
-          <div class="step hidden" id="step-tiles">
-            <div class="step-q">Add your clickable tiles</div>
-            <div class="step-hint">Each tile links to a sub-page or website.</div>
-            <div class="fl"><label>Heading above tiles <span class="opt">(optional)</span></label><input type="text" id="f-tiles-heading" placeholder="e.g. Click a tile to explore"></div>
-            <div class="tile-list" id="tile-list"></div>
-            <button class="add-row-btn" onclick="addTile()">+ Add a tile</button>
-            <div class="step-actions" style="margin-top:12px"><button class="btn-back" onclick="goBack('tiles')">&#8592;</button><button class="btn-next" onclick="nextStep('tiles')">All done &#8594;</button></div>
-          </div>
-          <div class="step hidden" id="step-done" style="border-color:var(--green);background:var(--green-lt)">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:20px">&#9989;</span><span style="font-size:14px;font-weight:700;color:#065F46">All set!</span></div>
-            <div style="font-size:12px;color:#047857;line-height:1.6">Click <strong>&#8220;Build this page&#8221;</strong> to generate.</div>
-          </div>
-        </div>
-        <div id="wiz-gen-bottom">
-          <div class="gen-hint" id="gen-hint">Fill in the details above, then build your page.</div>
-          <button id="btn-gen-bottom" onclick="generate()">&#10024; Build this page</button>
-        </div>
-      </div>
-      <div id="wiz-preview-panel">
-        <div id="wiz-prev-bar"><span class="prev-lbl">Preview</span><div class="vtog"><button class="vbtn on" id="vbtn-preview" onclick="setWizView('preview')">Preview</button><button class="vbtn" id="vbtn-code" onclick="setWizView('code')">HTML</button></div></div>
-        <div id="wiz-prev-scroll"><div id="wiz-prev-card">
-          <div class="prev-tag"><span class="ptag-dot"></span>SharePoint preview</div>
-          <div id="wiz-loading"><div class="spinner"></div><div class="load-t">Building your page&hellip;</div><div class="load-s">This takes about 15 seconds.</div></div>
-          <div id="wiz-err"></div>
-          <div id="wiz-empty"><div class="pe-ico">&#10024;</div><div class="pe-t">Preview will appear here</div><div class="pe-s">Complete the steps on the left, then click <strong>Build this page</strong>.</div></div>
-          <div id="wiz-iframe-wrap"><iframe id="wiz-iframe" sandbox="allow-same-origin" scrolling="no"></iframe></div>
-          <div id="wiz-codeview"><pre id="wiz-code-out"></pre></div>
-        </div></div>
-        <div id="wiz-paste-guide"><span>&#9989;</span><span class="pg-t"><strong>Page built!</strong> Click <strong>&#8220;Copy to SharePoint&#8221;</strong> above, then in SharePoint: Edit page &#8594; <strong>+ Add a web part</strong> &#8594; search <span class="pg-code">Embed</span> &#8594; paste &#8594; Republish.</span></div>
-      </div>
-    </div>
-
-    <!-- EDITOR -->
-    <div class="app-view" id="view-editor">
-      <div id="editor-toolbar">
-        <button class="tb-btn" onclick="efmt('bold')"><strong>B</strong></button>
-        <button class="tb-btn" onclick="efmt('italic')"><em>I</em></button>
-        <button class="tb-btn" onclick="efmt('underline')"><u>U</u></button>
-        <div class="tb-divider"></div>
-        <button class="tb-btn" onclick="efmt('insertUnorderedList')">&#8226; List</button>
-        <button class="tb-btn" onclick="efmt('removeFormat')">Clear</button>
-        <div class="tb-divider"></div>
-        <button class="tb-btn" onclick="efmtSize('larger')">A+</button>
-        <button class="tb-btn" onclick="efmtSize('smaller')">A-</button>
-        <span style="font-size:11px;color:var(--ink3);margin-left:8px">Click any text to edit &mdash; saves automatically</span>
-      </div>
-      <div id="editor-scroll"><div id="editor-card"><div id="wysiwyg-editor" contenteditable="true" oninput="onEditorChange()"></div></div></div>
-      <div id="editor-paste-guide"><span>&#9989;</span><span class="pg-t"><strong>Ready to publish!</strong> Click <strong>&#8220;Copy to SharePoint&#8221;</strong> above.</span></div>
-    </div>
-
-    <!-- LOCKED -->
-    <div class="app-view" id="view-locked">
-      <div class="locked-card">
-        <div class="locked-ico">&#128274;</div>
-        <div class="locked-t">This page is being edited</div>
-        <div class="locked-s">Another window or tab is currently editing this page. Close that window first, or take over if it was closed by mistake.</div>
-        <div class="locked-btns"><button class="locked-back" onclick="showDashboard()">Go back</button><button class="locked-force" onclick="forceLock()">Take over</button></div>
-      </div>
-    </div>
-
-  </div><!-- end #main -->
-</div><!-- end #layout -->
-</div><!-- end #app-shell -->
-
-<!-- MODALS -->
-<div class="modal-backdrop" id="modal-add-section"><div class="modal"><h3>Add a new section</h3><p>This will appear in the sidebar as a new group of pages.</p><input type="text" id="new-section-name" placeholder="e.g. International Programs" maxlength="60"><div class="modal-actions"><button class="btn-modal-cancel" onclick="closeModal('modal-add-section')">Cancel</button><button class="btn-modal-confirm" onclick="confirmAddSection()">Add section</button></div></div></div>
-<div class="modal-backdrop" id="modal-add-page"><div class="modal"><h3>Add a new page</h3><p>Add a page to <strong id="modal-section-label"></strong>.</p><input type="text" id="new-page-name" placeholder="e.g. Chess Club" maxlength="80"><div class="modal-actions"><button class="btn-modal-cancel" onclick="closeModal('modal-add-page')">Cancel</button><button class="btn-modal-confirm" onclick="confirmAddPage()">Add page</button></div></div></div>
-<div class="modal-backdrop" id="modal-rename"><div class="modal"><h3>Rename this page</h3><p>This only changes the name inside Digitalschools Pages.</p><input type="text" id="rename-input" maxlength="80"><div class="modal-actions"><button class="btn-modal-cancel" onclick="closeModal('modal-rename')">Cancel</button><button class="btn-modal-confirm" onclick="confirmRename()">Save name</button></div></div></div>
-<div class="modal-backdrop" id="modal-delete"><div class="modal"><h3>Delete this page?</h3><p>Permanently removes <strong id="delete-page-label"></strong>. Cannot be undone.</p><div class="modal-actions"><button class="btn-modal-cancel" onclick="closeModal('modal-delete')">Keep page</button><button class="btn-modal-confirm danger" onclick="confirmDelete()">Yes, delete it</button></div></div></div>
-
-<script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────────
-var WORKER_URL        = "https://schoolpage-api.webmaster-349.workers.dev";
-var CLOUDINARY_CLOUD  = "dewljixlc";
-var CLOUDINARY_PRESET = "pvsbmdmd";
-var APP_VERSION       = "v7";
-
-// ── TEMPLATES ───────────────────────────────────────────────────────────────────
-var TEMPLATES = {
-  classic:{id:'classic',name:'Classic',desc:'Clean and professional. Familiar to parents and staff. Single column, neat tile grid, clear headings.',tags:['All schools','Primary','Secondary'],
-    buildStyle:function(p,s){return 'TEMPLATE: Classic\n- Banner: border-radius:8px; solid background.\n- Headings: border-bottom:2px solid '+p+'; font-size:18px.\n- Tiles: border:2px solid '+p+'; white bg; hover: bg:'+p+' color:#fff.\n- Callout: border-left:4px solid '+s+'; background:#f8f9fa; border-radius:0 6px 6px 0.\n- Links: color:'+p+'; underline on hover.\n';}},
-  modern:{id:'modern',name:'Modern',desc:'Spacious and contemporary. Soft shadows, rounded tiles, smooth hover animations.',tags:['Secondary','All schools'],
-    buildStyle:function(p,s){return 'TEMPLATE: Modern\n- Banner: border-radius:16px; gradient: linear-gradient(135deg,'+p+','+s+'33).\n- Headings: font-size:20px; no border; letter-spacing:-0.3px; color:'+p+'.\n- Tiles: border-radius:16px; box-shadow:0 2px 8px rgba(0,0,0,.08); hover: box-shadow:0 8px 24px rgba(0,0,0,.12); transform:translateY(-3px); border-top:3px solid '+s+'.\n- Callout: background:linear-gradient(135deg,'+p+'11,'+s+'11); border-left:4px solid '+p+'; border-radius:0 12px 12px 0.\n';}},
-  warm:{id:'warm',name:'Warm',desc:'Friendly and approachable. Rounder corners, card-style tiles. Great for primary schools.',tags:['Primary','Community'],
-    buildStyle:function(p,s){return 'TEMPLATE: Warm\n- Banner: border-radius:20px; solid '+p+'.\n- Headings: font-size:18px; color:'+p+'; dot prefix ● in '+s+'.\n- Tiles: border-radius:20px; border:2px solid '+s+'44; hover: border-color:'+s+'; transform:scale(1.02).\n- Callout: background:'+s+'22; border:1.5px solid '+s+'; border-radius:12px; no harsh left-border.\n';}}
+    return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: cors() });
+  }
 };
 
-// ── DEFAULT TREE ─────────────────────────────────────────────────────────────────
-var DEFAULT_SECTIONS = [
-  {id:'s_ourschool',  label:'Our School',   pages:[{id:'p_aboutus',label:'About Us'},{id:'p_principal',label:"Principal's Message"},{id:'p_staff',label:'Staff Directory'},{id:'p_policies',label:'School Policies'},{id:'p_annualreport',label:'Annual Report'}]},
-  {id:'s_learning',   label:'Learning',     pages:[{id:'p_curriculum',label:'Curriculum'},{id:'p_assessment',label:'Assessment and Reporting'},{id:'p_resource',label:'Resource Centre'},{id:'p_gifted',label:'Gifted Education'},{id:'p_subjects',label:'Subject Selection'}]},
-  {id:'s_studentlife',label:'Student Life', pages:[{id:'p_sport',label:'Sport'},{id:'p_clubs',label:'Clubs and Activities'},{id:'p_leadership',label:'Student Leadership'},{id:'p_camps',label:'Camps and Excursions'}]},
-  {id:'s_support',    label:'Support',      pages:[{id:'p_guidance',label:'Guidance and Counselling'},{id:'p_learnsupport',label:'Learning Support'},{id:'p_health',label:'Health and Wellbeing'},{id:'p_chaplaincy',label:'Chaplaincy'}]},
-  {id:'s_community',  label:'Community',    pages:[{id:'p_pandc',label:'Parents and Citizens (P&C)'},{id:'p_volunteers',label:'Volunteers'},{id:'p_newsletters',label:'Newsletters'},{id:'p_enrolment',label:'Enrolment'}]},
-  {id:'s_facilities', label:'Facilities',   pages:[{id:'p_timetables',label:'Timetables'},{id:'p_roombooking',label:'Room Bookings'},{id:'p_canteen',label:'Canteen'}]},
-];
+// ── ANTHROPIC PROXY ──
+async function handleAnthropic(request) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
 
-// ── ONBOARDING STATE ─────────────────────────────────────────────────────────────
-var obScreen = 1;
-var obTotalScreens = 5;
-var obData = {
-  schoolName: '', logoUrl: '', primaryColor: '#1a3a6b', accentColor: '#f07f24',
-  templateId: '', sections: []
-};
-var obLogoTimer = null;
-
-// ── SESSION / LOCK ───────────────────────────────────────────────────────────────
-var SESSION_ID='sess_'+Math.random().toString(36).substr(2,9);
-var lockTimer=null,LOCK_TTL=90000;
-function acquireLock(pid){var e=getLock(pid);if(e&&e.sessionId!==SESSION_ID&&Date.now()-e.timestamp<LOCK_TTL)return false;localStorage.setItem('dsp_lock_'+pid,JSON.stringify({sessionId:SESSION_ID,timestamp:Date.now()}));return true;}
-function refreshLock(pid){localStorage.setItem('dsp_lock_'+pid,JSON.stringify({sessionId:SESSION_ID,timestamp:Date.now()}));}
-function releaseLock(pid){var l=getLock(pid);if(l&&l.sessionId===SESSION_ID)localStorage.removeItem('dsp_lock_'+pid);}
-function getLock(pid){try{return JSON.parse(localStorage.getItem('dsp_lock_'+pid));}catch(e){return null;}}
-function startLockHeartbeat(pid){stopLockHeartbeat();lockTimer=setInterval(function(){refreshLock(pid);},30000);}
-function stopLockHeartbeat(){if(lockTimer){clearInterval(lockTimer);lockTimer=null;}}
-
-// ── DB ────────────────────────────────────────────────────────────────────────────
-var db={};
-function saveDB(){try{localStorage.setItem('dsp_db_v7',JSON.stringify(db));}catch(e){}}
-function loadDB(){
-  try{
-    var s=localStorage.getItem('dsp_db_v7');
-    // Migrate from v4
-    if(!s){var v4=localStorage.getItem('dsp_db_v4');if(v4){db=JSON.parse(v4);db.version='v5';saveDB();return;}}
-    if(s){db=JSON.parse(s);return;}
-  }catch(e){}
-  db=null; // null = needs onboarding
-}
-
-// ── APP STATE ────────────────────────────────────────────────────────────────────
-var currentView='dashboard',currentPageId=null,pendingSectionId=null;
-var genHTML='',hasEdits=false;
-var wizardPageType='',wizardHeroUrl='',wizardTiles=[],wizardLinkSections=[],wizardSkipped={};
-var ic=0,wizardView='preview',saveFlashTimer=null;
-var prevTemplateId=null,settingsSaveTimer=null;
-
-// ── INIT ──────────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',function(){
-  loadDB();
-  if(!db || !db.onboarded){
-    // Show onboarding
-    startOnboarding();
-  } else {
-    bootApp();
-  }
-  window.addEventListener('beforeunload',function(){if(currentPageId)releaseLock(currentPageId);});
-});
-
-function startOnboarding(){
-  // Deep copy default sections for editing
-  obData.sections = DEFAULT_SECTIONS.map(function(s){
-    return {id:s.id,label:s.label,expanded:true,pages:s.pages.map(function(p){return {id:p.id,label:p.label};})};
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify(body),
   });
-  g('onboarding').classList.add('show');
-  renderObProgress();
-  renderObTemplates();
-  renderObSections();
+
+  const data = await res.json();
+  return json(data, res.status);
 }
 
-function bootApp(){
-  g('onboarding').classList.remove('show');
-  g('app-shell').classList.add('show');
-  applySidebarBranding();
-  renderSidebar();
-  showDashboard();
-  // Populate settings form
-  populateSettings();
-}
+// ── SCRAPE HOMEPAGE: get nav structure ──
+async function handleScrape(request) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────────
-function g(id){return document.getElementById(id);}
-function gv(id){return g(id)?g(id).value:'';}
-function newId(){return 'id_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);}
-function timeAgo(ts){if(!ts)return 'Not yet built';var d=Date.now()-ts;if(d<60000)return 'Just now';if(d<3600000)return Math.floor(d/60000)+'m ago';if(d<86400000)return Math.floor(d/3600000)+'h ago';return Math.floor(d/86400000)+'d ago';}
-function statusPillHTML(s){return s==='published'?'<span class="status-pill published">&#10003; Published</span>':'<span class="status-pill draft">Draft</span>';}
-function clearErr(e,i){var el=g(e);if(el)el.classList.remove('show');var inp=g(i);if(inp)inp.classList.remove('error');}
-function clearObErr(e,i){var el=g(e);if(el)el.classList.remove('show');var inp=g(i);if(inp)inp.classList.remove('error');}
-function escHTML(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function escAttr(s){return s.replace(/"/g,'&quot;');}
+  const siteUrl = body.url;
+  if (!siteUrl) return json({ error: "No URL provided" }, 400);
 
-// ── ONBOARDING: PROGRESS ─────────────────────────────────────────────────────────
-function renderObProgress(){
-  var el=g('ob-progress');el.innerHTML='';
-  var labels=['School','Colours','Template','Pages','Done'];
-  labels.forEach(function(l,i){
-    var n=i+1;
-    var dot=document.createElement('div');
-    dot.className='ob-step-dot'+(n<obScreen?' done':n===obScreen?' active':'');
-    dot.textContent=n<obScreen?'✓':n;
-    el.appendChild(dot);
-    if(i<labels.length-1){var line=document.createElement('div');line.className='ob-prog-line'+(n<obScreen?' done':'');el.appendChild(line);}
-  });
-}
+  // Validate it's a Queensland school or reasonable education URL
+  let parsedUrl;
+  try { parsedUrl = new URL(siteUrl); } catch { return json({ error: "Invalid URL" }, 400); }
 
-// ── ONBOARDING: LOGO PREVIEW ─────────────────────────────────────────────────────
-function previewObLogo(){
-  clearTimeout(obLogoTimer);
-  var url=gv('ob-logo-url').trim();
-  if(!url){g('ob-logo-preview').classList.remove('show');return;}
-  obLogoTimer=setTimeout(function(){
-    var img=g('ob-logo-img');
-    var preview=g('ob-logo-preview');
-    var status=g('ob-logo-status');
-    img.onload=function(){preview.classList.add('show');status.textContent='✓ Logo loaded';status.className='ob-logo-preview-status ok';obData.logoUrl=url;};
-    img.onerror=function(){preview.classList.add('show');status.textContent='✗ Could not load — check the URL';status.className='ob-logo-preview-status err';};
-    img.src=url;
-  },600);
-}
-
-// ── ONBOARDING: COLOURS ──────────────────────────────────────────────────────────
-function onObColor(k){
-  var val=gv('ob-c-'+k);
-  g('ob-swatch-'+k).style.background=val;
-  g('ob-hex-'+k).value=val;
-  if(k==='pri'){obData.primaryColor=val;g('ob-banner-preview').style.background=val;}
-  else obData.accentColor=val;
-  g('ob-banner-school-name').textContent=gv('ob-school-name')||'Your School Name';
-}
-function onObHex(k){
-  var val=gv('ob-hex-'+k).trim();
-  if(/^#[0-9a-fA-F]{6}$/.test(val)){
-    g('ob-c-'+k).value=val;
-    g('ob-swatch-'+k).style.background=val;
-    if(k==='pri'){obData.primaryColor=val;g('ob-banner-preview').style.background=val;}
-    else obData.accentColor=val;
-  }
-}
-
-// ── ONBOARDING: TEMPLATES ────────────────────────────────────────────────────────
-var lbTemplateIds = Object.keys(TEMPLATES); // ['classic','modern','warm']
-var lbCurrentId = '';
-
-function renderObTemplates(){
-  var grid=g('ob-tpl-grid');grid.innerHTML='';
-  lbTemplateIds.forEach(function(tplId){
-    var tpl=TEMPLATES[tplId];
-    var sel=obData.templateId===tplId;
-    var pri=obData.primaryColor||'#1a3a6b';
-    var sec=obData.accentColor||'#f07f24';
-    var card=document.createElement('div');
-    card.className='ob-tpl-card'+(sel?' selected':'');
-    card.id='ob-tpl-'+tplId;
-    card.innerHTML=
-      '<div class="ob-tpl-thumb" onclick="openTplLightbox(\''+tplId+'\')" title="Preview full size">'
-        +'<div class="ob-tpl-thumb-inner" style="height:90px"><iframe srcdoc="'+escAttr(buildTplPreviewHTML(tpl,pri,sec))+'" sandbox="allow-same-origin" scrolling="no"></iframe></div>'
-        +'<div class="ob-tpl-thumb-overlay"><span class="ob-tpl-zoom-icon">&#128269; Preview</span></div>'
-      +'</div>'
-      +'<div class="ob-tpl-info">'
-        +'<div class="ob-tpl-name">'+escHTML(tpl.name)+'<span class="ob-tpl-sel-badge">&#10003; Selected</span></div>'
-        +'<div class="ob-tpl-desc">'+escHTML(tpl.desc)+'</div>'
-        +'<div class="ob-tpl-actions">'
-          +'<button class="ob-tpl-preview-btn" onclick="openTplLightbox(\''+tplId+'\')">&#128269; Full preview</button>'
-          +'<button class="ob-tpl-select-btn'+(sel?' is-selected':'')+'" id="ob-tpl-sel-'+tplId+'" onclick="selectObTemplate(\''+tplId+'\')">'+( sel?'&#10003; Selected':'Select')+'</button>'
-        +'</div>'
-      +'</div>';
-    grid.appendChild(card);
-  });
-}
-
-function selectObTemplate(id){
-  obData.templateId=id;
-  // Update card states
-  lbTemplateIds.forEach(function(tid){
-    var card=g('ob-tpl-'+tid);
-    var btn=g('ob-tpl-sel-'+tid);
-    if(!card||!btn)return;
-    if(tid===id){card.classList.add('selected');btn.textContent='✓ Selected';btn.classList.add('is-selected');}
-    else{card.classList.remove('selected');btn.textContent='Select';btn.classList.remove('is-selected');}
-  });
-  g('ob-err-tpl').classList.remove('show');
-  // Update lightbox button if open
-  var lbBtn=g('tpl-lb-select-btn');
-  if(lbBtn){lbBtn.textContent=id===obData.templateId?'✓ Selected — continue':'Select this template';lbBtn.className='tpl-lb-select'+(id===obData.templateId?' is-selected':'');}
-}
-
-function openTplLightbox(id){
-  lbCurrentId=id;
-  var tpl=TEMPLATES[id];if(!tpl)return;
-  var pri=obData.primaryColor||'#1a3a6b';
-  var sec=obData.accentColor||'#f07f24';
-  g('tpl-lb-title').textContent=tpl.name;
-  g('tpl-lb-desc').textContent=tpl.desc;
-  // Build a taller, more detailed preview for the lightbox
-  g('tpl-lb-iframe').srcdoc=buildTplLightboxHTML(tpl,pri,sec);
-  // Select button state
-  var btn=g('tpl-lb-select-btn');
-  if(obData.templateId===id){btn.textContent='✓ Selected — continue';btn.className='tpl-lb-select is-selected';}
-  else{btn.textContent='Select this template';btn.className='tpl-lb-select';}
-  g('tpl-lightbox').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-
-function closeTplLightbox(e){
-  if(e&&e.target!==g('tpl-lightbox'))return;
-  g('tpl-lightbox').classList.remove('show');
-  document.body.style.overflow='';
-}
-
-function lbNav(dir){
-  var idx=lbTemplateIds.indexOf(lbCurrentId);
-  var next=(idx+dir+lbTemplateIds.length)%lbTemplateIds.length;
-  openTplLightbox(lbTemplateIds[next]);
-}
-
-function selectFromLightbox(){
-  selectObTemplate(lbCurrentId);
-  g('tpl-lightbox').classList.remove('show');
-  document.body.style.overflow='';
-}
-
-// Lightbox gets a richer, taller preview with more content shown
-function buildTplLightboxHTML(tpl,pri,sec){
-  var base='*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:20px;line-height:1.5;background:#fff;max-width:800px}';
-  var content = function(bannerStyle,headStyle,bodyStyle,tileStyle,calloutStyle,linkStyle){
-    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+base
-      +'.banner{'+bannerStyle+';color:#fff;padding:28px 32px;margin-bottom:20px}'
-      +'.banner h1{font-size:22px;font-weight:700;margin-bottom:5px}'
-      +'.banner p{font-size:13px;opacity:.88}'
-      +'.section-h{'+headStyle+';margin:20px 0 10px}'
-      +'.body-t{'+bodyStyle+';margin-bottom:12px}'
-      +'.tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 20px}'
-      +'.tile{'+tileStyle+';padding:16px 8px;text-align:center;font-size:11px;font-weight:700;color:'+pri+'}'
-      +'.callout{'+calloutStyle+';padding:12px 16px;margin:12px 0;font-size:12px;color:#333}'
-      +'.links{margin-top:16px}'
-      +'.link-item{display:block;'+linkStyle+';font-size:13px;padding:4px 0}'
-      +'</style></head><body>'
-      +'<div class="banner"><h1>Resource Centre</h1><p>Supporting learning for all students across the school</p></div>'
-      +'<div class="section-h">About the Resource Centre</div>'
-      +'<p class="body-t">The Resource Centre provides access to a wide range of learning materials, digital tools, reading resources and research support for all students from Year 7 to Year 12.</p>'
-      +'<div class="callout">&#128276; Opening hours: Monday to Friday, 8:00am &ndash; 4:00pm. Staff are available for research assistance during lunch.</div>'
-      +'<div class="section-h">Quick access</div>'
-      +'<div class="tile-grid"><div class="tile">Library Catalogue</div><div class="tile">Scootle</div><div class="tile">Reading Eggs</div><div class="tile">JSTOR</div><div class="tile">Oliver</div><div class="tile">Clickview</div></div>'
-      +'<div class="section-h">Useful links</div>'
-      +'<div class="links"><a class="link-item" href="#">Access Scootle</a><a class="link-item" href="#">Book a research session</a><a class="link-item" href="#">Request a resource</a><a class="link-item" href="#">Reading challenge</a></div>'
-      +'</body></html>';
-  };
-  if(tpl.id==='classic'){return content('background:'+pri+';border-radius:8px','font-size:17px;font-weight:700;color:'+pri+';border-bottom:2px solid '+pri+';padding-bottom:6px','font-size:14px;color:#222;line-height:1.75','border:2px solid '+pri+';border-radius:6px','border-left:4px solid '+sec+';background:#f8f9fa;border-radius:0 6px 6px 0','color:'+pri);}
-  if(tpl.id==='modern'){return content('background:linear-gradient(135deg,'+pri+','+sec+'55);border-radius:16px','font-size:19px;font-weight:700;color:'+pri+';letter-spacing:-.3px','font-size:15px;color:#374151;line-height:1.8','border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.08);border-top:3px solid '+sec,'background:linear-gradient(135deg,'+pri+'11,'+sec+'11);border-left:4px solid '+pri+';border-radius:0 12px 12px 0','color:'+pri+';font-weight:600');}
-  return content('background:'+pri+';border-radius:20px','font-size:17px;font-weight:700;color:'+pri,'font-size:14px;color:#444;line-height:1.85','border-radius:18px;border:2px solid '+sec+'66','background:'+sec+'22;border:1.5px solid '+sec+';border-radius:12px','color:'+pri+';text-decoration:underline');
-}
-
-// ── ONBOARDING: SECTION TREE ─────────────────────────────────────────────────────
-function renderObSections(){
-  var container=g('ob-sections');container.innerHTML='';
-  obData.sections.forEach(function(sec,si){
-    var div=document.createElement('div');div.className='ob-section';div.id='ob-sec-'+sec.id;
-    div.innerHTML='<div class="ob-section-hd" onclick="toggleObSection(\''+sec.id+'\')">'
-      +'<span class="ob-section-label">'+escHTML(sec.label)+'</span>'
-      +'<button class="ob-section-xbtn" onclick="removeObSection(\''+sec.id+'\',event)" title="Remove section">&times;</button>'
-      +'<span class="ob-section-chevron'+(sec.expanded?' open':'')+'">&#9654;</span>'
-      +'</div>'
-      +'<div class="ob-section-pages'+(sec.expanded?' open':'')+'" id="ob-pages-'+sec.id+'">'
-      +sec.pages.map(function(p){
-        return '<div class="ob-page-row" id="ob-pr-'+p.id+'">'
-          +'<span class="ob-page-dot"></span>'
-          +'<span class="ob-page-name">'+escHTML(p.label)+'</span>'
-          +'<button class="ob-page-x" onclick="removeObPage(\''+sec.id+'\',\''+p.id+'\')">&#10005;</button>'
-          +'</div>';
-      }).join('')
-      +'<button class="ob-add-page-btn" onclick="addObPage(\''+sec.id+'\')">+ Add page</button>'
-      +'</div>';
-    container.appendChild(div);
-  });
-}
-function toggleObSection(sid){
-  var sec=obData.sections.find(function(s){return s.id===sid;});if(!sec)return;
-  sec.expanded=!sec.expanded;
-  var pages=g('ob-pages-'+sid);var chev=pages.previousElementSibling.querySelector('.ob-section-chevron');
-  if(sec.expanded){pages.classList.add('open');chev.classList.add('open');}
-  else{pages.classList.remove('open');chev.classList.remove('open');}
-}
-function removeObSection(sid,e){
-  e.stopPropagation();
-  obData.sections=obData.sections.filter(function(s){return s.id!==sid;});
-  var el=g('ob-sec-'+sid);if(el)el.remove();
-}
-function removeObPage(sid,pid){
-  var sec=obData.sections.find(function(s){return s.id===sid;});if(!sec)return;
-  sec.pages=sec.pages.filter(function(p){return p.id!==pid;});
-  var el=g('ob-pr-'+pid);if(el)el.remove();
-}
-function addObPage(sid){
-  var name=prompt('Page name:');if(!name||!name.trim())return;
-  var sec=obData.sections.find(function(s){return s.id===sid;});if(!sec)return;
-  var pid='pg_'+newId();
-  sec.pages.push({id:pid,label:name.trim()});
-  // Append to DOM
-  var pages=g('ob-pages-'+sid);
-  var row=document.createElement('div');row.className='ob-page-row';row.id='ob-pr-'+pid;
-  row.innerHTML='<span class="ob-page-dot"></span><span class="ob-page-name">'+escHTML(name.trim())+'</span><button class="ob-page-x" onclick="removeObPage(\''+sid+'\',\''+pid+'\')">&#10005;</button>';
-  pages.insertBefore(row,pages.lastElementChild); // before the add button
-}
-function obAddSection(){
-  var name=prompt('Section name:');if(!name||!name.trim())return;
-  var sid='sec_'+newId();
-  obData.sections.push({id:sid,label:name.trim(),expanded:true,pages:[]});
-  renderObSections();
-}
-
-// ── ONBOARDING: NAVIGATION ───────────────────────────────────────────────────────
-function obNext(from){
-  // Validate
-  if(from===1){
-    var name=gv('ob-school-name').trim();
-    if(!name){g('ob-err-name').classList.add('show');g('ob-school-name').classList.add('error');g('ob-school-name').focus();return;}
-    obData.schoolName=name;
-    obData.logoUrl=gv('ob-logo-url').trim();
-    g('ob-banner-school-name').textContent=name;
-  }
-  if(from===2){
-    obData.primaryColor=gv('ob-c-pri');
-    obData.accentColor=gv('ob-c-sec');
-    // Refresh template previews with new colours
-    renderObTemplates();
-  }
-  if(from===3){
-    if(!obData.templateId){g('ob-err-tpl').classList.add('show');return;}
-  }
-  if(from===5){finishOnboarding();return;}
-  // Build summary on screen 5
-  if(from===4){buildObSummary();}
-  obScreen=from+1;
-  showObScreen(obScreen);
-}
-function obBack(from){
-  obScreen=from-1;
-  showObScreen(obScreen);
-}
-function showObScreen(n){
-  document.querySelectorAll('.ob-card').forEach(function(c){c.classList.remove('active');});
-  var card=g('ob-screen-'+n);if(card)card.classList.add('active');
-  renderObProgress();
-  // Scroll to top
-  g('onboarding').scrollTo({top:0,behavior:'smooth'});
-}
-
-function buildObSummary(){
-  var pri=obData.primaryColor,sec=obData.accentColor;
-  var tpl=TEMPLATES[obData.templateId]||TEMPLATES.classic;
-  var pageCount=obData.sections.reduce(function(t,s){return t+s.pages.length;},0);
-  var logoHTML=obData.logoUrl?'<img class="ob-summary-logo" src="'+escHTML(obData.logoUrl)+'" alt="Logo" onerror="this.style.display=\'none\'">':'<span style="font-size:11px;color:var(--ink3)">No logo set</span>';
-  g('ob-summary').innerHTML='<div class="ob-summary-banner" style="background:'+pri+'"><div class="ob-summary-school">'+escHTML(obData.schoolName)+'</div></div>'
-    +'<div class="ob-summary-rows">'
-    +'<div class="ob-summary-row"><span class="ob-summary-key">Logo</span><span class="ob-summary-val">'+logoHTML+'</span></div>'
-    +'<div class="ob-summary-row"><span class="ob-summary-key">Colours</span><span class="ob-summary-val"><span class="ob-summary-swatch" style="background:'+pri+'"></span>'+escHTML(pri)+'<span class="ob-summary-swatch" style="background:'+sec+'"></span>'+escHTML(sec)+'</span></div>'
-    +'<div class="ob-summary-row"><span class="ob-summary-key">Template</span><span class="ob-summary-val">'+escHTML(tpl.name)+'</span></div>'
-    +'<div class="ob-summary-row"><span class="ob-summary-key">Pages</span><span class="ob-summary-val">'+pageCount+' pages across '+obData.sections.length+' sections</span></div>'
-    +'</div>';
-}
-
-function finishOnboarding(){
-  // Build the DB from onboarding data
-  var sections={},sectionOrder=[],pages={};
-  obData.sections.forEach(function(sec){
-    sectionOrder.push(sec.id);
-    var pageOrder=sec.pages.map(function(p){return p.id;});
-    sections[sec.id]={id:sec.id,label:sec.label,expanded:sec.id==='s_ourschool',pageOrder:pageOrder};
-    sec.pages.forEach(function(p){
-      pages[p.id]={id:p.id,sectionId:sec.id,label:p.label,status:'draft',wizardData:null,generatedHTML:'',lastEdited:null};
+  try {
+    const res = await fetch(siteUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; SchoolPageBuilder/1.0)",
+        "Accept": "text/html"
+      },
+      redirect: "follow"
     });
+
+    if (!res.ok) return json({ error: "Could not fetch site (status " + res.status + ")" }, 400);
+
+    const html = await res.text();
+    const nav = extractNav(html, parsedUrl.origin);
+
+    return json({ success: true, nav: nav, origin: parsedUrl.origin });
+
+  } catch (e) {
+    return json({ error: "Failed to fetch: " + e.message }, 500);
+  }
+}
+
+// ── SCRAPE SINGLE PAGE: get full content ──
+async function handleScrapePage(request) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+
+  const pageUrl = body.url;
+  if (!pageUrl) return json({ error: "No URL provided" }, 400);
+
+  try {
+    const res = await fetch(pageUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; SchoolPageBuilder/1.0)",
+        "Accept": "text/html"
+      },
+      redirect: "follow"
+    });
+
+    if (!res.ok) return json({ error: "Could not fetch page (status " + res.status + ")" }, 400);
+
+    const html = await res.text();
+    const data = extractPageContent(html, pageUrl);
+
+    return json({ success: true, ...data });
+
+  } catch (e) {
+    return json({ error: "Failed to fetch page: " + e.message }, 500);
+  }
+}
+
+// ── HTML PARSER HELPERS ──
+
+// Extract navigation structure from the HTML
+function extractNav(html, origin) {
+  const pages = [];
+  const seen = new Set();
+
+  // Queensland DET school sites (Squiz Matrix) patterns
+  // Top nav
+  const topNavPatterns = [
+    /<nav[^>]*(?:id|class)="[^"]*(?:top|global|main|primary|site)[^"]*"[^>]*>([\s\S]*?)<\/nav>/gi,
+    /<ul[^>]*(?:id|class)="[^"]*(?:top|global|main|primary|nav|menu)[^"]*"[^>]*>([\s\S]*?)<\/ul>/gi,
+    /<div[^>]*(?:id|class)="[^"]*(?:top-nav|main-nav|primary-nav|navigation)[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
+  ];
+
+  // Left sidebar nav (common on QLD school sites)
+  const sideNavPatterns = [
+    /<(?:nav|ul|div)[^>]*(?:id|class)="[^"]*(?:side|left|local|section|sub)[^"]*nav[^"]*"[^>]*>([\s\S]*?)<\/(?:nav|ul|div)>/gi,
+    /<(?:nav|ul|div)[^>]*(?:id|class)="[^"]*nav[^"]*(?:side|left|local|section|sub)[^"]*"[^>]*>([\s\S]*?)<\/(?:nav|ul|div)>/gi,
+  ];
+
+  // Also grab all internal links as fallback
+  const allPatterns = [...topNavPatterns, ...sideNavPatterns];
+
+  for (const pattern of allPatterns) {
+    let match;
+    while ((match = pattern.exec(html)) !== null) {
+      const section = match[1] || match[0];
+      extractLinksFromHtml(section, origin, seen, pages);
+    }
+    pattern.lastIndex = 0;
+  }
+
+  // If nothing found, grab ALL internal links from the page
+  if (pages.length === 0) {
+    extractLinksFromHtml(html, origin, seen, pages);
+  }
+
+  // Sort and deduplicate
+  return pages
+    .filter(p => p.url && p.title)
+    .slice(0, 60); // cap at 60 pages
+}
+
+function extractLinksFromHtml(html, origin, seen, pages) {
+  const linkPattern = /<a[^>]+href="([^"#]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = linkPattern.exec(html)) !== null) {
+    let href = m[1].trim();
+    let rawTitle = m[2].replace(/<[^>]+>/g, '').trim();
+    if (!rawTitle || rawTitle.length < 2) continue;
+    if (rawTitle.length > 80) continue; // skip long link texts
+
+    // Resolve relative URLs
+    try {
+      if (href.startsWith('/')) href = origin + href;
+      else if (!href.startsWith('http')) href = origin + '/' + href;
+      const u = new URL(href);
+      // Only include internal links
+      if (!href.startsWith(origin) && u.hostname !== new URL(origin).hostname) continue;
+      // Skip non-page links
+      if (/\.(pdf|doc|docx|xls|xlsx|jpg|jpeg|png|gif|mp4|zip)$/i.test(href)) continue;
+      if (seen.has(href)) continue;
+      seen.add(href);
+      pages.push({ url: href, title: rawTitle });
+    } catch (e) { continue; }
+  }
+}
+
+// Extract content from a single page
+function extractPageContent(html, pageUrl) {
+  // Page title
+  let title = '';
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (titleMatch) title = titleMatch[1].replace(/\s*[-|]\s*.+$/, '').trim();
+
+  // h1 as a better title
+  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  if (h1Match) title = h1Match[1].replace(/<[^>]+>/g, '').trim() || title;
+
+  // Main content area — try common patterns
+  let contentHtml = '';
+  const contentPatterns = [
+    /<main[^>]*>([\s\S]*?)<\/main>/i,
+    /<div[^>]*(?:id|class)="[^"]*(?:main-content|page-content|content-area|content-body|entry-content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    /<article[^>]*>([\s\S]*?)<\/article>/i,
+    /<div[^>]*(?:id|class)="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+  ];
+
+  for (const p of contentPatterns) {
+    const m = html.match(p);
+    if (m && m[1] && m[1].length > 200) { contentHtml = m[1]; break; }
+  }
+
+  if (!contentHtml) contentHtml = html; // fallback to full page
+
+  // Extract clean text from content
+  const text = htmlToText(contentHtml);
+
+  // Extract links from content
+  const links = [];
+  const seen = new Set();
+  const lp = /<a[^>]+href="([^"#]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = lp.exec(contentHtml)) !== null) {
+    const href = m[1].trim();
+    const label = m[2].replace(/<[^>]+>/g, '').trim();
+    if (!label || label.length < 2 || seen.has(href)) continue;
+    if (/^(mailto:|tel:|javascript:)/i.test(href)) continue;
+    seen.add(href);
+    links.push({ url: href, label: label });
+  }
+
+  return { title, text, links: links.slice(0, 30) };
+}
+
+function htmlToText(html) {
+  // Remove scripts, styles, nav, header, footer
+  html = html.replace(/<(script|style|nav|header|footer)[^>]*>[\s\S]*?<\/\1>/gi, '');
+  // Replace block elements with newlines
+  html = html.replace(/<\/(p|div|li|h[1-6]|br|tr)>/gi, '\n');
+  html = html.replace(/<br\s*\/?>/gi, '\n');
+  // Remove all remaining tags
+  html = html.replace(/<[^>]+>/g, '');
+  // Decode common entities
+  html = html.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+             .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  // Clean up whitespace
+  html = html.split('\n').map(l => l.trim()).filter(l => l.length > 0).join('\n');
+  html = html.replace(/\n{3,}/g, '\n\n');
+  return html.trim().substring(0, 8000); // cap at 8000 chars
+}
+
+// ── HELPERS ──
+function json(data, status) {
+  return new Response(JSON.stringify(data), {
+    status: status || 200,
+    headers: cors()
   });
-  db={
-    onboarded:true, version:'v5',
-    schoolName:obData.schoolName, logoUrl:obData.logoUrl,
-    primaryColor:obData.primaryColor, accentColor:obData.accentColor,
-    templateId:obData.templateId,
-    sectionOrder:sectionOrder, sections:sections, pages:pages
+}
+
+function cors() {
+  return {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
   };
-  saveDB();
-  bootApp();
 }
-
-// ── SETTINGS ──────────────────────────────────────────────────────────────────────
-function populateSettings(){
-  g('set-school-name').value=db.schoolName||'';
-  g('set-logo-url').value=db.logoUrl||'';
-  g('set-c-pri').value=db.primaryColor||'#1a3a6b';
-  g('set-hex-pri').value=db.primaryColor||'#1a3a6b';
-  g('set-swatch-pri').style.background=db.primaryColor||'#1a3a6b';
-  g('set-c-sec').value=db.accentColor||'#f07f24';
-  g('set-hex-sec').value=db.accentColor||'#f07f24';
-  g('set-swatch-sec').style.background=db.accentColor||'#f07f24';
-  g('set-banner-name').textContent=db.schoolName||'';
-  g('set-banner-preview').style.background=db.primaryColor||'#1a3a6b';
-  if(db.logoUrl){
-    var img=g('set-logo-img');img.src=db.logoUrl;
-    img.onload=function(){g('set-logo-preview').classList.add('show');};
-  }
-}
-function onSettingsPreview(){
-  g('set-banner-name').textContent=gv('set-school-name')||'Your school name';
-}
-function onSettingsColor(k){
-  var val=gv('set-c-'+k);
-  g('set-swatch-'+k).style.background=val;
-  g('set-hex-'+k).value=val;
-  if(k==='pri')g('set-banner-preview').style.background=val;
-}
-function onSettingsHex(k){
-  var val=gv('set-hex-'+k).trim();
-  if(/^#[0-9a-fA-F]{6}$/.test(val)){
-    g('set-c-'+k).value=val;
-    g('set-swatch-'+k).style.background=val;
-    if(k==='pri')g('set-banner-preview').style.background=val;
-  }
-}
-function onSettingsLogoPreview(){
-  clearTimeout(settingsSaveTimer);
-  var url=gv('set-logo-url').trim();
-  if(!url){g('set-logo-preview').classList.remove('show');return;}
-  settingsSaveTimer=setTimeout(function(){
-    var img=g('set-logo-img');
-    img.onload=function(){g('set-logo-preview').classList.add('show');};
-    img.onerror=function(){g('set-logo-preview').classList.remove('show');};
-    img.src=url;
-  },600);
-}
-function saveSettings(){
-  db.schoolName=gv('set-school-name').trim()||db.schoolName;
-  db.logoUrl=gv('set-logo-url').trim();
-  db.primaryColor=gv('set-c-pri');
-  db.accentColor=gv('set-c-sec');
-  saveDB();
-  applySidebarBranding();
-  // Flash saved
-  var sf=g('settings-saved');sf.classList.add('show');
-  setTimeout(function(){sf.classList.remove('show');},2000);
-}
-function applySidebarBranding(){
-  g('sidebar-color-dot').style.background=db.primaryColor||'#1a3a6b';
-  g('sidebar-school-name').textContent=db.schoolName||'School';
-  updateSidebarTemplate();
-}
-function updateSidebarTemplate(){
-  var t=TEMPLATES[db.templateId||'classic'];
-  g('sidebar-template-name').textContent=t?t.name:'Classic';
-}
-function confirmReset(){
-  if(confirm('This will delete all pages and settings and restart the setup. Are you sure?')){
-    localStorage.removeItem('dsp_db_v7');
-    location.reload();
-  }
-}
-
-// ── VIEW ROUTING ──────────────────────────────────────────────────────────────────
-function showAppView(name){
-  currentView=name;
-  document.querySelectorAll('.app-view').forEach(function(v){v.classList.remove('active');});
-  var el=g('view-'+name);if(el)el.classList.add('active');
-  g('btn-copy-sp').classList.remove('show');g('btn-save-exit').classList.remove('show');g('btn-gen-top').classList.remove('show');
-  g('save-flash').style.opacity='0';
-  g('nav-templates').classList.remove('active');g('nav-settings').classList.remove('active');
-  if(name==='templates')g('nav-templates').classList.add('active');
-  if(name==='settings')g('nav-settings').classList.add('active');
-}
-function showDashboard(){
-  if(currentPageId){releaseLock(currentPageId);stopLockHeartbeat();currentPageId=null;}
-  showAppView('dashboard');renderDashboard();renderSidebar();g('tb-breadcrumb').innerHTML='';
-}
-function openTemplates(){
-  if(currentView==='wizard'||currentView==='editor'){alert('Please save and exit before changing the template.');return;}
-  prevTemplateId=db.templateId;showAppView('templates');
-  g('tpl-rebuild-warn').classList.remove('show');renderTemplateGrid();
-  g('tb-breadcrumb').innerHTML='<strong>Templates</strong>';
-}
-function openSettings(){
-  if(currentView==='wizard'||currentView==='editor'){alert('Please save and exit before opening settings.');return;}
-  populateSettings();showAppView('settings');
-  g('tb-breadcrumb').innerHTML='<strong>Settings</strong>';
-}
-function setTopbarEditing(page){
-  var sec=db.sections[page.sectionId];
-  g('tb-breadcrumb').innerHTML='<strong>'+escHTML(sec?sec.label:'')+'</strong><span class="tb-sep">›</span><strong>'+escHTML(page.label)+'</strong>';
-  g('btn-save-exit').classList.add('show');g('btn-gen-top').classList.add('show');
-  if(page.generatedHTML)g('btn-copy-sp').classList.add('show');
-}
-
-// ── SIDEBAR ───────────────────────────────────────────────────────────────────────
-function renderSidebar(){
-  var tree=g('tree-container');tree.innerHTML='';
-  (db.sectionOrder||[]).forEach(function(sid){
-    var sec=db.sections[sid];if(!sec)return;
-    var el=document.createElement('div');el.className='tree-section';
-    el.innerHTML='<div class="section-header" onclick="toggleSection(\''+sid+'\')">'
-      +escHTML(sec.label)+'<span class="section-chevron'+(sec.expanded?' open':'')+'">&#9654;</span></div>'
-      +'<div class="section-pages" id="pages-'+sid+'" style="'+(sec.expanded?'':'display:none')+'">'
-      +(sec.pageOrder||[]).map(function(pid){var p=db.pages[pid];if(!p)return '';
-        return '<div class="tree-page'+(currentPageId===pid?' active':'')+'" onclick="openPage(\''+pid+'\')">'
-          +'<span class="page-dot '+p.status+'"></span><span class="page-label">'+escHTML(p.label)+'</span></div>';
-      }).join('')
-      +'<button class="add-page-btn" onclick="showAddPage(\''+sid+'\',event)">+ Add page</button></div>';
-    tree.appendChild(el);
-  });
-}
-function toggleSection(sid){
-  db.sections[sid].expanded=!db.sections[sid].expanded;saveDB();
-  var pages=g('pages-'+sid);var chev=pages.previousElementSibling.querySelector('.section-chevron');
-  if(db.sections[sid].expanded){pages.style.display='';chev.classList.add('open');}
-  else{pages.style.display='none';chev.classList.remove('open');}
-}
-
-// ── DASHBOARD ─────────────────────────────────────────────────────────────────────
-function renderDashboard(){
-  var hr=new Date().getHours();
-  g('dash-welcome').innerHTML=hr<12?'Good morning &#128075;':hr<17?'Good afternoon &#128075;':'Good evening &#128075;';
-  g('dash-school').textContent=db.schoolName||'';
-  var pages=Object.values(db.pages||{});
-  var pub=pages.filter(function(p){return p.status==='published';}).length;
-  var built=pages.filter(function(p){return p.generatedHTML;}).length;
-  g('dash-stats').innerHTML=[['Total pages',pages.length],['Built',built],['Published',pub],['Drafts',pages.length-pub]]
-    .map(function(s){return '<div class="stat-card"><div class="stat-n">'+s[1]+'</div><div class="stat-l">'+s[0]+'</div></div>';}).join('');
-  var recent=pages.filter(function(p){return p.lastEdited;}).sort(function(a,b){return b.lastEdited-a.lastEdited;}).slice(0,5);
-  if(recent.length){
-    g('dash-recent').innerHTML=recent.map(function(p){var sec=db.sections[p.sectionId];
-      return '<div class="recent-card" onclick="openPage(\''+p.id+'\')">'
-        +'<div style="font-size:22px">&#128196;</div>'
-        +'<div style="flex:1"><div class="recent-card-name">'+escHTML(p.label)+'</div>'
-        +'<div class="recent-card-meta">'+escHTML(sec?sec.label:'')+'  &middot;  '+timeAgo(p.lastEdited)+'</div></div>'
-        +statusPillHTML(p.status)+'<span style="color:var(--ink3);font-size:16px">&#8250;</span></div>';
-    }).join('');
-  } else {
-    g('dash-recent').innerHTML='<div class="empty-dash"><div class="empty-dash-ico">&#128214;</div><div class="empty-dash-t">No pages built yet</div><div class="empty-dash-s">Click any page in the sidebar to get started.</div></div>';
-  }
-}
-
-// ── TEMPLATES ─────────────────────────────────────────────────────────────────────
-function renderTemplateGrid(){
-  var grid=g('tpl-grid');grid.innerHTML='';
-  Object.values(TEMPLATES).forEach(function(tpl){
-    var sel=db.templateId===tpl.id;
-    var card=document.createElement('div');card.className='tpl-card'+(sel?' selected':'');
-    var pri=db.primaryColor||'#1a3a6b',sec=db.accentColor||'#f07f24';
-    card.innerHTML='<div class="tpl-preview"><iframe srcdoc="'+escAttr(buildTplPreviewHTML(tpl,pri,sec))+'" sandbox="allow-same-origin" scrolling="no"></iframe></div>'
-      +'<div class="tpl-info"><div class="tpl-name-row"><span class="tpl-name">'+escHTML(tpl.name)+'</span><span class="tpl-selected-badge">&#10003; Selected</span></div>'
-      +'<div class="tpl-desc">'+escHTML(tpl.desc)+'</div>'
-      +'<div class="tpl-tags">'+tpl.tags.map(function(t){return '<span class="tpl-tag">'+escHTML(t)+'</span>';}).join('')+'</div>'
-      +'<button class="tpl-select-btn '+(sel?'active':'choose')+'" onclick="selectTemplate(\''+tpl.id+'\')">'+(sel?'&#10003; Currently active':'Select '+tpl.name)+'</button></div>';
-    grid.appendChild(card);
-  });
-}
-function selectTemplate(id){
-  if(db.templateId===id)return;
-  db.templateId=id;saveDB();updateSidebarTemplate();renderTemplateGrid();
-  if(prevTemplateId&&prevTemplateId!==id)g('tpl-rebuild-warn').classList.add('show');
-  prevTemplateId=id;
-}
-function buildTplPreviewHTML(tpl,pri,sec){
-  var base='*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:10px;line-height:1.5;background:#fff}';
-  if(tpl.id==='classic'){
-    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+base+'.b{background:'+pri+';color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:12px}.b h1{font-size:16px;font-weight:700;margin-bottom:3px}.b p{font-size:10px;opacity:.85}.h{font-size:12px;font-weight:700;color:'+pri+';border-bottom:2px solid '+pri+';padding-bottom:4px;margin:10px 0 6px}.t{font-size:10px;color:#222;line-height:1.7;margin-bottom:8px}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.ti{border:2px solid '+pri+';border-radius:6px;padding:8px 4px;text-align:center;font-size:9px;font-weight:700;color:'+pri+'}.c{border-left:4px solid '+sec+';background:#f8f9fa;padding:6px 8px;border-radius:0 4px 4px 0;font-size:9px;color:#333;margin:6px 0}</style></head><body><div class="b"><h1>Resource Centre</h1><p>Supporting learning across the school</p></div><div class="h">About</div><p class="t">The Resource Centre provides access to learning materials, digital tools, and reading resources.</p><div class="c">Open: 8am – 4pm Monday to Friday</div><div class="h">Quick links</div><div class="g"><div class="ti">Library</div><div class="ti">Scootle</div><div class="ti">Reading Eggs</div></div></body></html>';
-  }
-  if(tpl.id==='modern'){
-    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+base+'.b{background:linear-gradient(135deg,'+pri+','+sec+'55);color:#fff;border-radius:16px;padding:18px 22px;margin-bottom:14px}.b h1{font-size:16px;font-weight:700;letter-spacing:-.3px;margin-bottom:3px}.b p{font-size:10px;opacity:.88}.h{font-size:13px;font-weight:700;color:'+pri+';margin:12px 0 5px;letter-spacing:-.2px}.t{font-size:10px;color:#374151;line-height:1.8;margin-bottom:8px}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.ti{border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:9px 4px;text-align:center;font-size:9px;font-weight:700;color:'+pri+';background:#fff;border-top:3px solid '+sec+'}.c{background:linear-gradient(135deg,'+pri+'11,'+sec+'11);border-left:4px solid '+pri+';border-radius:0 10px 10px 0;padding:7px 10px;font-size:9px;color:#333;margin:6px 0}</style></head><body><div class="b"><h1>Resource Centre</h1><p>Supporting learning across the school</p></div><div class="h">About</div><p class="t">The Resource Centre provides access to learning materials, digital tools, and reading resources.</p><div class="c">Open: 8am – 4pm Monday to Friday</div><div class="h">Quick links</div><div class="g"><div class="ti">Library</div><div class="ti">Scootle</div><div class="ti">Reading Eggs</div></div></body></html>';
-  }
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+base+'.b{background:'+pri+';color:#fff;border-radius:20px;padding:16px 20px;margin-bottom:12px}.b h1{font-size:16px;font-weight:700;margin-bottom:3px}.b p{font-size:10px;opacity:.88}.h{font-size:12px;font-weight:700;color:'+pri+';margin:10px 0 5px}.h:before{content:"● ";color:'+sec+'}.t{font-size:10px;color:#444;line-height:1.85;margin-bottom:8px}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.ti{border-radius:16px;border:2px solid '+sec+'66;padding:10px 4px;text-align:center;font-size:9px;font-weight:700;color:'+pri+';background:#fff}.c{background:'+sec+'22;border:1.5px solid '+sec+';border-radius:10px;padding:7px 10px;font-size:9px;color:#333;margin:6px 0}</style></head><body><div class="b"><h1>Resource Centre</h1><p>Supporting learning across the school</p></div><div class="h">About</div><p class="t">The Resource Centre provides access to learning materials, digital tools, and reading resources.</p><div class="c">Open: 8am – 4pm Monday to Friday</div><div class="h">Quick links</div><div class="g"><div class="ti">Library</div><div class="ti">Scootle</div><div class="ti">Reading Eggs</div></div></body></html>';
-}
-
-// ── PAGE HOME ──────────────────────────────────────────────────────────────────────
-function openPage(pageId){
-  var page=db.pages[pageId];if(!page)return;
-  if(currentPageId&&currentPageId!==pageId){releaseLock(currentPageId);stopLockHeartbeat();}
-  currentPageId=pageId;showAppView('page-home');renderPageHome(page);renderSidebar();
-  var sec=db.sections[page.sectionId];
-  g('tb-breadcrumb').innerHTML=escHTML(sec?sec.label:'')+' <span class="tb-sep">›</span> <strong>'+escHTML(page.label)+'</strong>';
-}
-function renderPageHome(page){
-  var sec=db.sections[page.sectionId];
-  g('ph-breadcrumb').innerHTML=escHTML(sec?sec.label:'')+' <span class="tb-sep">›</span> '+escHTML(page.label);
-  g('ph-title').textContent=page.label;
-  g('ph-meta').textContent='Last edited: '+timeAgo(page.lastEdited)+'   ·   Template: '+((TEMPLATES[db.templateId]||{}).name||'Classic');
-  g('stog-draft').className='stog-btn'+(page.status==='draft'?' on draft':'');
-  g('stog-published').className='stog-btn'+(page.status==='published'?' on published':'');
-  var hasHTML=!!page.generatedHTML;
-  g('ph-actions').innerHTML='<button class="ph-action-card primary-action" onclick="openWizard()"><span class="ph-action-ico">&#9889;</span><span class="ph-action-name">Build with Wizard</span><span class="ph-action-desc">Answer a few questions and the AI builds the page</span></button>'
-    +'<button class="ph-action-card" onclick="openEditor()" '+(hasHTML?'':'disabled')+'><span class="ph-action-ico">&#9998;</span><span class="ph-action-name">Edit Directly</span><span class="ph-action-desc">'+(hasHTML?'Make quick changes to the generated page':'Build the page with the wizard first')+'</span></button>';
-  if(hasHTML){g('ph-preview-section').style.display='';g('ph-preview-status-pill').innerHTML=statusPillHTML(page.status);g('ph-preview-iframe').srcdoc='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:12px;line-height:1.5}</style></head><body>'+page.generatedHTML+'</body></html>';}
-  else g('ph-preview-section').style.display='none';
-}
-function setPageStatus(s){var p=db.pages[currentPageId];if(!p)return;p.status=s;saveDB();renderPageHome(p);renderSidebar();}
-
-// ── WIZARD ────────────────────────────────────────────────────────────────────────
-var STEPS_MAIN=[{id:'type',label:'Page type'},{id:'title',label:'Title'},{id:'photo',label:'Photo'},{id:'content',label:'Content'},{id:'tiles',label:'Tiles'}];
-var STEPS_SUB=[{id:'type',label:'Page type'},{id:'title',label:'Title'},{id:'photo',label:'Photo'},{id:'content',label:'Content'},{id:'links',label:'Links'}];
-function openWizard(){
-  var page=db.pages[currentPageId];if(!page)return;
-  if(!acquireLock(currentPageId)){showAppView('locked');return;}
-  startLockHeartbeat(currentPageId);
-  showAppView('wizard');setTopbarEditing(page);
-  wizardPageType='';wizardHeroUrl='';wizardTiles=[];wizardLinkSections=[];wizardSkipped={};ic=0;
-  genHTML=page.generatedHTML||'';hasEdits=false;
-  document.querySelectorAll('.step').forEach(function(s){s.classList.add('hidden');s.classList.remove('active');});
-  g('step-type').classList.remove('hidden');g('step-type').classList.add('active');
-  document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('selected');});
-  g('tile-list').innerHTML='';g('lsec-list').innerHTML='';
-  if(page.wizardData)restoreWizardData(page.wizardData);
-  renderProgress(null,0);
-  if(genHTML){showWizardPreview(genHTML);g('wiz-paste-guide').classList.add('show');g('btn-copy-sp').classList.add('show');}
-  else{g('wiz-empty').style.display='';g('wiz-iframe-wrap').style.display='none';g('wiz-paste-guide').classList.remove('show');}
-}
-function openEditor(){
-  var page=db.pages[currentPageId];if(!page||!page.generatedHTML)return;
-  if(!acquireLock(currentPageId)){showAppView('locked');return;}
-  startLockHeartbeat(currentPageId);
-  showAppView('editor');setTopbarEditing(page);g('btn-gen-top').classList.remove('show');g('btn-copy-sp').classList.add('show');
-  genHTML=page.generatedHTML;g('wysiwyg-editor').innerHTML=genHTML;g('editor-paste-guide').classList.add('show');
-}
-function saveAndExit(){
-  var page=db.pages[currentPageId];if(!page)return;
-  if(currentView==='wizard'){page.wizardData=collectWizardData();if(genHTML){page.generatedHTML=genHTML;page.lastEdited=Date.now();}}
-  else if(currentView==='editor'){genHTML=g('wysiwyg-editor').innerHTML;page.generatedHTML=genHTML;page.lastEdited=Date.now();}
-  saveDB();releaseLock(currentPageId);stopLockHeartbeat();
-  var pid=currentPageId;currentPageId=null;openPage(pid);
-}
-function forceLock(){if(currentPageId){localStorage.removeItem('dsp_lock_'+currentPageId);openWizard();}}
-function restoreWizardData(wd){
-  wizardPageType=wd.pageType||'';wizardHeroUrl=wd.heroImageUrl||'';
-  if(wd.title)g('f-title').value=wd.title;if(wd.sub)g('f-sub').value=wd.sub;
-  if(wd.bannerColor)g('f-banner-color').value=wd.bannerColor;if(wd.audience)g('f-audience').value=wd.audience;if(wd.level)g('f-level').value=wd.level;
-  if(wd.heroAlt)g('f-hero-alt').value=wd.heroAlt;
-  if(wd.heroImageUrl){g('hero-prev-img').src=wd.heroImageUrl;g('hero-prev').classList.add('show');g('hero-upload-area').classList.add('has-img');}
-  if(wd.contentHTML)g('f-content-editor').innerHTML=wd.contentHTML;
-  if(wd.tilesHeading)g('f-tiles-heading').value=wd.tilesHeading;
-  if(wd.tiles)wd.tiles.forEach(function(t){restoreTile(t);});
-  if(wd.linkSections)wd.linkSections.forEach(function(s){restoreLinkSection(s);});
-  if(wd.skipped)wizardSkipped=wd.skipped;
-  if(wd.pageType){var el=document.querySelector('.type-card[onclick*="\''+wd.pageType+'\'"]');if(el)el.classList.add('selected');}
-}
-function collectWizardData(){return{pageType:wizardPageType,title:gv('f-title'),sub:gv('f-sub'),bannerColor:gv('f-banner-color'),audience:gv('f-audience'),level:gv('f-level'),heroImageUrl:wizardHeroUrl,heroAlt:gv('f-hero-alt'),contentHTML:g('f-content-editor')?g('f-content-editor').innerHTML:'',tilesHeading:gv('f-tiles-heading'),tiles:wizardTiles.map(function(t){return{label:t.label,url:t.url,img:t.img};}),linkSections:wizardLinkSections.map(function(s){return{heading:s.heading,links:s.links.slice()};}),skipped:wizardSkipped};}
-function renderProgress(steps,idx){if(!steps)steps=[{label:'Type'},{label:'Title'},{label:'Photo'},{label:'Content'},{label:'Links'}];var el=g('prog-steps');el.innerHTML='';steps.forEach(function(s,i){var dot=document.createElement('div');dot.className='prog-dot'+(i<idx?' done':i===idx?' active':'');dot.textContent=i<idx?'✓':(i+1);el.appendChild(dot);if(i<steps.length-1){var line=document.createElement('div');line.className='prog-line'+(i<idx?' done':'');el.appendChild(line);}});var lbl=g('prog-label');if(idx>=0&&idx<steps.length)lbl.textContent='Step '+(idx+1)+' of '+steps.length+' — '+steps[idx].label;}
-function getSteps(){return wizardPageType==='main'?STEPS_MAIN:STEPS_SUB;}
-function stepIndex(name){return getSteps().findIndex(function(s){return s.id===name;});}
-function selectType(type,el){wizardPageType=type;document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('selected');});el.classList.add('selected');setTimeout(function(){g('step-type').classList.remove('active');showStep('title');renderProgress(getSteps(),1);},220);}
-function showStep(name){var el=g('step-'+name);if(!el)return;el.classList.remove('hidden');el.classList.add('active');setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'nearest'});var inp=el.querySelector('input:not([type=file])');if(inp)inp.focus();},180);}
-function hideStep(name){var el=g('step-'+name);if(el)el.classList.remove('active');}
-function nextStep(name){
-  if(name==='title'&&!gv('f-title').trim()){g('title-err').classList.add('show');g('f-title').classList.add('error');g('f-title').focus();return;}
-  hideStep(name);var steps=getSteps(),idx=stepIndex(name);
-  for(var i=idx+1;i<steps.length;i++){if(!wizardSkipped[steps[i].id]){showStep(steps[i].id);renderProgress(steps,i);return;}}
-  if(!gv('f-title').trim()){showStep('title');renderProgress(steps,stepIndex('title'));g('title-err').classList.add('show');return;}
-  g('step-done').classList.remove('hidden');g('step-done').scrollIntoView({behavior:'smooth',block:'nearest'});renderProgress(steps,steps.length);g('gen-hint').textContent='Ready! Click "Build this page".';
-}
-function skipStep(name){wizardSkipped[name]=true;nextStep(name);}
-function goBack(name){hideStep(name);var steps=getSteps(),idx=stepIndex(name);for(var i=idx-1;i>=0;i--){var el=g('step-'+steps[i].id);if(el){el.classList.remove('hidden');el.classList.add('active');el.scrollIntoView({behavior:'smooth',block:'nearest'});renderProgress(steps,i);return;}}}
-function addTile(data){var id=++ic;if(!data)wizardTiles.push({id:id,label:'',url:'',img:''});var t=data||{id:id,label:'',url:'',img:''};var list=g('tile-list');var div=document.createElement('div');div.className='tile-item';div.id='tile'+id;div.innerHTML='<div class="tile-hd"><span class="tile-lbl">Tile '+(list.children.length+1)+'</span><button class="xbtn" onclick="removeTile('+id+')">&times;</button></div><div class="frow"><div class="fl"><label>Name</label><input type="text" value="'+(t.label||'')+'" placeholder="e.g. Library" oninput="updTile('+id+',\'label\',this.value)" style="width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;outline:none;background:var(--white)"></div><div class="fl"><label>Link</label><input type="url" value="'+(t.url||'')+'" placeholder="https://..." oninput="updTile('+id+',\'url\',this.value)" style="width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;outline:none;background:var(--white)"></div></div><div class="tile-logo-row"><img class="tile-thumb'+(t.img?' show':'')+'" id="tthumb'+id+'" src="'+(t.img||'')+'" alt=""><button class="tile-upload-btn"><input type="file" accept="image/*" onchange="handleTileUpload('+id+',this)">&#128247; Logo</button></div><div class="tile-upload-ok" id="tok'+id+'">Uploaded &#10003;</div>';list.appendChild(div);}
-function restoreTile(t){var id=++ic;wizardTiles.push({id:id,label:t.label,url:t.url,img:t.img});addTile({id:id,label:t.label,url:t.url,img:t.img});}
-function updTile(id,f,v){var t=wizardTiles.find(function(t){return t.id===id;});if(t)t[f]=v;}
-function removeTile(id){wizardTiles=wizardTiles.filter(function(t){return t.id!==id;});var el=g('tile'+id);if(el)el.remove();}
-async function handleTileUpload(id,input){var file=input.files[0];if(!file)return;var ok=g('tok'+id);ok.textContent='Uploading…';ok.classList.add('show');try{var url=await uploadCloudinary(file);var t=wizardTiles.find(function(t){return t.id===id;});if(t)t.img=url;var th=g('tthumb'+id);th.src=url;th.classList.add('show');ok.textContent='Uploaded ✓';setTimeout(function(){ok.classList.remove('show');},2000);}catch(e){ok.textContent='Upload failed';}}
-function addLinkSection(data){var id=++ic;var sec=data||{id:id,heading:'',links:[]};if(!data)wizardLinkSections.push({id:id,heading:'',links:[]});var list=g('lsec-list');var div=document.createElement('div');div.className='lsec-item';div.id='lsec'+id;div.innerHTML='<div class="lsec-hd"><span class="lsec-lbl">Link group</span><button class="xbtn" onclick="removeLSec('+id+')">&times;</button></div><div class="fl"><label>Group heading <span class="opt">(optional)</span></label><input type="text" value="'+(sec.heading||'')+'" placeholder="e.g. E-Resources" oninput="updLSec('+id+',\'heading\',this.value)" style="width:100%;padding:7px 9px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;outline:none;background:var(--white)"></div><div class="link-list" id="ll'+id+'"></div><button class="add-row-btn" onclick="addLink('+id+')">+ Add a link</button>';list.appendChild(div);if(sec.links&&sec.links.length)sec.links.forEach(function(l){buildLinkRow(id,wizardLinkSections[wizardLinkSections.length-1].links.indexOf(l),l.t,l.u);});else addLink(id);}
-function restoreLinkSection(s){var id=++ic;wizardLinkSections.push({id:id,heading:s.heading,links:s.links.slice()});addLinkSection({id:id,heading:s.heading,links:s.links});}
-function removeLSec(id){wizardLinkSections=wizardLinkSections.filter(function(s){return s.id!==id;});var el=g('lsec'+id);if(el)el.remove();}
-function updLSec(id,f,v){var s=wizardLinkSections.find(function(s){return s.id===id;});if(s)s[f]=v;}
-function addLink(sid){var s=wizardLinkSections.find(function(s){return s.id===sid;});if(!s)return;var li=s.links.length;s.links.push({t:'',u:''});buildLinkRow(sid,li,'','');}
-function buildLinkRow(sid,li,t,u){var list=g('ll'+sid);if(!list)return;var row=document.createElement('div');row.className='link-row';row.innerHTML='<input type="text" placeholder="Link name" value="'+(t||'')+'" oninput="updLink('+sid+','+li+',\'t\',this.value)"><input type="url" placeholder="https://..." value="'+(u||'')+'" oninput="updLink('+sid+','+li+',\'u\',this.value)"><button class="xbtn" onclick="this.closest(\'.link-row\').remove()">&times;</button>';list.appendChild(row);}
-function updLink(sid,li,f,v){var s=wizardLinkSections.find(function(s){return s.id===sid;});if(s&&s.links[li])s.links[li][f]=v;}
-function handleRichPaste(e){e.preventDefault();var html=e.clipboardData&&e.clipboardData.getData('text/html');var text=e.clipboardData&&e.clipboardData.getData('text/plain');var hadF=false;if(html&&html.trim()){var c=sanitisePastedHTML(html);document.execCommand('insertHTML',false,c);hadF=/<a\s|<b>|<strong>|<em>|<ul>|<ol>|<h[1-6]>/i.test(c);}else if(text){var w=text.split(/\n\n+/).map(function(p){return '<p>'+escHTML(p.trim())+'</p>';}).join('');document.execCommand('insertHTML',false,w);}if(hadF){var n=g('paste-notice');n.classList.add('show');setTimeout(function(){n.classList.remove('show');},3500);}}
-function sanitisePastedHTML(html){var p=new DOMParser(),doc=p.parseFromString(html,'text/html');['script','style','meta','link','title'].forEach(function(t){doc.querySelectorAll(t).forEach(function(el){el.remove();});});doc.querySelectorAll('*').forEach(function(el){var tag=el.tagName.toLowerCase();var keep=tag==='a'?['href']:[];Array.from(el.attributes).forEach(function(a){if(keep.indexOf(a.name)===-1)el.removeAttribute(a.name);});if(tag==='span'){var f=doc.createDocumentFragment();while(el.firstChild)f.appendChild(el.firstChild);el.parentNode&&el.parentNode.replaceChild(f,el);}});doc.querySelectorAll('p,li').forEach(function(el){if(!el.textContent.trim()&&!el.querySelector('img'))el.remove();});return doc.body.innerHTML;}
-function reCmd(cmd){document.execCommand(cmd,false,null);g('f-content-editor').focus();}
-async function handleHeroUpload(input){var file=input.files[0];if(!file)return;try{wizardHeroUrl=await uploadCloudinary(file);g('hero-prev-img').src=wizardHeroUrl;g('hero-prev').classList.add('show');g('hero-upload-area').classList.add('has-img');g('hero-upload-area').querySelector('.img-upload-t').textContent='Photo uploaded ✓';}catch(e){alert('Image upload failed.');}}
-function removeHero(){wizardHeroUrl='';g('hero-prev').classList.remove('show');g('hero-upload-area').classList.remove('has-img');g('hero-upload-area').querySelector('.img-upload-t').textContent='📷 Click to choose a photo';}
-async function uploadCloudinary(file){var fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLOUDINARY_PRESET);var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload',{method:'POST',body:fd});var data=await res.json();if(!data.secure_url)throw new Error(data.error&&data.error.message||'Upload failed');return data.secure_url;}
-function setWizView(mode){wizardView=mode;g('wiz-iframe-wrap').style.display='none';g('wiz-codeview').style.display='none';document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});if(mode==='preview'){if(genHTML)g('wiz-iframe-wrap').style.display='block';g('vbtn-preview').classList.add('on');}else if(mode==='code'){g('wiz-codeview').style.display='block';g('wiz-code-out').textContent=genHTML;g('vbtn-code').classList.add('on');}}
-
-// ── GENERATE ─────────────────────────────────────────────────────────────────────
-function generate(){
-  if(!wizardPageType){alert('Please choose a page type first.');return;}
-  if(!gv('f-title').trim()){alert('Please add a page title first.');return;}
-  var b1=g('btn-gen-top'),b2=g('btn-gen-bottom');b1.disabled=true;b2.disabled=true;
-  g('wiz-empty').style.display='none';g('wiz-err').classList.remove('show');g('wiz-loading').classList.add('show');g('wiz-iframe-wrap').style.display='none';setTbStatus('Building…');
-  fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:buildSystem(),messages:[{role:'user',content:buildPrompt()}]})})
-  .then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error('Error '+r.status+': '+t);});return r.json();})
-  .then(function(data){var html=(data.content&&data.content[0]&&data.content[0].text)||'';if(!html)throw new Error('No content returned.');genHTML=html;showWizardPreview(html);var page=db.pages[currentPageId];if(page){page.generatedHTML=html;page.wizardData=collectWizardData();page.lastEdited=Date.now();saveDB();}g('wiz-paste-guide').classList.add('show');g('btn-copy-sp').classList.add('show');setTbStatus('Done! ✓');setTimeout(function(){setTbStatus('');},3000);})
-  .catch(function(err){g('wiz-err').textContent='Something went wrong: '+err.message;g('wiz-err').classList.add('show');g('wiz-empty').style.display='';setTbStatus('');console.error(err);})
-  .finally(function(){g('wiz-loading').classList.remove('show');b1.disabled=false;b2.disabled=false;});
-}
-function showWizardPreview(html){var iframe=g('wiz-iframe');g('wiz-iframe-wrap').style.display='block';g('wiz-empty').style.display='none';var full='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:14px;line-height:1.5}</style></head><body>'+html+'</body></html>';iframe.srcdoc=full;iframe.onload=function(){try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+20)+'px';}catch(e){iframe.style.height='600px';}};g('wiz-code-out').textContent=html;setWizView('preview');}
-function buildSystem(){
-  var pri=db.primaryColor||'#1a3a6b',sec=db.accentColor||'#f07f24';
-  var audience=gv('f-audience')||'all',level=gv('f-level')||'all';
-  var audienceNote={'all':'The audience includes students, parents and the wider school community.','students':'The audience is students. Use clear, engaging language.','parents':'The audience is parents and families. Use warm, informative language.','staff':'The audience is school staff. Use professional, direct language.'}[audience];
-  var levelNote={'all':'','primary':'Primary school — keep language simple and warm.','secondary':'Secondary school — language can be more detailed.'}[level];
-  var tpl=TEMPLATES[db.templateId||'classic'];
-  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.\n\nOUTPUT RULES:\n1. Raw HTML only. No DOCTYPE, no html/head/body tags.\n2. No script tags.\n3. No external fonts or CDN links.\n4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n5. One <style> block at the top. All CSS class names prefixed with sp-.\n6. Output ONLY the HTML. No markdown, no backticks, no explanation.\n\n'+(tpl?tpl.buildStyle(pri,sec):'')+'\nCONTENT RULES:\n- CRITICAL: Use the school\'s EXACT wording, word-for-word. Do NOT paraphrase or rewrite.\n- Your job is to ADD STRUCTURE only — not change the words.\n- Preserve all <a href> links from pasted content.\n- Wrap notices/warnings in callout boxes using template callout style — text verbatim.\n- '+audienceNote+'\n'+(levelNote?'- '+levelNote+'\n':'')+'\nACCESSIBILITY — WCAG 2.1 AA:\n- Every <img> MUST have alt text.\n- Use h2 for main sections, h3 for sub-sections.\n- Descriptive link text only — never "click here".\n- Add :focus styles: outline:2px solid '+pri+';outline-offset:2px;\n- Use <ul>/<ol> for lists. Add role="region" and aria-label to major sections.';}
-function buildPrompt(){
-  var pri=db.primaryColor||'#1a3a6b',sec=db.accentColor||'#f07f24';
-  var bannerBg=gv('f-banner-color')==='sec'?sec:pri;
-  var lines=['Build a '+(wizardPageType==='main'?'main landing':'detailed content')+' page for '+(db.schoolName||'the school')+'.'];
-  lines.push('Brand: Primary='+pri+' | Accent='+sec+' | Text on primary=#fff\n');
-  lines.push('CONTENT BLOCKS — implement in this exact order:\n');var n=1;
-  lines.push(n+'. HERO BANNER: background:'+bannerBg+'; color:#fff; padding:28px 32px. Apply template banner style.');
-  lines.push('   Title "'+gv('f-title')+'" — font-size:26px; font-weight:700.');
-  if(gv('f-sub'))lines.push('   Subtitle "'+gv('f-sub')+'" — font-size:15px; opacity:.88; margin-top:8px.');n++;
-  if(wizardHeroUrl&&!wizardSkipped['photo']){lines.push(n+'. HERO IMAGE: <img src="'+wizardHeroUrl+'" alt="'+(gv('f-hero-alt')||'Page banner image')+'"> — width:100%;max-height:320px;object-fit:cover;display:block.');n++;}
-  var ce=g('f-content-editor');var cHTML=ce?ce.innerHTML.trim():'';var cText=ce?ce.innerText.trim():'';
-  if(cText&&!wizardSkipped['content']){
-    if(wizardPageType==='main')lines.push(n+'. INTRO TEXT: Render this HTML exactly, preserving links and formatting:\n   '+cHTML);
-    else lines.push(n+'. MAIN CONTENT: STRICT: (a) Exact wording. (b) Preserve links. (c) Add headings where topics shift. (d) Use template body/callout styles.\n   --- CONTENT START ---\n   '+cHTML+'\n   --- CONTENT END ---');
-    n++;
-  }
-  if(wizardPageType==='sub'&&!wizardSkipped['links']){wizardLinkSections.forEach(function(s){var v=s.links.filter(function(l){return l.t;});if(!v.length)return;if(s.heading)lines.push(n+'. LINKS SECTION: Heading "'+s.heading+'" — apply template heading style.');else lines.push(n+'. LINK LIST:');lines.push('   Links: '+v.map(function(l){return '"'+l.t+'" href="'+(l.u||'#')+'"';}).join(', '));n++;});}
-  if(wizardPageType==='main'&&!wizardSkipped['tiles']){var vt=wizardTiles.filter(function(t){return t.label;});if(vt.length){var th=gv('f-tiles-heading');if(th)lines.push(n+'. TILES HEADING: "'+th+'" — font-size:13px;font-weight:700;color:#333;margin-bottom:12px.');lines.push(n+(th?'.5':'')+'. TILE GRID: CSS grid repeat(3,1fr) gap:14px. Responsive: 2-col @540px, 1-col @360px. Apply template tile style.');vt.forEach(function(t,i){lines.push('   Tile '+(i+1)+': label="'+t.label+'" href="'+(t.url||'#')+'"'+(t.img?' img="'+t.img+'"':''));});n++;}}
-  lines.push('\nDESIGN: Wrap in a div, max-width:880px. System fonts. No JS. All links open target="_blank". Professional Australian school look.');
-  return lines.join('\n');
-}
-function onEditorChange(){genHTML=g('wysiwyg-editor').innerHTML;var page=db.pages[currentPageId];if(page){page.generatedHTML=genHTML;page.lastEdited=Date.now();saveDB();}var sf=g('save-flash');sf.style.opacity='1';clearTimeout(saveFlashTimer);saveFlashTimer=setTimeout(function(){sf.style.opacity='0';},1800);}
-function efmt(cmd){document.execCommand(cmd,false,null);g('wysiwyg-editor').focus();onEditorChange();}
-function efmtSize(dir){document.execCommand('fontSize',false,dir==='larger'?'5':'2');g('wysiwyg-editor').focus();onEditorChange();}
-function copyToSharePoint(){if(currentView==='editor')genHTML=g('wysiwyg-editor').innerHTML;if(!genHTML)return;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(genHTML).then(function(){setTbStatus('Copied! ✓');setTimeout(function(){setTbStatus('');},2500);});}else{var ta=document.createElement('textarea');ta.value=genHTML;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);setTbStatus('Copied! ✓');setTimeout(function(){setTbStatus('');},2500);}}
-function showAddSection(){g('new-section-name').value='';g('modal-add-section').classList.add('show');setTimeout(function(){g('new-section-name').focus();},100);}
-function confirmAddSection(){var name=g('new-section-name').value.trim();if(!name)return;var id='sec_'+newId();db.sections[id]={id:id,label:name,expanded:true,pageOrder:[]};db.sectionOrder.push(id);saveDB();renderSidebar();closeModal('modal-add-section');}
-function showAddPage(sid,e){e.stopPropagation();pendingSectionId=sid;var sec=db.sections[sid];g('modal-section-label').textContent=sec?sec.label:'';g('new-page-name').value='';g('modal-add-page').classList.add('show');setTimeout(function(){g('new-page-name').focus();},100);}
-function confirmAddPage(){var name=g('new-page-name').value.trim();if(!name)return;var id='pg_'+newId();db.pages[id]={id:id,sectionId:pendingSectionId,label:name,status:'draft',wizardData:null,generatedHTML:'',lastEdited:null};db.sections[pendingSectionId].pageOrder.push(id);db.sections[pendingSectionId].expanded=true;saveDB();renderSidebar();closeModal('modal-add-page');openPage(id);}
-function renamePage(){var p=db.pages[currentPageId];if(!p)return;g('rename-input').value=p.label;g('modal-rename').classList.add('show');setTimeout(function(){g('rename-input').select();},100);}
-function confirmRename(){var name=g('rename-input').value.trim();if(!name)return;db.pages[currentPageId].label=name;saveDB();renderSidebar();renderPageHome(db.pages[currentPageId]);closeModal('modal-rename');}
-function deletePage(){var p=db.pages[currentPageId];if(!p)return;g('delete-page-label').textContent=p.label;g('modal-delete').classList.add('show');}
-function confirmDelete(){var p=db.pages[currentPageId];if(!p)return;var s=db.sections[p.sectionId];if(s)s.pageOrder=s.pageOrder.filter(function(id){return id!==currentPageId;});delete db.pages[currentPageId];releaseLock(currentPageId);saveDB();currentPageId=null;renderSidebar();showDashboard();closeModal('modal-delete');}
-function closeModal(id){g(id).classList.remove('show');}
-// ── SIDEBAR COLLAPSE ──────────────────────────────────────────────────────────────
-var sidebarCollapsed = false;
-function toggleSidebar(){
-  sidebarCollapsed = !sidebarCollapsed;
-  var sb = g('sidebar');
-  var btn = g('sidebar-toggle-btn');
-  var logoZone = document.querySelector('.tb-logo-zone');
-  if(sidebarCollapsed){
-    sb.classList.add('collapsed');
-    btn.innerHTML = '&#8677;';
-    btn.title = 'Expand sidebar';
-    if(logoZone) logoZone.style.width = '52px';
-  } else {
-    sb.classList.remove('collapsed');
-    btn.innerHTML = '&#8676;';
-    btn.title = 'Collapse sidebar';
-    if(logoZone) logoZone.style.width = '';
-  }
-}
-
-function setTbStatus(msg){g('tb-status').textContent=msg;}
-</script>
-</body>
-</html>
