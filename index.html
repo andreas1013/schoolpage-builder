@@ -182,7 +182,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <div class="logo">School<em>Page</em></div>
+  <div class="logo">School<em>Page</em> <span style="font-size:10px;font-weight:500;color:var(--ink3);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 7px;margin-left:2px">v1.3</span></div>
   <div class="tb-sep"></div>
   <input class="school-name-input" id="school-name" type="text" value="Western Cape College" oninput="saveProject()" placeholder="School name">
   <div class="tb-sep"></div>
@@ -679,8 +679,7 @@ async function processNextPage(){
     });
     var scrapeData = await scrapeRes.json();
     if(scrapeData.success){
-      page.scrapedText = scrapeData.text || '';
-      page.scrapedLinks = scrapeData.links || [];
+      page.rawHtml = scrapeData.rawHtml || '';
       if(scrapeData.title && scrapeData.title !== page.title) page.title = scrapeData.title;
     }
   }catch(e){
@@ -734,34 +733,131 @@ async function generatePage(page){
   var data = await res.json();
   var html = (data.content&&data.content[0]&&data.content[0].text) || '';
   if(!html) throw new Error('No content returned');
+  // Strip markdown code fences if model wraps output in ```html ... ```
+  html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
   return html;
 }
 
 function buildSystem(){
-  return 'You generate HTML fragments for Microsoft SharePoint Embed web parts.\n\n'
-    +'RULES:\n'
-    +'1. Raw HTML only. No DOCTYPE, no html/head/body tags.\n'
-    +'2. No script tags.\n'
-    +'3. No external fonts or CDN links.\n'
-    +'4. System fonts only: Arial, Helvetica, Georgia, sans-serif.\n'
-    +'5. One <style> block at the top, all CSS prefixed with sp-.\n'
-    +'6. Output ONLY the HTML fragment. No markdown, no backticks, no explanation.\n\n'
-    +'CONTENT:\n'
-    +'- Preserve the school\'s exact wording. Do not rewrite or paraphrase.\n'
-    +'- Structure content with headings and sections based on natural topic breaks.\n'
-    +'- Format important notices, warnings, or deadlines as styled callout boxes.\n'
-    +'- Split long text into readable paragraphs.\n\n'
-    +'ACCESSIBILITY — WCAG 2.1 AA:\n'
-    +'- Every img must have a descriptive alt attribute.\n'
-    +'- Use semantic heading hierarchy (h2 for sections, h3 for sub-sections).\n'
-    +'- Descriptive link text — never "click here".\n'
-    +'- Visible :focus styles on all links.\n'
-    +'- Semantic HTML lists (<ul>/<li>).\n'
-    +'- Add role="region" and aria-label to major sections.\n'
-    +'- Tile links must have aria-label attributes.';
+  return `You are an expert web designer rebuilding Australian school website pages as SharePoint Embed HTML fragments.
+
+CRITICAL CONTENT RULE — READ THIS FIRST:
+You must copy the school's content with ZERO changes. Not one word may be altered, added, removed, or paraphrased.
+- Copy all text EXACTLY as written in the source HTML
+- Copy all links with their EXACT original URLs — do not change, shorten or invent URLs
+- Copy all images using their EXACT original src URLs — do not change image URLs
+- If a list exists in the source, recreate it as a list
+- If a table exists in the source, recreate it as a table
+- If a button/CTA exists in the source, recreate it as a button with the exact same URL and label
+- The ONLY thing you are changing is the visual design and styling
+
+OUTPUT RULES:
+1. Raw HTML fragment only — no DOCTYPE, no html/head/body tags
+2. No script tags
+3. No external fonts or CDN links
+4. System fonts only: Georgia, Arial, Helvetica, sans-serif
+5. One <style> block at the very top — all CSS class names prefixed with sp-
+6. Output ONLY the HTML. No markdown, no backticks, no explanation
+
+ACCESSIBILITY — WCAG 2.1 AA:
+- Every img must have a descriptive alt attribute
+- Heading hierarchy: h2 for sections, h3 for sub-sections — never skip levels
+- All link text must be descriptive — never "click here"
+- Visible :focus styles on all interactive elements: outline:2px solid currentColor; outline-offset:2px
+- Semantic HTML: use ul/ol/li for lists, table/th/td for tables
+- Add role="region" aria-label on major page sections`;
 }
 
 function buildPagePrompt(page, pri, sec){
+  var lightenPri = pri; // used for tints
+  var lines = [];
+
+  lines.push('Redesign this page for ' + project.schoolName + ' keeping ALL content identical.');
+  lines.push('School brand — Primary: ' + pri + ' | Accent: ' + sec + ' | White text on primary backgrounds');
+  lines.push('');
+  lines.push('=== DESIGN SYSTEM ===');
+  lines.push('Build a premium, visually rich page using this design system:');
+  lines.push('');
+  lines.push('TYPOGRAPHY:');
+  lines.push('  - Page hero title: Georgia or serif; font-size:32px; font-weight:700; letter-spacing:-.5px');
+  lines.push('  - Section headings (h2): font-size:22px; font-weight:700; color:' + pri + '; margin:32px 0 8px');
+  lines.push('  - Section heading underline: width:48px; height:4px; background:' + sec + '; border-radius:2px; margin-bottom:20px (a colored bar, not a full-width border)');
+  lines.push('  - Sub-headings (h3): font-size:16px; font-weight:700; color:' + pri + '; margin:20px 0 8px');
+  lines.push('  - Body text: font-size:15px; line-height:1.8; color:#2D2D2D');
+  lines.push('');
+  lines.push('HERO BANNER:');
+  lines.push('  background: linear-gradient(135deg, ' + pri + ' 0%, ' + pri + 'DD 60%, ' + sec + '99 100%)');
+  lines.push('  border-radius:16px; padding:40px 44px; margin-bottom:32px; position:relative; overflow:hidden');
+  lines.push('  Add a subtle pattern overlay: before pseudo-element with radial-gradient circles at opacity:.08');
+  lines.push('  Title: color:#fff; font-size:32px; font-weight:700; font-family:Georgia,serif; margin:0 0 10px');
+  lines.push('  Subtitle if present: color:rgba(255,255,255,.85); font-size:16px; font-weight:400; margin:0');
+  lines.push('');
+  lines.push('CARDS (for any grouped content — programs, campus info, support services):');
+  lines.push('  background:#fff; border-radius:12px; border:1px solid #E8EDF2');
+  lines.push('  box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04)');
+  lines.push('  padding:24px; overflow:hidden');
+  lines.push('  :hover — transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.1); border-color:' + pri + '44; transition:all .2s');
+  lines.push('  Card heading: color:' + pri + '; font-size:16px; font-weight:700; margin:0 0 10px');
+  lines.push('  Card text: color:#555; font-size:14px; line-height:1.65');
+  lines.push('');
+  lines.push('TILE GRID (for icon/logo+label tiles like academic programs):');
+  lines.push('  3-column grid (2-col under 600px, 1-col under 380px); gap:16px');
+  lines.push('  Each tile: background:#fff; border-radius:12px; border:2px solid #E8EDF2');
+  lines.push('  padding:28px 16px; flex-col center; min-height:150px');
+  lines.push('  box-shadow:0 2px 8px rgba(0,0,0,.05)');
+  lines.push('  :hover — border-color:' + pri + '; box-shadow:0 8px 20px rgba(0,0,0,.1); transform:translateY(-3px); transition:all .2s');
+  lines.push('  Logo img: max-height:80px; max-width:120px; object-fit:contain; margin-bottom:14px');
+  lines.push('  Label: font-size:13px; font-weight:700; color:' + pri + '; text-align:center; line-height:1.3');
+  lines.push('');
+  lines.push('CALLOUT / NOTICE BOXES:');
+  lines.push('  Info (blue): background:linear-gradient(135deg,#EFF6FF,#DBEAFE); border-left:5px solid ' + pri + '; border-radius:0 10px 10px 0; padding:18px 22px; margin:20px 0');
+  lines.push('  Warning (amber): background:linear-gradient(135deg,#FFFBEB,#FEF3C7); border-left:5px solid #F59E0B; border-radius:0 10px 10px 0; padding:18px 22px; margin:20px 0');
+  lines.push('  Success (green): background:linear-gradient(135deg,#ECFDF5,#D1FAE5); border-left:5px solid #10B981; border-radius:0 10px 10px 0; padding:18px 22px; margin:20px 0');
+  lines.push('  Callout heading: font-weight:700; font-size:14px; margin-bottom:6px');
+  lines.push('');
+  lines.push('BUTTONS / CTAs:');
+  lines.push('  Primary button: background:' + pri + '; color:#fff; padding:12px 24px; border-radius:8px; font-weight:700; font-size:14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; margin:8px 8px 0 0');
+  lines.push('  :hover — background:' + sec + '; transition:background .15s; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.15)');
+  lines.push('  PDF/Doc button: same style but add 📄 prefix icon');
+  lines.push('  Accent button (secondary): background:' + sec + '; color:#fff; same padding/radius');
+  lines.push('');
+  lines.push('TABLES:');
+  lines.push('  width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; margin:16px 0; box-shadow:0 2px 8px rgba(0,0,0,.06)');
+  lines.push('  Header: background:' + pri + '; color:#fff; font-weight:700; padding:12px 16px; text-align:left');
+  lines.push('  Rows: alternating #fff / #F8FAFF; padding:11px 16px; border-bottom:1px solid #E8EDF2');
+  lines.push('');
+  lines.push('IMAGES (standalone / photo sections):');
+  lines.push('  Wrap in figure: border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.1); margin:20px 0');
+  lines.push('  img: width:100%; height:auto; display:block');
+  lines.push('  2+ images: CSS grid, gap:16px; each image border-radius:10px overflow:hidden');
+  lines.push('');
+  lines.push('PAGE WRAPPER:');
+  lines.push('  max-width:900px; font-family:Arial,Helvetica,sans-serif');
+  lines.push('  Outer background: transparent (SharePoint provides the page bg)');
+  lines.push('');
+  lines.push('=== SOURCE CONTENT ===');
+  lines.push('Below is the raw HTML from the original page. Read its structure and recreate it with the design system above.');
+  lines.push('RULES:');
+  lines.push('  1. Copy ALL text content EXACTLY — not one word changed');
+  lines.push('  2. Copy ALL links with their EXACT original href values');
+  lines.push('  3. Copy ALL image src URLs exactly as they appear');
+  lines.push('  4. Recreate the same content structure (if original has tiles, make tiles; if original has a table, make a table; etc.)');
+  lines.push('  5. Replace the hero/page title banner with the premium gradient hero above');
+  lines.push('  6. Apply the design system to all elements');
+  lines.push('');
+
+  if(page.rawHtml && page.rawHtml.trim()){
+    lines.push('--- RAW HTML START ---');
+    lines.push(page.rawHtml);
+    lines.push('--- RAW HTML END ---');
+  } else {
+    lines.push('(No scraped content available — create a professional placeholder page for: ' + page.title + ' at ' + project.schoolName + ')');
+  }
+
+  return lines.join('\n');
+}
+
+
   var lines = [
     'Redesign this page for ' + project.schoolName + ', an Australian school. It will be embedded in their SharePoint website.',
     'Brand: Primary=' + pri + ' | Accent=' + sec + ' | Text on primary=#fff',
@@ -792,15 +888,31 @@ function buildPagePrompt(page, pri, sec){
     lines.push('   font-size:14px; line-height:1.75; color:#333.');
   }
 
-  // Links
-  if(page.scrapedLinks && page.scrapedLinks.length > 0){
-    var validLinks = page.scrapedLinks.filter(function(l){return l.label&&l.url;}).slice(0,15);
+  // Tiles — if scraper found image+link cards, recreate as a tile grid
+  var tiles = page.scrapedTiles || [];
+  if(tiles.length >= 2){
+    lines.push('');
+    lines.push('3. TILE GRID: The original page has ' + tiles.length + ' clickable tiles with logos/images. Recreate as a 3-column CSS grid.');
+    lines.push('   Grid: display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px.');
+    lines.push('   Responsive: 2-col under 600px, 1-col under 380px.');
+    lines.push('   Each tile: <a href="..." target="_blank"> — display:flex; flex-direction:column; align-items:center; justify-content:center;');
+    lines.push('     padding:24px 16px; border:2px solid ' + pri + '; border-radius:10px; text-decoration:none; min-height:140px;');
+    lines.push('     transition:all .18s; CSS :hover — border-color:' + sec + '; box-shadow:0 4px 16px rgba(0,0,0,.1); transform:translateY(-2px).');
+    lines.push('   Image inside tile: <img src="..." alt="..."> — max-height:80px; max-width:130px; object-fit:contain; margin-bottom:12px.');
+    lines.push('   Label below image: font-size:13px; font-weight:700; color:' + pri + '; text-align:center; line-height:1.3.');
+    lines.push('   IMPORTANT: Use the exact image URLs provided. Do not change them.');
+    tiles.forEach(function(t,i){
+      lines.push('   Tile '+(i+1)+': label="'+t.label+'" href="'+t.url+'" img="'+t.img+'"');
+    });
+  } else {
+    // Regular links
+    var validLinks = (page.scrapedLinks||[]).filter(function(l){return l.label&&l.url;}).slice(0,15);
     if(validLinks.length){
       lines.push('');
-      lines.push('3. USEFUL LINKS section (heading "Related Links" in ' + pri + ' 20px bold border-bottom:2px solid ' + pri + ' margin:24px 0 12px):');
+      lines.push('3. USEFUL LINKS (heading "Related Links" in ' + pri + ' 20px bold border-bottom:2px solid ' + pri + ' margin:24px 0 12px):');
       lines.push('   Bullet list: color:' + pri + '; font-size:14px; line-height:2; hover:underline; target="_blank".');
       validLinks.forEach(function(l,i){
-        lines.push('   Link ' + (i+1) + ': "' + l.label + '" href="' + l.url + '"');
+        lines.push('   Link '+(i+1)+': "'+l.label+'" href="'+l.url+'"');
       });
     }
   }
