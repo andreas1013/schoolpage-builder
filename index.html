@@ -867,60 +867,7 @@ function buildPagePrompt(page, pri, sec){
     ''
   ];
 
-  // Banner
-  lines.push('1. HERO BANNER: background:' + pri + '; color:#fff; border-radius:10px; padding:28px 32px; margin-bottom:0.');
-  lines.push('   Title "' + page.title + '" — font-size:26px; font-weight:700.');
-  lines.push('');
 
-  // Content
-  if(page.scrapedText && page.scrapedText.trim()){
-    lines.push('2. MAIN CONTENT: Structure the following scraped text into a professional page.');
-    lines.push('   - Keep exact wording.');
-    lines.push('   - Add section headings in ' + pri + ' (20px bold, border-bottom:2px solid ' + pri + ' margin:24px 0 12px) where topics naturally change.');
-    lines.push('   - Paragraphs: 14px #333 line-height:1.7.');
-    lines.push('   - Callout boxes for important notices (background:#DBEAFE; border-left:4px solid #93C5FD; color:#1E3A8A; border-radius:0 8px 8px 0; padding:14px 18px; margin:16px 0).');
-    lines.push('');
-    lines.push('   --- CONTENT ---');
-    lines.push('   ' + page.scrapedText.substring(0, 4000));
-    lines.push('   --- END ---');
-  } else {
-    lines.push('2. INTRO: Create a brief professional placeholder intro for a page called "' + page.title + '" at ' + project.schoolName + '.');
-    lines.push('   font-size:14px; line-height:1.75; color:#333.');
-  }
-
-  // Tiles — if scraper found image+link cards, recreate as a tile grid
-  var tiles = page.scrapedTiles || [];
-  if(tiles.length >= 2){
-    lines.push('');
-    lines.push('3. TILE GRID: The original page has ' + tiles.length + ' clickable tiles with logos/images. Recreate as a 3-column CSS grid.');
-    lines.push('   Grid: display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px.');
-    lines.push('   Responsive: 2-col under 600px, 1-col under 380px.');
-    lines.push('   Each tile: <a href="..." target="_blank"> — display:flex; flex-direction:column; align-items:center; justify-content:center;');
-    lines.push('     padding:24px 16px; border:2px solid ' + pri + '; border-radius:10px; text-decoration:none; min-height:140px;');
-    lines.push('     transition:all .18s; CSS :hover — border-color:' + sec + '; box-shadow:0 4px 16px rgba(0,0,0,.1); transform:translateY(-2px).');
-    lines.push('   Image inside tile: <img src="..." alt="..."> — max-height:80px; max-width:130px; object-fit:contain; margin-bottom:12px.');
-    lines.push('   Label below image: font-size:13px; font-weight:700; color:' + pri + '; text-align:center; line-height:1.3.');
-    lines.push('   IMPORTANT: Use the exact image URLs provided. Do not change them.');
-    tiles.forEach(function(t,i){
-      lines.push('   Tile '+(i+1)+': label="'+t.label+'" href="'+t.url+'" img="'+t.img+'"');
-    });
-  } else {
-    // Regular links
-    var validLinks = (page.scrapedLinks||[]).filter(function(l){return l.label&&l.url;}).slice(0,15);
-    if(validLinks.length){
-      lines.push('');
-      lines.push('3. USEFUL LINKS (heading "Related Links" in ' + pri + ' 20px bold border-bottom:2px solid ' + pri + ' margin:24px 0 12px):');
-      lines.push('   Bullet list: color:' + pri + '; font-size:14px; line-height:2; hover:underline; target="_blank".');
-      validLinks.forEach(function(l,i){
-        lines.push('   Link '+(i+1)+': "'+l.label+'" href="'+l.url+'"');
-      });
-    }
-  }
-
-  lines.push('');
-  lines.push('DESIGN: Wrap in div max-width:880px. System fonts. No JS. Clean professional Australian school look. All links target="_blank".');
-  return lines.join('\n');
-}
 
 // ── PAGE ACTIONS ──
 function generateNext(){
