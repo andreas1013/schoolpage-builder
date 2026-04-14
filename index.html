@@ -48,42 +48,107 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .screen.active{display:flex}
 
 /* ══════════════════════════════════════════
-   SCREEN 1 — STYLE CHOOSER
+   SCREEN 1 — ONBOARDING (3 sub-steps)
 ══════════════════════════════════════════ */
-#s-style{flex-direction:column;background:var(--white);animation:fadeUp .4s ease}
-.sc-top{padding:24px 32px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.sc-logo{font-size:17px;font-weight:700;letter-spacing:-.3px}.sc-logo em{color:var(--blue);font-style:normal}
-.sc-ver{font-size:10px;color:var(--ink4);background:var(--bg);border-radius:20px;padding:2px 8px;margin-left:6px;border:1px solid var(--border-m)}
-.sc-school-row{display:flex;align-items:center;gap:10px}
-.sc-school-input{border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);outline:none;text-align:right;width:180px}
-.sc-school-input:focus{background:var(--bg);border-radius:8px;padding:3px 8px;text-align:left}
-.cpill{display:flex;align-items:center;gap:4px;padding:4px 9px 4px 4px;border:1px solid var(--border-m);border-radius:20px;font-size:11px;color:var(--ink3);background:var(--bg);cursor:pointer;transition:border-color .15s}
-.cpill:hover{border-color:var(--ink4)}
-.cdot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.08);overflow:hidden;flex-shrink:0}
-.cdot input[type=color]{width:24px;height:24px;margin:-5px;border:none;cursor:pointer;background:none}
+#s-style{flex-direction:column;background:var(--white)}
+/* Sub-step manager */
+.ob-step{display:none;flex:1;flex-direction:column}
+.ob-step.active{display:flex}
 
-.sc-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 32px 0}
-.sc-hero h1{font-size:36px;font-weight:800;letter-spacing:-.8px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,var(--ink),var(--ink2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.sc-hero p{font-size:15px;color:var(--ink3);text-align:center;margin-bottom:32px;font-weight:400}
+/* ── Step A: URL Entry ── */
+#ob-url{align-items:center;justify-content:center;background:var(--bg);padding:40px 24px}
+.ob-logo-row{margin-bottom:40px;text-align:center}
+.ob-logo{font-size:24px;font-weight:800;letter-spacing:-.5px}.ob-logo em{color:var(--blue);font-style:normal}
+.ob-ver{font-size:11px;color:var(--ink4);margin-left:6px}
+.ob-url-card{background:var(--white);border-radius:20px;padding:36px 40px;width:100%;max-width:500px;box-shadow:var(--shadow-lg);text-align:center}
+.ob-url-card h2{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.ob-url-card p{font-size:14px;color:var(--ink3);margin-bottom:28px;line-height:1.6}
+.ob-url-input{width:100%;padding:14px 16px;border:1.5px solid var(--border-m);border-radius:12px;font-family:inherit;font-size:14px;outline:none;transition:all .15s;margin-bottom:12px;text-align:center}
+.ob-url-input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,102,204,.1)}
+#btn-ob-scan{width:100%;padding:15px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(0,102,204,.25);transition:all .2s}
+#btn-ob-scan:hover{background:#0055AA}
+#btn-ob-scan:disabled{opacity:.4;cursor:not-allowed}
+.ob-scan-status{display:none;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:13px;color:var(--blue)}
+.ob-scan-status.show{display:flex}
+.ob-scan-err{display:none;margin-top:12px;padding:10px 14px;background:var(--red-lt);border-radius:10px;font-size:12px;color:#CC2200;text-align:left}
+.ob-scan-err.show{display:block}
 
-/* Template cards */
-.tpl-cards{display:flex;gap:20px;justify-content:center;margin-bottom:28px}
-.tpl-card{width:260px;border-radius:20px;border:2px solid var(--border-m);overflow:hidden;cursor:pointer;transition:all .2s;background:var(--white);flex-shrink:0;position:relative}
-.tpl-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--blue)}
-.tpl-card.sel{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,102,204,.12),var(--shadow-lg);transform:translateY(-4px)}
-.tpl-card-prev{height:180px;overflow:hidden;pointer-events:none;background:var(--bg)}
-.tpl-card-prev iframe{width:300%;height:540px;transform:scale(.333);transform-origin:top left;border:none}
-.tpl-card-foot{padding:14px 16px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border)}
-.tpl-card-name{font-size:13px;font-weight:700;flex:1}
-.tpl-card-desc{font-size:11px;color:var(--ink3)}
-.tpl-sel-check{width:22px;height:22px;border-radius:50%;background:var(--blue);display:none;align-items:center;justify-content:center;color:#fff;font-size:11px;flex-shrink:0}
-.tpl-card.sel .tpl-sel-check{display:flex}
+/* ── Step B: Brand Colors ── */
+#ob-brand{align-items:center;justify-content:center;background:var(--bg);padding:40px 24px}
+.ob-brand-card{background:var(--white);border-radius:20px;padding:36px 40px;width:100%;max-width:520px;box-shadow:var(--shadow-lg)}
+.ob-brand-top{display:flex;align-items:center;gap:16px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.ob-school-logo{width:64px;height:64px;border-radius:12px;object-fit:contain;background:var(--bg);border:1px solid var(--border-m);padding:4px;flex-shrink:0}
+.ob-school-logo-placeholder{width:64px;height:64px;border-radius:12px;background:var(--bg);border:1px solid var(--border-m);display:flex;align-items:center;justify-content:center;color:var(--ink4);font-size:20px;flex-shrink:0}
+.ob-school-info{flex:1;min-width:0}
+.ob-school-name-input{font-size:18px;font-weight:700;color:var(--ink);border:none;background:none;outline:none;width:100%;font-family:inherit;padding:0}
+.ob-school-name-input:focus{background:var(--bg);border-radius:6px;padding:3px 8px}
+.ob-school-url{font-size:11px;color:var(--ink4);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ob-colors-label{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.ob-colors-row{display:flex;gap:12px;margin-bottom:24px}
+.ob-color-swatch{flex:1;border:1.5px solid var(--border-m);border-radius:14px;padding:14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;background:var(--white)}
+.ob-color-swatch:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.ob-color-preview{height:44px;border-radius:8px;margin-bottom:10px;transition:background .2s}
+.ob-color-swatch-label{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:2px}
+.ob-color-hex{font-size:11px;color:var(--ink3);font-family:monospace}
+.ob-color-swatch input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ob-detected-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--green-lt);border-radius:20px;font-size:10px;font-weight:600;color:#1A7A35;margin-bottom:16px}
+.ob-brand-note{font-size:11px;color:var(--ink3);line-height:1.6;margin-bottom:20px}
+#btn-ob-continue{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(0,102,204,.25);transition:all .2s}
+#btn-ob-continue:hover{background:#0055AA}
+.ob-back-link{text-align:center;margin-top:12px;font-size:12px;color:var(--blue);cursor:pointer}
+.ob-back-link:hover{text-decoration:underline}
 
-.sc-cta{display:flex;flex-direction:column;align-items:center;gap:10px;padding-bottom:32px;flex-shrink:0}
-#btn-choose-tpl{padding:16px 48px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,102,204,.3)}
-#btn-choose-tpl:hover{background:#0055AA;transform:scale(1.02)}
-#btn-choose-tpl:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.sc-cta-note{font-size:11px;color:var(--ink4)}
+/* ── Step C: Template Selection ── */
+#ob-tpl{flex-direction:column;background:var(--bg)}
+.ob-tpl-top{padding:20px 32px 16px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-shrink:0}
+.ob-tpl-school{display:flex;align-items:center;gap:10px}
+.ob-tpl-school-logo{width:32px;height:32px;border-radius:6px;object-fit:contain;background:var(--bg);border:1px solid var(--border-m);padding:2px}
+.ob-tpl-school-name{font-size:13px;font-weight:700;color:var(--ink)}
+.ob-tpl-colors{display:flex;gap:6px}
+.ob-tpl-cswatch{width:18px;height:18px;border-radius:50%;border:2px solid var(--white);box-shadow:var(--shadow-sm);cursor:pointer;overflow:hidden;position:relative}
+.ob-tpl-cswatch input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:200%;height:200%;top:-50%;left:-50%}
+.ob-tpl-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.ob-tpl-hd{padding:24px 32px 8px;flex-shrink:0}
+.ob-tpl-hd h2{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.ob-tpl-hd p{font-size:13px;color:var(--ink3)}
+.ob-tpl-scroll{flex:1;overflow-y:auto;padding:16px 32px 100px}
+.ob-tpl-scroll::-webkit-scrollbar{width:4px}
+.ob-tpl-scroll::-webkit-scrollbar-thumb{background:var(--border-m);border-radius:4px}
+/* Template cards — horizontal layout */
+.tpl-card{background:var(--white);border-radius:20px;border:2px solid var(--border-m);overflow:hidden;cursor:pointer;transition:all .2s;margin-bottom:20px;display:flex;flex-direction:column}
+.tpl-card:hover{border-color:var(--blue);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.tpl-card.sel{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,102,204,.12),var(--shadow-lg)}
+.tpl-card-preview{height:280px;overflow:hidden;position:relative;background:var(--bg)}
+.tpl-card-wireframe{width:100%;height:100%;padding:0}
+.tpl-card-footer{padding:16px 20px;display:flex;align-items:center;gap:12px;border-top:1px solid var(--border);background:var(--white)}
+.tpl-card-info{flex:1}
+.tpl-card-name{font-size:15px;font-weight:700;color:var(--ink)}
+.tpl-card-desc{font-size:12px;color:var(--ink3);margin-top:2px}
+.tpl-card-actions{display:flex;align-items:center;gap:8px}
+.tpl-preview-btn{padding:8px 16px;border:1.5px solid var(--blue);border-radius:var(--rs);background:none;color:var(--blue);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tpl-preview-btn:hover{background:var(--blue-lt)}
+.tpl-select-btn{padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tpl-select-btn:hover{background:#0055AA}
+.tpl-card.sel .tpl-select-btn{background:var(--green)}
+/* Floating continue */
+.ob-tpl-cta{position:fixed;bottom:0;left:0;right:0;padding:16px 32px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-between;z-index:50}
+.ob-tpl-cta.show{display:flex}
+.ob-tpl-cta-info{font-size:13px;color:var(--ink2)}
+.ob-tpl-cta-info strong{font-weight:700;color:var(--ink)}
+#btn-start-project{padding:14px 36px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,102,204,.25);transition:all .2s}
+#btn-start-project:hover{background:#0055AA;transform:scale(1.02)}
+
+/* ── Full-screen preview overlay ── */
+#tpl-fullscreen{position:fixed;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column}
+#tpl-fullscreen.show{display:flex}
+.tfs-top{height:56px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;box-shadow:var(--shadow-sm)}
+.tfs-top h3{font-size:15px;font-weight:700;flex:1}
+#btn-tfs-close{padding:8px 16px;border:1.5px solid var(--border-m);border-radius:var(--rs);background:none;font-family:inherit;font-size:12px;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px}
+#btn-tfs-close:hover{border-color:var(--blue);color:var(--blue)}
+#btn-tfs-use{padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,102,204,.25)}
+#btn-tfs-use:hover{background:#0055AA}
+.tfs-body{flex:1;overflow-y:auto;padding:24px;display:flex;justify-content:center}
+.tfs-wireframe-wrap{width:100%;max-width:900px}
 
 /* ══════════════════════════════════════════
    SCREEN 2 — URL + PAGE SELECT
@@ -330,27 +395,119 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 </head>
 <body>
 
-<!-- ══ SCREEN 1: STYLE CHOOSER ══ -->
+<!-- ══ SCREEN 1: ONBOARDING ══ -->
 <div class="screen active" id="s-style">
-  <div class="sc-top">
-    <div><span class="sc-logo">School<em>Page</em></span><span class="sc-ver">v2.0</span></div>
-    <div class="sc-school-row">
-      <div class="cpill"><div class="cdot" id="d-pri" style="background:#1a3a6b"><input type="color" id="c-pri" value="#1a3a6b" oninput="onColor()"></div>Main</div>
-      <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor()"></div>Accent</div>
-      <input id="school-name" type="text" class="sc-school-input" value="Western Cape College" oninput="saveProject()" placeholder="School name">
+
+  <!-- STEP A: URL ENTRY -->
+  <div class="ob-step active" id="ob-url">
+    <div class="ob-logo-row">
+      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.0</span>
+    </div>
+    <div class="ob-url-card">
+      <h2>Let&#8217;s redesign your school website</h2>
+      <p>Start by entering your school&#8217;s website address. We&#8217;ll scan it and automatically detect your school&#8217;s branding.</p>
+      <input class="ob-url-input" type="url" id="ob-url-input" placeholder="https://westerncapecollege.eq.edu.au">
+      <button id="btn-ob-scan" onclick="obScan()">
+        <i class="fa-solid fa-magnifying-glass"></i> Find my school
+      </button>
+      <div class="ob-scan-status" id="ob-scan-status">
+        <div class="minispin"></div><span id="ob-scan-msg">Scanning your website&hellip;</span>
+      </div>
+      <div class="ob-scan-err" id="ob-scan-err"></div>
     </div>
   </div>
-  <div class="sc-hero">
-    <h1>Choose your design style</h1>
-    <p>Pick the style that feels right for your school. You can always change it later.</p>
-    <div class="tpl-cards" id="tpl-cards"><!-- populated by JS --></div>
+
+  <!-- STEP B: BRAND COLORS -->
+  <div class="ob-step" id="ob-brand">
+    <div class="ob-brand-card">
+      <div class="ob-brand-top">
+        <div id="ob-logo-wrap">
+          <div class="ob-school-logo-placeholder" id="ob-logo-placeholder">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <img class="ob-school-logo" id="ob-school-logo" src="" alt="School logo" style="display:none">
+        </div>
+        <div class="ob-school-info">
+          <input class="ob-school-name-input" id="school-name" type="text" value="Western Cape College" placeholder="School name" oninput="saveProject()">
+          <div class="ob-school-url" id="ob-school-url-label"></div>
+        </div>
+      </div>
+      <div class="ob-detected-badge" id="ob-detected-badge" style="display:none">
+        <i class="fa-solid fa-sparkles" style="font-size:9px"></i> Brand colors detected
+      </div>
+      <div class="ob-colors-label">Your school colours</div>
+      <div class="ob-colors-row">
+        <div class="ob-color-swatch" id="ob-swatch-pri">
+          <div class="ob-color-preview" id="ob-pri-preview"></div>
+          <span class="ob-color-swatch-label">Main colour</span>
+          <span class="ob-color-hex" id="ob-pri-hex">#1a3a6b</span>
+          <input type="color" id="c-pri" value="#1a3a6b" oninput="onColor('pri')">
+        </div>
+        <div class="ob-color-swatch" id="ob-swatch-sec">
+          <div class="ob-color-preview" id="ob-sec-preview"></div>
+          <span class="ob-color-swatch-label">Accent colour</span>
+          <span class="ob-color-hex" id="ob-sec-hex">#f07f24</span>
+          <input type="color" id="c-sec" value="#f07f24" oninput="onColor('sec')">
+        </div>
+      </div>
+      <div class="ob-brand-note">These colours are used for your page designs. Click either colour to adjust it.</div>
+      <button id="btn-ob-continue" onclick="obGoToTemplates()">
+        <i class="fa-solid fa-arrow-right"></i> Choose a design style
+      </button>
+      <div class="ob-back-link" onclick="obGoToUrl()">&#8592; Back</div>
+    </div>
   </div>
-  <div class="sc-cta">
-    <button id="btn-choose-tpl" onclick="goToPages()" disabled><i class="fa-solid fa-arrow-right"></i> Continue with this style</button>
-    <div class="sc-cta-note">Your content stays the same — only the design changes</div>
+
+  <!-- STEP C: TEMPLATE SELECTION -->
+  <div class="ob-step" id="ob-tpl" style="flex-direction:column">
+    <div class="ob-tpl-top">
+      <div class="ob-tpl-school">
+        <img class="ob-tpl-school-logo" id="ob-tpl-logo" src="" alt="" style="display:none">
+        <span class="ob-tpl-school-name" id="ob-tpl-school-name">Western Cape College</span>
+      </div>
+      <div class="ob-tpl-colors">
+        <div class="ob-tpl-cswatch" id="ot-pri-dot" title="Main colour">
+          <input type="color" id="ot-c-pri" oninput="onColor('pri')">
+        </div>
+        <div class="ob-tpl-cswatch" id="ot-sec-dot" title="Accent colour">
+          <input type="color" id="ot-c-sec" oninput="onColor('sec')">
+        </div>
+      </div>
+      <div class="ob-tpl-right">
+        <button class="back-btn" onclick="obGoToBrand()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      </div>
+    </div>
+    <div class="ob-tpl-hd">
+      <h2>Choose your design style</h2>
+      <p>All three use your school colours. Click Preview to see it full screen.</p>
+    </div>
+    <div class="ob-tpl-scroll" id="ob-tpl-scroll">
+      <!-- populated by JS -->
+    </div>
+    <div class="ob-tpl-cta" id="ob-tpl-cta">
+      <div class="ob-tpl-cta-info">Selected: <strong id="ob-selected-name">none</strong></div>
+      <button id="btn-start-project" onclick="startFromOnboarding()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Start redesigning
+      </button>
+    </div>
   </div>
 </div>
 
+<!-- FULL SCREEN TEMPLATE PREVIEW -->
+<div id="tpl-fullscreen">
+  <div class="tfs-top">
+    <h3 id="tfs-name">Heritage — full preview</h3>
+    <button id="btn-tfs-close" onclick="closeTplFullscreen()">
+      <i class="fa-solid fa-arrow-left"></i> Back
+    </button>
+    <button id="btn-tfs-use" onclick="useTplFullscreen()">
+      <i class="fa-solid fa-check"></i> Use this style
+    </button>
+  </div>
+  <div class="tfs-body">
+    <div class="tfs-wireframe-wrap" id="tfs-wireframe"></div>
+  </div>
+</div>
 <!-- ══ SCREEN 2: PAGE SELECTOR ══ -->
 <div class="screen" id="s-pages" style="flex-direction:column;align-items:center;justify-content:center">
   <div class="s-pages-inner">
@@ -513,6 +670,157 @@ var TEMPLATES = {
   }
 };
 
+// ── WIREFRAME MOCKUPS ───────────────────────────────────────────
+// These render as CSS-only design mockups showing the real layout
+// with actual school colors. No lorem text — visual shapes only.
+
+function buildWireframe(id, pri, sec){
+  // Compact version for cards (280px tall)
+  if(id==='heritage') return buildHeritageWireframe(pri, sec, false);
+  if(id==='metro')    return buildMetroWireframe(pri, sec, false);
+  return buildCanvasWireframe(pri, sec, false);
+}
+
+function buildWireframeFull(id, pri, sec){
+  // Full version for fullscreen preview
+  if(id==='heritage') return buildHeritageWireframe(pri, sec, true);
+  if(id==='metro')    return buildMetroWireframe(pri, sec, true);
+  return buildCanvasWireframe(pri, sec, true);
+}
+
+function buildHeritageWireframe(pri, sec, full){
+  var schoolName = project.schoolName || 'Western Cape College';
+  var scale = full ? 1 : 1;
+  return '<div style="background:#F9F8F6;font-family:Georgia,serif;padding:'+(full?'0':'0')+'">'
+    // Hero
+    +'<div style="background:linear-gradient(135deg,'+pri+' 0%,'+pri+'CC 100%);padding:'+(full?'44px 48px':'24px 28px')+';position:relative;overflow:hidden">'
+    +'<div style="position:absolute;right:-20px;bottom:-20px;width:'+(full?'180px':'90px')+';height:'+(full?'180px':'90px')+';border-radius:50%;border:'+(full?'40px':'20px')+' solid rgba(255,255,255,.08)"></div>'
+    +'<div style="color:#fff;font-size:'+(full?'34px':'18px')+';font-weight:700;font-family:Georgia,serif;letter-spacing:-.5px;position:relative">'+schoolName+'</div>'
+    +'<div style="color:rgba(255,255,255,.75);font-size:'+(full?'15px':'9px')+';font-style:italic;margin-top:'+(full?'8px':'4px')+';position:relative">Excellence in education since 1962</div>'
+    +'<div style="width:'+(full?'60px':'30px')+';height:'+(full?'3px':'2px')+';background:'+sec+';border-radius:2px;margin-top:'+(full?'16px':'8px')+'"></div>'
+    +'</div>'
+    // Section heading
+    +'<div style="padding:'+(full?'28px 48px 0':'14px 28px 0')+'">'
+    +'<div style="color:'+pri+';font-size:'+(full?'21px':'11px')+';font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+pri+';padding-bottom:'+(full?'8px':'4px')+';margin-bottom:'+(full?'20px':'10px')+'">Our Programs</div>'
+    // Cards
+    +'<div style="display:flex;flex-direction:column;gap:'+(full?'12px':'6px')+'">'
+    +['Curriculum & Learning','Wellbeing Support','Extra-Curricular'].map(function(t){
+      return '<div style="background:#fff;border:1px solid #DDE3EF;border-left:4px solid '+pri+';border-radius:0 10px 10px 0;padding:'+(full?'16px 20px':'8px 10px')+';box-shadow:0 2px 6px rgba(0,0,0,.05)">'
+        +'<div style="font-size:'+(full?'14px':'8px')+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+(full?'4px':'2px')+'">'+t+'</div>'
+        +'<div style="display:flex;gap:'+(full?'6px':'3px')+';flex-wrap:wrap">'
+        +'<div style="height:'+(full?'8px':'4px')+';border-radius:3px;background:#E5EAF5;flex:3"></div>'
+        +'<div style="height:'+(full?'8px':'4px')+';border-radius:3px;background:#E5EAF5;flex:2"></div>'
+        +'</div></div>';
+    }).join('')
+    +'</div>'
+    // Stat strip
+    +'<div style="display:flex;gap:0;margin-top:'+(full?'24px':'12px')+';border:1px solid #DDE3EF;border-radius:10px;overflow:hidden">'
+    +[['1200+','Students'],['45','Years'],['98%','Satisfaction']].map(function(s,i){
+      return '<div style="flex:1;padding:'+(full?'16px':'8px')+';text-align:center;border-right:'+(i<2?'1px solid #DDE3EF':'none')+';background:#fff">'
+        +'<div style="font-size:'+(full?'26px':'13px')+';font-weight:700;color:'+pri+';font-family:Georgia,serif">'+s[0]+'</div>'
+        +'<div style="font-size:'+(full?'11px':'6px')+';color:#86868B;margin-top:'+(full?'2px':'1px')+'">'+s[1]+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Callout
+    +'<div style="background:#FFFBF0;border-left:4px solid '+sec+';border-radius:0 8px 8px 0;padding:'+(full?'14px 18px':'7px 9px')+';margin-top:'+(full?'20px':'10px')+'">'
+    +'<div style="font-size:'+(full?'13px':'7px')+';color:#7A4600;font-style:italic;font-family:Georgia,serif">Key information and important notices will appear here for students and families.</div>'
+    +'</div>'
+    // Button
+    +'<div style="margin-top:'+(full?'20px':'10px')+';padding-bottom:'+(full?'32px':'16px')+'">'
+    +'<div style="display:inline-block;background:'+pri+';color:#fff;padding:'+(full?'11px 22px':'6px 12px')+';border-radius:6px;font-size:'+(full?'13px':'7px')+';font-weight:700;font-family:Georgia,serif">Learn More</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+function buildMetroWireframe(pri, sec, full){
+  var schoolName = project.schoolName || 'Western Cape College';
+  return '<div style="background:#EFEFEF;font-family:Arial,sans-serif;padding:0">'
+    // Hero
+    +'<div style="background:'+pri+';padding:'+(full?'44px 48px':'24px 28px')+';position:relative;overflow:hidden">'
+    +'<div style="position:absolute;top:0;right:0;width:'+(full?'10px':'5px')+';height:100%;background:'+sec+'"></div>'
+    +'<div style="position:absolute;bottom:-30px;right:80px;width:'+(full?'140px':'70px')+';height:'+(full?'140px':'70px')+';border-radius:50%;background:rgba(255,255,255,.06)"></div>'
+    +'<div style="position:absolute;top:-30px;right:200px;width:'+(full?'100px':'50px')+';height:'+(full?'100px':'50px')+';border-radius:50%;background:rgba(255,255,255,.04)"></div>'
+    +'<div style="color:#fff;font-size:'+(full?'36px':'19px')+';font-weight:900;text-transform:uppercase;letter-spacing:-1px;position:relative">'+schoolName.toUpperCase()+'</div>'
+    +'<div style="color:'+sec+';font-size:'+(full?'12px':'6px')+';font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-top:'+(full?'6px':'3px')+';position:relative">Excellence in Education</div>'
+    +'</div>'
+    // Section badge
+    +'<div style="padding:'+(full?'24px 48px 0':'12px 28px 0')+'">'
+    +'<div style="display:inline-block;background:'+pri+';color:#fff;font-size:'+(full?'11px':'6px')+';font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:'+(full?'6px 14px':'3px 8px')+';border-radius:6px;margin-bottom:'+(full?'16px':'8px')+'">Our Programs</div>'
+    // Stat strip
+    +'<div style="background:'+pri+';border-radius:12px;padding:'+(full?'20px':'10px')+';display:flex;gap:0;margin-bottom:'+(full?'16px':'8px')+'">'
+    +[['1200+','Students'],['45','Years'],['98%','Satisfaction'],['120+','Staff']].map(function(s,i){
+      return '<div style="flex:1;text-align:center;border-right:'+(i<3?'1px solid rgba(255,255,255,.15)':'none')+'">'
+        +'<div style="font-size:'+(full?'28px':'14px')+';font-weight:900;color:#fff">'+s[0]+'</div>'
+        +'<div style="font-size:'+(full?'10px':'5px')+';color:'+sec+';text-transform:uppercase;letter-spacing:.5px">'+s[1]+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Cards grid
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:'+(full?'12px':'6px')+'">'
+    +['Curriculum','Wellbeing','Activities','Support'].map(function(t){
+      return '<div style="background:#fff;border-radius:12px;padding:'+(full?'18px':'9px')+';box-shadow:0 4px 20px rgba(0,0,0,.08)">'
+        +'<div style="font-size:'+(full?'12px':'6px')+';font-weight:900;color:'+pri+';text-transform:uppercase;margin-bottom:'+(full?'8px':'4px')+'">'+t+'</div>'
+        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#F0F0F0;margin-bottom:'+(full?'4px':'2px')+'"></div>'
+        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#F0F0F0;width:70%"></div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // CTA
+    +'<div style="margin-top:'+(full?'20px':'10px')+';padding-bottom:'+(full?'32px':'16px')+'">'
+    +'<div style="display:inline-block;background:'+sec+';color:#111;padding:'+(full?'12px 28px':'6px 14px')+';border-radius:40px;font-size:'+(full?'13px':'7px')+';font-weight:900;text-transform:uppercase;letter-spacing:.5px">Learn More</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+function buildCanvasWireframe(pri, sec, full){
+  var schoolName = project.schoolName || 'Western Cape College';
+  return '<div style="background:#EEF0F5;font-family:Arial,sans-serif;padding:0">'
+    // Hero
+    +'<div style="background:linear-gradient(135deg,'+pri+' 0%,'+pri+'EE 45%,'+sec+'BB 100%);padding:'+(full?'52px 48px':'28px 28px')+';position:relative;overflow:hidden">'
+    +'<div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.18),transparent 55%)"></div>'
+    +'<div style="position:absolute;bottom:-50px;right:-50px;width:'+(full?'200px':'100px')+';height:'+(full?'200px':'100px')+';border-radius:50%;border:'+(full?'50px':'25px')+' solid rgba(255,255,255,.08)"></div>'
+    +'<div style="color:#fff;font-size:'+(full?'36px':'19px')+';font-weight:700;font-family:Georgia,serif;line-height:1.15;position:relative">'+schoolName+'</div>'
+    +'<div style="color:rgba(255,255,255,.88);font-size:'+(full?'15px':'8px')+';margin-top:'+(full?'8px':'4px')+';position:relative">Excellence in education since 1962</div>'
+    +'</div>'
+    // Section heading with accent bar
+    +'<div style="padding:'+(full?'28px 48px 0':'14px 28px 0')+'">'
+    +'<div style="color:'+pri+';font-size:'+(full?'22px':'12px')+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+(full?'6px':'3px')+'">Our Programs</div>'
+    +'<div style="width:'+(full?'52px':'26px')+';height:'+(full?'4px':'2px')+';background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:'+(full?'20px':'10px')+'"></div>'
+    // Card grid
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:'+(full?'14px':'7px')+';margin-bottom:'+(full?'20px':'10px')+'">'
+    +['Curriculum','Wellbeing','Activities'].map(function(t){
+      return '<div style="background:#fff;border-radius:14px;border-top:4px solid '+sec+';padding:'+(full?'20px':'10px')+';box-shadow:0 4px 20px rgba(0,0,0,.07)">'
+        +'<div style="font-size:'+(full?'12px':'7px')+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+(full?'8px':'4px')+'">'+t+'</div>'
+        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#EEF0F5;margin-bottom:'+(full?'4px':'2px')+'"></div>'
+        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#EEF0F5;width:75%"></div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Info strip
+    +'<div style="display:flex;gap:0;border:1px solid rgba(0,0,0,.08);border-radius:14px;overflow:hidden;background:#fff;margin-bottom:'+(full?'20px':'10px')+'">'
+    +[['1200+','Students'],['45yrs','Experience'],['98%','Satisfaction']].map(function(s,i){
+      return '<div style="flex:1;padding:'+(full?'16px':'8px')+';text-align:center;border-right:'+(i<2?'1px solid rgba(0,0,0,.06)':'none')+'">'
+        +'<div style="font-size:'+(full?'24px':'12px')+';font-weight:700;color:'+sec+';font-family:Georgia,serif">'+s[0]+'</div>'
+        +'<div style="font-size:'+(full?'10px':'5px')+';color:#86868B">'+s[1]+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Callout
+    +'<div style="background:linear-gradient(135deg,#F8FAFF,#EEF2FF);border-left:5px solid '+pri+';border-radius:0 12px 12px 0;padding:'+(full?'16px 20px':'8px 10px')+';margin-bottom:'+(full?'20px':'10px')+'">'
+    +'<div style="font-size:'+(full?'13px':'7px')+';color:#1E293B;line-height:1.6">Important information and key notices for students and families.</div>'
+    +'</div>'
+    // Button
+    +'<div style="padding-bottom:'+(full?'32px':'16px')+'">'
+    +'<div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,'+pri+','+pri+'CC);color:#fff;padding:'+(full?'12px 24px':'6px 12px')+';border-radius:10px;font-size:'+(full?'13px':'7px')+';font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15)">Learn More &rarr;</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+
 // ── STATE ───────────────────────────────────────────────────────
 var project={schoolName:'Western Cape College',siteUrl:'',primaryColor:'#1a3a6b',accentColor:'#f07f24',template:'heritage',pages:[]};
 var selId=null,curView='preview',isGen=false,navPages=[],selAll=false,discovered=[];
@@ -532,17 +840,30 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   g(id).classList.add('active');
 }
-function goToStyle(){showScreen('s-style');}
+function showObStep(id){
+  document.querySelectorAll('.ob-step').forEach(function(s){s.classList.remove('active');});
+  g(id).classList.add('active');
+}
+function goToStyle(){showScreen('s-style');showObStep('ob-url');}
 function goToPages(){showScreen('s-pages');}
 function goToMain(){showScreen('s-main');}
+function obGoToUrl(){showObStep('ob-url');}
+function obGoToBrand(){showObStep('ob-brand');}
+function obGoToTemplates(){
+  showObStep('ob-tpl');
+  var n=g('ob-tpl-school-name');if(n)n.textContent=project.schoolName;
+  syncTopColors();
+  renderOnboardingTemplates();
+}
 
 // ── INIT ────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',function(){
   loadProject();
-  renderTemplateCards();
-  renderStyleStrip();
-  updateTplPill();
-  if(project.pages.length>0){goToMain();renderTree();updateProgress();}
+  if(project.pages.length>0){
+    goToMain();renderTree();updateProgress();renderStyleStrip();
+  } else {
+    showObStep('ob-url');
+  }
   initVoice();
   var dz=g('drop-zone');
   if(dz){
@@ -552,10 +873,192 @@ window.addEventListener('DOMContentLoaded',function(){
   }
 });
 
-function onColor(){
-  project.primaryColor=gv('c-pri');project.accentColor=gv('c-sec');
-  g('d-pri').style.background=project.primaryColor;g('d-sec').style.background=project.accentColor;
-  renderTemplateCards();renderStyleStrip();saveProject();
+function onColor(which){
+  var pri = gv('c-pri') || gv('ot-c-pri') || project.primaryColor;
+  var sec = gv('c-sec') || gv('ot-c-sec') || project.accentColor;
+  // sync all color inputs
+  if(which==='pri'){ pri=gv('c-pri')||gv('ot-c-pri'); }
+  else { sec=gv('c-sec')||gv('ot-c-sec'); }
+  project.primaryColor = pri;
+  project.accentColor  = sec;
+  updateColorUI();
+  renderOnboardingTemplates();
+  renderStyleStrip();
+  saveProject();
+}
+
+function updateColorUI(){
+  var pri=project.primaryColor, sec=project.accentColor;
+  // Step B swatches
+  var pp=g('ob-pri-preview'); if(pp)pp.style.background=pri;
+  var sp=g('ob-sec-preview'); if(sp)sp.style.background=sec;
+  var ph=g('ob-pri-hex'); if(ph)ph.textContent=pri;
+  var sh=g('ob-sec-hex'); if(sh)sh.textContent=sec;
+  // Sync all color inputs
+  ['c-pri','ot-c-pri'].forEach(function(id){var el=g(id);if(el)el.value=pri;});
+  ['c-sec','ot-c-sec'].forEach(function(id){var el=g(id);if(el)el.value=sec;});
+  // Top nav dots
+  var pd=g('ot-pri-dot'); if(pd)pd.style.background=pri;
+  var sd=g('ot-sec-dot'); if(sd)sd.style.background=sec;
+}
+
+function syncTopColors(){
+  var pri=project.primaryColor, sec=project.accentColor;
+  var p=g('ot-c-pri'); if(p)p.value=pri;
+  var s=g('ot-c-sec'); if(s)s.value=sec;
+  var pd=g('ot-pri-dot'); if(pd)pd.style.background=pri;
+  var sd=g('ot-sec-dot'); if(sd)sd.style.background=sec;
+}
+
+// ── ONBOARDING SCAN ──────────────────────────────────────────────
+var obNavPages = [];
+
+async function obScan(){
+  var url = gv('ob-url-input').trim();
+  if(!url){alert('Please enter your school website address.');return;}
+  if(!url.startsWith('http'))url='https://'+url;
+  g('btn-ob-scan').disabled=true;
+  g('ob-scan-msg').textContent='Scanning '+url+'...';
+  g('ob-scan-status').classList.add('show');
+  g('ob-scan-err').classList.remove('show');
+  try{
+    var res=await fetch(WORKER+'/scrape',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url})});
+    var data=await res.json();
+    if(!data.success)throw new Error(data.error||'Could not load the website. Check the address and try again.');
+    obNavPages=data.nav||[];
+    if(!obNavPages.length)throw new Error('No pages found.');
+
+    // Apply detected brand
+    project.siteUrl=url;
+    if(data.schoolName)project.schoolName=data.schoolName;
+    if(data.primaryColor)project.primaryColor=data.primaryColor;
+    if(data.accentColor) project.accentColor =data.accentColor;
+
+    // Update school name input
+    var sn=g('school-name');if(sn)sn.value=project.schoolName;
+
+    // Show logo
+    if(data.logo){
+      var logoImg=g('ob-school-logo');
+      var logoPlaceholder=g('ob-logo-placeholder');
+      logoImg.src=data.logo;
+      logoImg.onload=function(){logoImg.style.display='block';if(logoPlaceholder)logoPlaceholder.style.display='none';};
+      logoImg.onerror=function(){logoImg.style.display='none';if(logoPlaceholder)logoPlaceholder.style.display='flex';};
+      project.logo=data.logo;
+    }
+
+    // Show detected badge if colors found
+    if(data.primaryColor||data.accentColor){
+      var badge=g('ob-detected-badge');if(badge)badge.style.display='inline-flex';
+    }
+
+    // Update URL label
+    var urlLabel=g('ob-school-url-label');if(urlLabel)urlLabel.textContent=url;
+
+    // Update color UI
+    updateColorUI();
+    saveProject();
+    showObStep('ob-brand');
+
+  }catch(e){
+    g('ob-scan-err').textContent=e.message;
+    g('ob-scan-err').classList.add('show');
+  }finally{
+    g('btn-ob-scan').disabled=false;
+    g('ob-scan-status').classList.remove('show');
+  }
+}
+
+// ── ONBOARDING TEMPLATE CARDS ────────────────────────────────────
+var selectedTplId = 'heritage';
+var fullscreenTplId = '';
+
+function renderOnboardingTemplates(){
+  var scroll=g('ob-tpl-scroll');if(!scroll)return;
+  scroll.innerHTML='';
+  var pri=project.primaryColor, sec=project.accentColor;
+  Object.keys(TEMPLATES).forEach(function(id){
+    var tpl=TEMPLATES[id];
+    var card=document.createElement('div');
+    card.className='tpl-card'+(id===selectedTplId?' sel':'');
+    card.id='obcard-'+id;
+
+    // Wireframe preview
+    var prevDiv=document.createElement('div');
+    prevDiv.className='tpl-card-preview';
+    prevDiv.innerHTML=buildWireframe(id,pri,sec);
+    card.appendChild(prevDiv);
+
+    // Footer
+    var foot=document.createElement('div');
+    foot.className='tpl-card-footer';
+    foot.innerHTML='<div class="tpl-card-info"><div class="tpl-card-name">'+tpl.name+'</div><div class="tpl-card-desc">'+tpl.desc+'</div></div>'
+      +'<div class="tpl-card-actions">'
+      +'<button class="tpl-preview-btn" onclick="openTplFullscreen(\'' + id + '\')" data-id="'+id+'"><i class="fa-solid fa-expand"></i> Full screen</button>'
+      +'<button class="tpl-select-btn" id="obsel-'+id+'" onclick="selectObTpl(\'' + id + '\')" data-id="'+id+'"><i class="fa-solid fa-check"></i> '+(id===selectedTplId?'Selected':'Select')+'</button>'
+      +'</div>';
+    card.appendChild(foot);
+    card.onclick=function(e){if(!e.target.closest('button'))selectObTpl(id);};
+    scroll.appendChild(card);
+  });
+  updateObCta();
+}
+
+function selectObTpl(id){
+  selectedTplId=id;
+  document.querySelectorAll('.tpl-card').forEach(function(c){c.classList.remove('sel');});
+  var card=g('obcard-'+id);if(card)card.classList.add('sel');
+  document.querySelectorAll('.tpl-select-btn').forEach(function(b){
+    b.innerHTML='<i class="fa-solid fa-check"></i> '+(b.dataset.id===id?'Selected':'Select');
+    if(b.dataset.id===id)b.style.background='var(--green)';
+    else b.style.background='var(--blue)';
+  });
+  updateObCta();
+}
+
+function updateObCta(){
+  var cta=g('ob-tpl-cta');
+  var name=g('ob-selected-name');
+  if(cta)cta.classList.add('show');
+  if(name&&TEMPLATES[selectedTplId])name.textContent=TEMPLATES[selectedTplId].name;
+}
+
+// ── FULL SCREEN TEMPLATE PREVIEW ─────────────────────────────────
+function openTplFullscreen(id){
+  fullscreenTplId=id;
+  var tpl=TEMPLATES[id];
+  var pri=project.primaryColor,sec=project.accentColor;
+  var nameEl=g('tfs-name');if(nameEl)nameEl.textContent=tpl.name+' — '+tpl.desc;
+  var wrap=g('tfs-wireframe');
+  if(wrap)wrap.innerHTML=buildWireframeFull(id,pri,sec);
+  g('tpl-fullscreen').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeTplFullscreen(){
+  g('tpl-fullscreen').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+function useTplFullscreen(){
+  selectObTpl(fullscreenTplId);
+  closeTplFullscreen();
+}
+
+function startFromOnboarding(){
+  if(!selectedTplId)return;
+  project.template=selectedTplId;
+  saveProject();
+  // Filter out homepage
+  var origin='';try{origin=new URL(project.siteUrl).origin;}catch(e){}
+  var pages=obNavPages.filter(function(p){
+    var path='';try{path=new URL(p.url).pathname;}catch(e){}
+    return path!=='/'&&path!==''&&p.url!==project.siteUrl&&p.url!==origin&&p.url!==origin+'/';
+  });
+  // Go to page selection
+  navPages=pages;
+  renderPageList(navPages);
+  showScreen('s-pages');
 }
 
 // ── SAVE/LOAD ────────────────────────────────────────────────────
