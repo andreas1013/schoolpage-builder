@@ -50,13 +50,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 /* ══════════════════════════════════════════
    SCREEN 1 — ONBOARDING (3 sub-steps)
 ══════════════════════════════════════════ */
-#s-style{flex-direction:column;background:var(--white)}
+#s-style{flex-direction:column;background:var(--white);height:100%;overflow:hidden}
 /* Sub-step manager */
-.ob-step{display:none;flex:1;flex-direction:column}
-.ob-step.active{display:flex}
+.ob-step{display:none;flex:1;flex-direction:column;overflow:hidden;height:100%}
+.ob-step.active{display:flex;height:100%}
 
 /* ── Step A: URL Entry ── */
-#ob-url{align-items:center;justify-content:center;background:var(--bg);padding:40px 24px}
+#ob-url{align-items:center;justify-content:center;background:var(--bg);padding:40px 24px;overflow-y:auto}
 .ob-logo-row{margin-bottom:40px;text-align:center}
 .ob-logo{font-size:24px;font-weight:800;letter-spacing:-.5px}.ob-logo em{color:var(--blue);font-style:normal}
 .ob-ver{font-size:11px;color:var(--ink4);margin-left:6px}
@@ -74,7 +74,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .ob-scan-err.show{display:block}
 
 /* ── Step B: Brand Colors ── */
-#ob-brand{align-items:center;justify-content:center;background:var(--bg);padding:40px 24px}
+#ob-brand{align-items:center;justify-content:center;background:var(--bg);padding:40px 24px;overflow-y:auto}
 .ob-brand-card{background:var(--white);border-radius:20px;padding:36px 40px;width:100%;max-width:520px;box-shadow:var(--shadow-lg)}
 .ob-brand-top{display:flex;align-items:center;gap:16px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)}
 .ob-school-logo{width:64px;height:64px;border-radius:12px;object-fit:contain;background:var(--bg);border:1px solid var(--border-m);padding:4px;flex-shrink:0}
@@ -99,7 +99,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .ob-back-link:hover{text-decoration:underline}
 
 /* ── Step C: Template Selection ── */
-#ob-tpl{flex-direction:column;background:var(--bg)}
+#ob-tpl{flex-direction:column;background:var(--bg);height:100%;overflow:hidden}
 .ob-tpl-top{padding:20px 32px 16px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-shrink:0}
 .ob-tpl-school{display:flex;align-items:center;gap:10px}
 .ob-tpl-school-logo{width:32px;height:32px;border-radius:6px;object-fit:contain;background:var(--bg);border:1px solid var(--border-m);padding:2px}
@@ -451,6 +451,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         </div>
       </div>
       <div class="ob-brand-note">These colours are used for your page designs. Click either colour to adjust it.</div>
+      <div id="ob-font-row" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border-m)">
+        <div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;align-items:center;gap:5px"><i class="fa-solid fa-font" style="color:var(--blue)"></i> Detected typography</div>
+        <div style="display:flex;gap:12px">
+          <div id="ob-heading-font-wrap" style="flex:1;display:none">
+            <div style="font-size:10px;color:var(--ink3);margin-bottom:3px">Heading font</div>
+            <div id="ob-heading-font" style="font-size:14px;font-weight:700;color:var(--ink)"></div>
+          </div>
+          <div id="ob-body-font-wrap" style="flex:1;display:none">
+            <div style="font-size:10px;color:var(--ink3);margin-bottom:3px">Body font</div>
+            <div id="ob-body-font" style="font-size:13px;color:var(--ink2)"></div>
+          </div>
+        </div>
+      </div>
       <button id="btn-ob-continue" onclick="obGoToTemplates()">
         <i class="fa-solid fa-arrow-right"></i> Choose a design style
       </button>
@@ -671,151 +684,338 @@ var TEMPLATES = {
 };
 
 // ── WIREFRAME MOCKUPS ───────────────────────────────────────────
-// These render as CSS-only design mockups showing the real layout
-// with actual school colors. No lorem text — visual shapes only.
+// Full CSS-only design mockups. No iframes, no lorem text.
+// Shows real layout with actual school colours.
 
 function buildWireframe(id, pri, sec){
-  // Compact version for cards (280px tall)
-  if(id==='heritage') return buildHeritageWireframe(pri, sec, false);
-  if(id==='metro')    return buildMetroWireframe(pri, sec, false);
-  return buildCanvasWireframe(pri, sec, false);
+  var fonts = project.fonts || {};
+  if(id==='heritage') return buildHeritageWF(pri,sec,fonts,false);
+  if(id==='metro')    return buildMetroWF(pri,sec,fonts,false);
+  return buildCanvasWF(pri,sec,fonts,false);
 }
-
 function buildWireframeFull(id, pri, sec){
-  // Full version for fullscreen preview
-  if(id==='heritage') return buildHeritageWireframe(pri, sec, true);
-  if(id==='metro')    return buildMetroWireframe(pri, sec, true);
-  return buildCanvasWireframe(pri, sec, true);
+  var fonts = project.fonts || {};
+  if(id==='heritage') return buildHeritageWF(pri,sec,fonts,true);
+  if(id==='metro')    return buildMetroWF(pri,sec,fonts,true);
+  return buildCanvasWF(pri,sec,fonts,true);
 }
 
-function buildHeritageWireframe(pri, sec, full){
-  var schoolName = project.schoolName || 'Western Cape College';
-  var scale = full ? 1 : 1;
-  return '<div style="background:#F9F8F6;font-family:Georgia,serif;padding:'+(full?'0':'0')+'">'
-    // Hero
-    +'<div style="background:linear-gradient(135deg,'+pri+' 0%,'+pri+'CC 100%);padding:'+(full?'44px 48px':'24px 28px')+';position:relative;overflow:hidden">'
-    +'<div style="position:absolute;right:-20px;bottom:-20px;width:'+(full?'180px':'90px')+';height:'+(full?'180px':'90px')+';border-radius:50%;border:'+(full?'40px':'20px')+' solid rgba(255,255,255,.08)"></div>'
-    +'<div style="color:#fff;font-size:'+(full?'34px':'18px')+';font-weight:700;font-family:Georgia,serif;letter-spacing:-.5px;position:relative">'+schoolName+'</div>'
-    +'<div style="color:rgba(255,255,255,.75);font-size:'+(full?'15px':'9px')+';font-style:italic;margin-top:'+(full?'8px':'4px')+';position:relative">Excellence in education since 1962</div>'
-    +'<div style="width:'+(full?'60px':'30px')+';height:'+(full?'3px':'2px')+';background:'+sec+';border-radius:2px;margin-top:'+(full?'16px':'8px')+'"></div>'
+// Shared helpers
+function wfLines(count,w,h,color){
+  var out='';for(var i=0;i<count;i++)out+='<div style="height:'+h+'px;border-radius:3px;background:'+color+';margin-bottom:5px;width:'+(i===count-1?'65%':w)+'"></div>';
+  return out;
+}
+function wfImg(w,h,pri){
+  return '<div style="width:'+w+';height:'+h+'px;border-radius:10px;background:linear-gradient(135deg,'+pri+'22,'+pri+'44);display:flex;align-items:center;justify-content:center;margin-bottom:12px">'
+    +'<div style="width:32px;height:32px;border-radius:50%;background:'+pri+'33"></div>'
+    +'</div>';
+}
+
+function buildHeritageWF(pri,sec,fonts,full){
+  var s=full?1:.5; // scale multiplier for text sizing
+  var p=function(px){return Math.round(px*s)+'px';};
+  var school = project.schoolName||'Western Cape College';
+  return '<div style="font-family:Georgia,serif;background:#F9F8F6">'
+    // Nav bar
+    +'<div style="background:'+pri+';padding:'+p(10)+' '+p(20)+';display:flex;align-items:center;gap:'+p(16)+'">'
+    +'<div style="width:'+p(32)+';height:'+p(32)+';border-radius:6px;background:rgba(255,255,255,.25)"></div>'
+    +'<div style="color:#fff;font-size:'+p(13)+';font-weight:700;flex:1">'+school+'</div>'
+    +['Home','About','Learning','Community'].map(function(t){return '<div style="color:rgba(255,255,255,.75);font-size:'+p(10)+';white-space:nowrap">'+t+'</div>';}).join('')
     +'</div>'
-    // Section heading
-    +'<div style="padding:'+(full?'28px 48px 0':'14px 28px 0')+'">'
-    +'<div style="color:'+pri+';font-size:'+(full?'21px':'11px')+';font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+pri+';padding-bottom:'+(full?'8px':'4px')+';margin-bottom:'+(full?'20px':'10px')+'">Our Programs</div>'
+    // Hero
+    +'<div style="background:linear-gradient(135deg,'+pri+' 0%,'+pri+'BB 100%);padding:'+p(40)+' '+p(44)+';position:relative;overflow:hidden">'
+    +'<div style="position:absolute;right:-20px;bottom:-20px;width:'+p(160)+';height:'+p(160)+';border-radius:50%;border:'+p(36)+' solid rgba(255,255,255,.08)"></div>'
+    +'<div style="position:absolute;top:-30px;left:60%;width:'+p(100)+';height:'+p(100)+';border-radius:50%;background:rgba(255,255,255,.05)"></div>'
+    +'<div style="color:#fff;font-size:'+p(32)+';font-weight:700;font-family:Georgia,serif;letter-spacing:-.5px;position:relative;margin-bottom:'+p(8)+'">'+school+'</div>'
+    +'<div style="color:rgba(255,255,255,.75);font-size:'+p(14)+';font-style:italic;position:relative;margin-bottom:'+p(16)+'">Excellence in Education Since 1962</div>'
+    +'<div style="display:flex;gap:'+p(10)+';position:relative">'
+    +'<div style="background:#fff;color:'+pri+';padding:'+p(10)+' '+p(20)+';border-radius:5px;font-size:'+p(12)+';font-weight:700;font-family:Georgia,serif">Enrol Now</div>'
+    +'<div style="border:2px solid rgba(255,255,255,.6);color:#fff;padding:'+p(10)+' '+p(20)+';border-radius:5px;font-size:'+p(12)+';font-weight:600">Learn More</div>'
+    +'</div>'
+    +'</div>'
+    // Breadcrumb
+    +'<div style="padding:'+p(10)+' '+p(44)+';border-bottom:1px solid #E8E4DC;background:#fff;font-size:'+p(10)+';color:#999;display:flex;align-items:center;gap:'+p(6)+'">'
+    +'<span>Home</span><span style="color:#ccc">›</span><span>About</span><span style="color:#ccc">›</span><span style="color:'+pri+'">Our School</span>'
+    +'</div>'
+    // Two-col layout
+    +'<div style="display:flex;gap:'+p(28)+';padding:'+p(28)+' '+p(44)+'">'
+    // Main content
+    +'<div style="flex:2">'
+    +'<div style="color:'+pri+';font-size:'+p(20)+';font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+pri+';padding-bottom:'+p(8)+';margin-bottom:'+p(16)+'">Welcome to Our School</div>'
+    // Image + text
+    +wfImg('100%',full?160:80,pri)
+    +wfLines(3,'100%',full?8:4,'#E8E4DC')
     // Cards
-    +'<div style="display:flex;flex-direction:column;gap:'+(full?'12px':'6px')+'">'
-    +['Curriculum & Learning','Wellbeing Support','Extra-Curricular'].map(function(t){
-      return '<div style="background:#fff;border:1px solid #DDE3EF;border-left:4px solid '+pri+';border-radius:0 10px 10px 0;padding:'+(full?'16px 20px':'8px 10px')+';box-shadow:0 2px 6px rgba(0,0,0,.05)">'
-        +'<div style="font-size:'+(full?'14px':'8px')+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+(full?'4px':'2px')+'">'+t+'</div>'
-        +'<div style="display:flex;gap:'+(full?'6px':'3px')+';flex-wrap:wrap">'
-        +'<div style="height:'+(full?'8px':'4px')+';border-radius:3px;background:#E5EAF5;flex:3"></div>'
-        +'<div style="height:'+(full?'8px':'4px')+';border-radius:3px;background:#E5EAF5;flex:2"></div>'
+    +'<div style="color:'+pri+';font-size:'+p(17)+';font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+pri+';padding-bottom:'+p(6)+';margin:'+p(20)+' 0 '+p(12)+'">Our Programs</div>'
+    +['Senior Secondary','Junior Secondary','Primary','Vocational Ed'].map(function(t){
+      return '<div style="background:#fff;border:1px solid #DDE3EF;border-left:4px solid '+pri+';border-radius:0 10px 10px 0;padding:'+p(12)+' '+p(16)+';margin-bottom:'+p(8)+';box-shadow:0 2px 6px rgba(0,0,0,.04)">'
+        +'<div style="display:flex;align-items:center;gap:'+p(10)+'">'
+        +'<div style="width:'+p(10)+';height:'+p(10)+';border-radius:50%;background:'+sec+';flex-shrink:0"></div>'
+        +'<div style="font-size:'+p(12)+';font-weight:700;color:'+pri+';font-family:Georgia,serif;flex:1">'+t+'</div>'
+        +'<div style="font-size:'+p(10)+';color:'+sec+';border:1px solid '+sec+';padding:'+p(2)+' '+p(8)+';border-radius:4px">View</div>'
+        +'</div>'
+        +'<div style="margin-top:'+p(6)+'">'
+        +wfLines(1,'90%',full?6:3,'#EEE')
+        +'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Sidebar
+    +'<div style="flex:1;display:flex;flex-direction:column;gap:'+p(12)+'">'
+    // Important dates
+    +'<div style="background:#fff;border:1px solid #DDE3EF;border-radius:10px;overflow:hidden">'
+    +'<div style="background:'+pri+';padding:'+p(10)+' '+p(14)+';color:#fff;font-size:'+p(11)+';font-weight:700;font-family:Georgia,serif">Important Dates</div>'
+    +['Term 2 begins','Athletics Carnival','Parent Evening'].map(function(t){
+      return '<div style="padding:'+p(8)+' '+p(14)+';border-bottom:1px solid #EEE;font-size:'+p(10)+';color:#444">'
+        +'<div style="width:'+p(24)+';height:'+p(4)+';background:'+sec+';border-radius:2px;margin-bottom:'+p(3)+'"></div>'
+        +t+'</div>';
+    }).join('')
+    +'</div>'
+    // Quick links
+    +'<div style="background:'+pri+'11;border:1px solid '+pri+'33;border-radius:10px;padding:'+p(12)+'">'
+    +'<div style="font-size:'+p(11)+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+p(8)+'">Quick Links</div>'
+    +['Enrolment','Newsletter','Timetable','Contact'].map(function(t){
+      return '<div style="padding:'+p(6)+' 0;border-bottom:1px solid '+pri+'22;font-size:'+p(10)+';color:'+pri+';display:flex;justify-content:space-between">'+t+' <span>›</span></div>';
+    }).join('')
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    // Stats
+    +'<div style="background:'+pri+';margin:0;padding:'+p(20)+' '+p(44)+';display:flex">'
+    +[['1200+','Students'],['45','Years'],['98%','Satisfaction'],['120+','Staff']].map(function(s,i){
+      return '<div style="flex:1;text-align:center;border-right:'+(i<3?'1px solid rgba(255,255,255,.15)':'none')+'">'
+        +'<div style="font-size:'+p(26)+';font-weight:700;color:#fff;font-family:Georgia,serif">'+s[0]+'</div>'
+        +'<div style="font-size:'+p(10)+';color:rgba(255,255,255,.7)">'+s[1]+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    // Tile grid
+    +'<div style="padding:'+p(24)+' '+p(44)+';background:#fff">'
+    +'<div style="color:'+pri+';font-size:'+p(18)+';font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+pri+';padding-bottom:'+p(6)+';margin-bottom:'+p(16)+'">News & Events</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:'+p(14)+'">'
+    +['School News','Sports','Community'].map(function(t){
+      return '<div style="background:#F9F8F6;border:1px solid #DDE3EF;border-top:3px solid '+pri+';border-radius:0 0 10px 10px;overflow:hidden">'
+        +'<div style="height:'+p(80)+';background:linear-gradient(135deg,'+pri+'22,'+pri+'44)"></div>'
+        +'<div style="padding:'+p(10)+'">'
+        +'<div style="font-size:'+p(11)+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+p(4)+'">'+t+'</div>'
+        +wfLines(2,'100%',full?5:3,'#DDE3EF')
         +'</div></div>';
     }).join('')
     +'</div>'
-    // Stat strip
-    +'<div style="display:flex;gap:0;margin-top:'+(full?'24px':'12px')+';border:1px solid #DDE3EF;border-radius:10px;overflow:hidden">'
-    +[['1200+','Students'],['45','Years'],['98%','Satisfaction']].map(function(s,i){
-      return '<div style="flex:1;padding:'+(full?'16px':'8px')+';text-align:center;border-right:'+(i<2?'1px solid #DDE3EF':'none')+';background:#fff">'
-        +'<div style="font-size:'+(full?'26px':'13px')+';font-weight:700;color:'+pri+';font-family:Georgia,serif">'+s[0]+'</div>'
-        +'<div style="font-size:'+(full?'11px':'6px')+';color:#86868B;margin-top:'+(full?'2px':'1px')+'">'+s[1]+'</div>'
+    +'</div>'
+    // Footer
+    +'<div style="background:#2A2A2A;padding:'+p(20)+' '+p(44)+';display:flex;gap:'+p(24)+'">'
+    +'<div style="flex:2">'
+    +'<div style="color:#fff;font-size:'+p(13)+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+p(8)+'">'+school+'</div>'
+    +wfLines(2,'80%',full?5:3,'#555')
+    +'</div>'
+    +['About','Learning','Community'].map(function(t){
+      return '<div style="flex:1"><div style="color:#ccc;font-size:'+p(10)+';font-weight:700;text-transform:uppercase;margin-bottom:'+p(8)+'">'+t+'</div>'
+        +wfLines(3,'80%',full?4:2,'#444')
         +'</div>';
     }).join('')
-    +'</div>'
-    // Callout
-    +'<div style="background:#FFFBF0;border-left:4px solid '+sec+';border-radius:0 8px 8px 0;padding:'+(full?'14px 18px':'7px 9px')+';margin-top:'+(full?'20px':'10px')+'">'
-    +'<div style="font-size:'+(full?'13px':'7px')+';color:#7A4600;font-style:italic;font-family:Georgia,serif">Key information and important notices will appear here for students and families.</div>'
-    +'</div>'
-    // Button
-    +'<div style="margin-top:'+(full?'20px':'10px')+';padding-bottom:'+(full?'32px':'16px')+'">'
-    +'<div style="display:inline-block;background:'+pri+';color:#fff;padding:'+(full?'11px 22px':'6px 12px')+';border-radius:6px;font-size:'+(full?'13px':'7px')+';font-weight:700;font-family:Georgia,serif">Learn More</div>'
-    +'</div>'
     +'</div>'
     +'</div>';
 }
 
-function buildMetroWireframe(pri, sec, full){
-  var schoolName = project.schoolName || 'Western Cape College';
-  return '<div style="background:#EFEFEF;font-family:Arial,sans-serif;padding:0">'
-    // Hero
-    +'<div style="background:'+pri+';padding:'+(full?'44px 48px':'24px 28px')+';position:relative;overflow:hidden">'
-    +'<div style="position:absolute;top:0;right:0;width:'+(full?'10px':'5px')+';height:100%;background:'+sec+'"></div>'
-    +'<div style="position:absolute;bottom:-30px;right:80px;width:'+(full?'140px':'70px')+';height:'+(full?'140px':'70px')+';border-radius:50%;background:rgba(255,255,255,.06)"></div>'
-    +'<div style="position:absolute;top:-30px;right:200px;width:'+(full?'100px':'50px')+';height:'+(full?'100px':'50px')+';border-radius:50%;background:rgba(255,255,255,.04)"></div>'
-    +'<div style="color:#fff;font-size:'+(full?'36px':'19px')+';font-weight:900;text-transform:uppercase;letter-spacing:-1px;position:relative">'+schoolName.toUpperCase()+'</div>'
-    +'<div style="color:'+sec+';font-size:'+(full?'12px':'6px')+';font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-top:'+(full?'6px':'3px')+';position:relative">Excellence in Education</div>'
+function buildMetroWF(pri,sec,fonts,full){
+  var s=full?1:.5;
+  var p=function(px){return Math.round(px*s)+'px';};
+  var school = project.schoolName||'Western Cape College';
+  return '<div style="font-family:Arial,sans-serif;background:#EBEBEB">'
+    // Nav
+    +'<div style="background:#1A1A1A;padding:'+p(10)+' '+p(20)+';display:flex;align-items:center;gap:'+p(16)+'">'
+    +'<div style="width:'+p(32)+';height:'+p(32)+';border-radius:6px;background:rgba(255,255,255,.15)"></div>'
+    +'<div style="color:#fff;font-size:'+p(12)+';font-weight:900;text-transform:uppercase;letter-spacing:.5px;flex:1">'+school.toUpperCase()+'</div>'
+    +['Home','About','Learning','Community'].map(function(t){return '<div style="color:rgba(255,255,255,.6);font-size:'+p(10)+';white-space:nowrap;text-transform:uppercase;letter-spacing:.5px">'+t+'</div>';}).join('')
     +'</div>'
-    // Section badge
-    +'<div style="padding:'+(full?'24px 48px 0':'12px 28px 0')+'">'
-    +'<div style="display:inline-block;background:'+pri+';color:#fff;font-size:'+(full?'11px':'6px')+';font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:'+(full?'6px 14px':'3px 8px')+';border-radius:6px;margin-bottom:'+(full?'16px':'8px')+'">Our Programs</div>'
+    // Hero
+    +'<div style="background:'+pri+';padding:'+p(48)+' '+p(52)+';position:relative;overflow:hidden">'
+    +'<div style="position:absolute;top:0;right:0;width:'+p(10)+';height:100%;background:'+sec+'"></div>'
+    +'<div style="position:absolute;bottom:-40px;right:100px;width:'+p(160)+';height:'+p(160)+';border-radius:50%;background:rgba(255,255,255,.06)"></div>'
+    +'<div style="position:absolute;top:-40px;right:220px;width:'+p(100)+';height:'+p(100)+';border-radius:50%;background:rgba(255,255,255,.04)"></div>'
+    +'<div style="color:#fff;font-size:'+p(36)+';font-weight:900;text-transform:uppercase;letter-spacing:-1.5px;position:relative;margin-bottom:'+p(6)+'">'+school.toUpperCase()+'</div>'
+    +'<div style="color:'+sec+';font-size:'+p(12)+';font-weight:700;text-transform:uppercase;letter-spacing:3px;position:relative;margin-bottom:'+p(20)+'">Excellence in Education</div>'
+    +'<div style="display:flex;gap:'+p(10)+';position:relative">'
+    +'<div style="background:'+sec+';color:#111;padding:'+p(12)+' '+p(28)+';border-radius:40px;font-size:'+p(12)+';font-weight:900;text-transform:uppercase;letter-spacing:.5px">Enrol Now</div>'
+    +'<div style="border:2px solid rgba(255,255,255,.4);color:#fff;padding:'+p(12)+' '+p(28)+';border-radius:40px;font-size:'+p(12)+';font-weight:700;text-transform:uppercase">Learn More</div>'
+    +'</div>'
+    +'</div>'
     // Stat strip
-    +'<div style="background:'+pri+';border-radius:12px;padding:'+(full?'20px':'10px')+';display:flex;gap:0;margin-bottom:'+(full?'16px':'8px')+'">'
-    +[['1200+','Students'],['45','Years'],['98%','Satisfaction'],['120+','Staff']].map(function(s,i){
+    +'<div style="background:'+pri+'DD;padding:'+p(16)+' '+p(52)+';display:flex">'
+    +[['1200+','Students'],['45yrs','Experience'],['98%','Satisfaction'],['120+','Staff']].map(function(s,i){
       return '<div style="flex:1;text-align:center;border-right:'+(i<3?'1px solid rgba(255,255,255,.15)':'none')+'">'
-        +'<div style="font-size:'+(full?'28px':'14px')+';font-weight:900;color:#fff">'+s[0]+'</div>'
-        +'<div style="font-size:'+(full?'10px':'5px')+';color:'+sec+';text-transform:uppercase;letter-spacing:.5px">'+s[1]+'</div>'
+        +'<div style="font-size:'+p(26)+';font-weight:900;color:#fff">'+s[0]+'</div>'
+        +'<div style="font-size:'+p(9)+';color:'+sec+';text-transform:uppercase;letter-spacing:1px">'+s[1]+'</div>'
         +'</div>';
     }).join('')
     +'</div>'
-    // Cards grid
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:'+(full?'12px':'6px')+'">'
-    +['Curriculum','Wellbeing','Activities','Support'].map(function(t){
-      return '<div style="background:#fff;border-radius:12px;padding:'+(full?'18px':'9px')+';box-shadow:0 4px 20px rgba(0,0,0,.08)">'
-        +'<div style="font-size:'+(full?'12px':'6px')+';font-weight:900;color:'+pri+';text-transform:uppercase;margin-bottom:'+(full?'8px':'4px')+'">'+t+'</div>'
-        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#F0F0F0;margin-bottom:'+(full?'4px':'2px')+'"></div>'
-        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#F0F0F0;width:70%"></div>'
+    // Section
+    +'<div style="padding:'+p(24)+' '+p(52)+'">'
+    +'<div style="display:inline-block;background:'+pri+';color:#fff;font-size:'+p(10)+';font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:'+p(6)+' '+p(14)+';border-radius:6px;margin-bottom:'+p(16)+'">Our Programs</div>'
+    // Card grid
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:'+p(12)+';margin-bottom:'+p(20)+'">'
+    +['Senior Secondary','Junior Secondary','Primary School','Vocational Ed'].map(function(t){
+      return '<div style="background:#fff;border-radius:12px;padding:'+p(18)+';box-shadow:0 4px 20px rgba(0,0,0,.08)">'
+        +'<div style="width:'+p(32)+';height:'+p(32)+';border-radius:8px;background:'+pri+';margin-bottom:'+p(10)+';display:flex;align-items:center;justify-content:center">'
+        +'<div style="width:'+p(14)+';height:'+p(14)+';border-radius:50%;background:'+sec+'"></div>'
+        +'</div>'
+        +'<div style="font-size:'+p(12)+';font-weight:900;color:'+pri+';text-transform:uppercase;margin-bottom:'+p(6)+'">'+t+'</div>'
+        +wfLines(2,'100%',full?5:3,'#EEE')
         +'</div>';
     }).join('')
     +'</div>'
-    // CTA
-    +'<div style="margin-top:'+(full?'20px':'10px')+';padding-bottom:'+(full?'32px':'16px')+'">'
-    +'<div style="display:inline-block;background:'+sec+';color:#111;padding:'+(full?'12px 28px':'6px 14px')+';border-radius:40px;font-size:'+(full?'13px':'7px')+';font-weight:900;text-transform:uppercase;letter-spacing:.5px">Learn More</div>'
+    // Divider
+    +'<div style="height:2px;background:linear-gradient(90deg,'+sec+',transparent);margin-bottom:'+p(20)+'"></div>'
+    // News tiles
+    +'<div style="display:inline-block;background:'+pri+';color:#fff;font-size:'+p(10)+';font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:'+p(6)+' '+p(14)+';border-radius:6px;margin-bottom:'+p(16)+'">Latest News</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:'+p(12)+';margin-bottom:'+p(20)+'">'
+    +['School News','Sports Update','Community'].map(function(t){
+      return '<div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.07)">'
+        +'<div style="height:'+p(80)+';background:linear-gradient(135deg,'+pri+','+sec+'66)"></div>'
+        +'<div style="padding:'+p(12)+'">'
+        +'<div style="font-size:'+p(10)+';font-weight:900;color:'+pri+';text-transform:uppercase;margin-bottom:'+p(6)+'">'+t+'</div>'
+        +wfLines(2,'100%',full?5:3,'#EEE')
+        +'<div style="margin-top:'+p(10)+';display:inline-block;background:'+sec+';color:#111;padding:'+p(4)+' '+p(12)+';border-radius:20px;font-size:'+p(9)+';font-weight:900;text-transform:uppercase">Read</div>'
+        +'</div></div>';
+    }).join('')
     +'</div>'
+    // Highlight box
+    +'<div style="background:'+pri+';border-radius:12px;padding:'+p(20)+' '+p(24)+';margin-bottom:'+p(20)+'">'
+    +'<div style="display:flex;align-items:center;gap:'+p(16)+'">'
+    +'<div style="flex:1">'
+    +'<div style="font-size:'+p(14)+';font-weight:900;color:#fff;text-transform:uppercase;margin-bottom:'+p(8)+'">Enrolments Open 2025</div>'
+    +wfLines(1,'70%',full?6:3,'rgba(255,255,255,.3)')
+    +'</div>'
+    +'<div style="background:'+sec+';color:#111;padding:'+p(10)+' '+p(20)+';border-radius:40px;font-size:'+p(11)+';font-weight:900;text-transform:uppercase;white-space:nowrap">Enrol Now</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    // Footer
+    +'<div style="background:#111;padding:'+p(20)+' '+p(52)+';display:flex;gap:'+p(24)+'">'
+    +'<div style="flex:2">'
+    +'<div style="color:'+sec+';font-size:'+p(13)+';font-weight:900;text-transform:uppercase;margin-bottom:'+p(8)+'">'+school.toUpperCase()+'</div>'
+    +wfLines(2,'70%',full?5:3,'#333')
+    +'</div>'
+    +['Links','Community'].map(function(t){
+      return '<div style="flex:1"><div style="color:'+sec+';font-size:'+p(9)+';font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:'+p(8)+'">'+t+'</div>'
+        +wfLines(3,'80%',full?4:2,'#333')
+        +'</div>';
+    }).join('')
     +'</div>'
     +'</div>';
 }
 
-function buildCanvasWireframe(pri, sec, full){
-  var schoolName = project.schoolName || 'Western Cape College';
-  return '<div style="background:#EEF0F5;font-family:Arial,sans-serif;padding:0">'
-    // Hero
-    +'<div style="background:linear-gradient(135deg,'+pri+' 0%,'+pri+'EE 45%,'+sec+'BB 100%);padding:'+(full?'52px 48px':'28px 28px')+';position:relative;overflow:hidden">'
-    +'<div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.18),transparent 55%)"></div>'
-    +'<div style="position:absolute;bottom:-50px;right:-50px;width:'+(full?'200px':'100px')+';height:'+(full?'200px':'100px')+';border-radius:50%;border:'+(full?'50px':'25px')+' solid rgba(255,255,255,.08)"></div>'
-    +'<div style="color:#fff;font-size:'+(full?'36px':'19px')+';font-weight:700;font-family:Georgia,serif;line-height:1.15;position:relative">'+schoolName+'</div>'
-    +'<div style="color:rgba(255,255,255,.88);font-size:'+(full?'15px':'8px')+';margin-top:'+(full?'8px':'4px')+';position:relative">Excellence in education since 1962</div>'
+function buildCanvasWF(pri,sec,fonts,full){
+  var s=full?1:.5;
+  var p=function(px){return Math.round(px*s)+'px';};
+  var school = project.schoolName||'Western Cape College';
+  return '<div style="font-family:Arial,sans-serif;background:#EEF0F5">'
+    // Nav
+    +'<div style="background:#fff;padding:'+p(12)+' '+p(24)+';display:flex;align-items:center;gap:'+p(16)+';box-shadow:0 2px 8px rgba(0,0,0,.06)">'
+    +'<div style="width:'+p(36)+';height:'+p(36)+';border-radius:8px;background:linear-gradient(135deg,'+pri+','+sec+')"></div>'
+    +'<div style="color:'+pri+';font-size:'+p(13)+';font-weight:700;flex:1;font-family:Georgia,serif">'+school+'</div>'
+    +['Home','About','Learning','Community'].map(function(t){return '<div style="color:'+pri+'99;font-size:'+p(10)+';white-space:nowrap">'+t+'</div>';}).join('')
+    +'<div style="background:'+pri+';color:#fff;padding:'+p(5)+' '+p(14)+';border-radius:20px;font-size:'+p(10)+';font-weight:600">Enrol</div>'
     +'</div>'
-    // Section heading with accent bar
-    +'<div style="padding:'+(full?'28px 48px 0':'14px 28px 0')+'">'
-    +'<div style="color:'+pri+';font-size:'+(full?'22px':'12px')+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+(full?'6px':'3px')+'">Our Programs</div>'
-    +'<div style="width:'+(full?'52px':'26px')+';height:'+(full?'4px':'2px')+';background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:'+(full?'20px':'10px')+'"></div>'
-    // Card grid
-    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:'+(full?'14px':'7px')+';margin-bottom:'+(full?'20px':'10px')+'">'
-    +['Curriculum','Wellbeing','Activities'].map(function(t){
-      return '<div style="background:#fff;border-radius:14px;border-top:4px solid '+sec+';padding:'+(full?'20px':'10px')+';box-shadow:0 4px 20px rgba(0,0,0,.07)">'
-        +'<div style="font-size:'+(full?'12px':'7px')+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+(full?'8px':'4px')+'">'+t+'</div>'
-        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#EEF0F5;margin-bottom:'+(full?'4px':'2px')+'"></div>'
-        +'<div style="height:'+(full?'6px':'3px')+';border-radius:3px;background:#EEF0F5;width:75%"></div>'
-        +'</div>';
-    }).join('')
+    // Hero
+    +'<div style="background:linear-gradient(135deg,'+pri+' 0%,'+pri+'EE 45%,'+sec+'BB 100%);padding:'+p(52)+' '+p(48)+';position:relative;overflow:hidden">'
+    +'<div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.18),transparent 55%)"></div>'
+    +'<div style="position:absolute;bottom:-60px;right:-60px;width:'+p(220)+';height:'+p(220)+';border-radius:50%;border:'+p(50)+' solid rgba(255,255,255,.08)"></div>'
+    +'<div style="position:absolute;top:20px;right:180px;width:'+p(80)+';height:'+p(80)+';border-radius:50%;background:rgba(255,255,255,.06)"></div>'
+    +'<div style="color:#fff;font-size:'+p(36)+';font-weight:700;font-family:Georgia,serif;line-height:1.15;position:relative;margin-bottom:'+p(10)+'">'+school+'</div>'
+    +'<div style="color:rgba(255,255,255,.88);font-size:'+p(15)+';position:relative;margin-bottom:'+p(24)+'">Excellence in Education Since 1962</div>'
+    +'<div style="display:flex;gap:'+p(12)+';position:relative">'
+    +'<div style="background:linear-gradient(135deg,rgba(255,255,255,.95),#fff);color:'+pri+';padding:'+p(12)+' '+p(24)+';border-radius:10px;font-size:'+p(13)+';font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15)">Enrol Now →</div>'
+    +'<div style="border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:'+p(12)+' '+p(24)+';border-radius:10px;font-size:'+p(13)+';font-weight:600">Learn More</div>'
+    +'</div>'
     +'</div>'
     // Info strip
-    +'<div style="display:flex;gap:0;border:1px solid rgba(0,0,0,.08);border-radius:14px;overflow:hidden;background:#fff;margin-bottom:'+(full?'20px':'10px')+'">'
-    +[['1200+','Students'],['45yrs','Experience'],['98%','Satisfaction']].map(function(s,i){
-      return '<div style="flex:1;padding:'+(full?'16px':'8px')+';text-align:center;border-right:'+(i<2?'1px solid rgba(0,0,0,.06)':'none')+'">'
-        +'<div style="font-size:'+(full?'24px':'12px')+';font-weight:700;color:'+sec+';font-family:Georgia,serif">'+s[0]+'</div>'
-        +'<div style="font-size:'+(full?'10px':'5px')+';color:#86868B">'+s[1]+'</div>'
+    +'<div style="background:#fff;padding:'+p(16)+' '+p(48)+';display:flex;border-bottom:1px solid rgba(0,0,0,.06)">'
+    +[['1200+','Students'],['45yrs','Experience'],['98%','Satisfaction'],['120+','Staff']].map(function(s,i){
+      return '<div style="flex:1;text-align:center;border-right:'+(i<3?'1px solid rgba(0,0,0,.08)':'none')+'">'
+        +'<div style="font-size:'+p(24)+';font-weight:700;color:'+sec+';font-family:Georgia,serif">'+s[0]+'</div>'
+        +'<div style="font-size:'+p(10)+';color:#86868B">'+s[1]+'</div>'
         +'</div>';
     }).join('')
     +'</div>'
-    // Callout
-    +'<div style="background:linear-gradient(135deg,#F8FAFF,#EEF2FF);border-left:5px solid '+pri+';border-radius:0 12px 12px 0;padding:'+(full?'16px 20px':'8px 10px')+';margin-bottom:'+(full?'20px':'10px')+'">'
-    +'<div style="font-size:'+(full?'13px':'7px')+';color:#1E293B;line-height:1.6">Important information and key notices for students and families.</div>'
+    // Two col
+    +'<div style="display:flex;gap:'+p(24)+';padding:'+p(28)+' '+p(48)+'">'
+    // Main
+    +'<div style="flex:2;display:flex;flex-direction:column;gap:'+p(16)+'">'
+    // Heading with accent bar
+    +'<div>'
+    +'<div style="color:'+pri+';font-size:'+p(20)+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+p(6)+'">Welcome to Our School</div>'
+    +'<div style="width:'+p(52)+';height:'+p(4)+';background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:'+p(14)+'"></div>'
+    +wfImg('100%',full?160:80,pri)
+    +wfLines(3,'100%',full?7:4,'#D8DDE8')
     +'</div>'
-    // Button
-    +'<div style="padding-bottom:'+(full?'32px':'16px')+'">'
-    +'<div style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,'+pri+','+pri+'CC);color:#fff;padding:'+(full?'12px 24px':'6px 12px')+';border-radius:10px;font-size:'+(full?'13px':'7px')+';font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15)">Learn More &rarr;</div>'
+    // Cards
+    +'<div>'
+    +'<div style="color:'+pri+';font-size:'+p(18)+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+p(6)+'">Our Programs</div>'
+    +'<div style="width:'+p(52)+';height:'+p(4)+';background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:'+p(12)+'"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:'+p(12)+'">'
+    +['Senior Secondary','Junior Secondary','Primary School','Vocational Ed'].map(function(t){
+      return '<div style="background:#fff;border-radius:14px;border-top:4px solid '+sec+';padding:'+p(16)+';box-shadow:0 4px 20px rgba(0,0,0,.07)">'
+        +'<div style="font-size:'+p(12)+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+p(8)+'">'+t+'</div>'
+        +wfLines(2,'100%',full?5:3,'#E4E8F0')
+        +'</div>';
+    }).join('')
     +'</div>'
+    +'</div>'
+    // Tile grid
+    +'<div>'
+    +'<div style="color:'+pri+';font-size:'+p(18)+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+p(6)+'">Latest News</div>'
+    +'<div style="width:'+p(52)+';height:'+p(4)+';background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:'+p(12)+'"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:'+p(12)+'">'
+    +['School News','Sports','Events'].map(function(t){
+      return '<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07)">'
+        +'<div style="height:'+p(80)+';background:linear-gradient(135deg,'+pri+'33,'+sec+'44)"></div>'
+        +'<div style="padding:'+p(12)+';border-top:3px solid '+sec+'">'
+        +'<div style="font-size:'+p(11)+';font-weight:700;color:'+pri+';font-family:Georgia,serif;margin-bottom:'+p(6)+'">'+t+'</div>'
+        +wfLines(2,'100%',full?5:3,'#E4E8F0')
+        +'</div></div>';
+    }).join('')
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    // Sidebar
+    +'<div style="flex:1;display:flex;flex-direction:column;gap:'+p(12)+'">'
+    +'<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07)">'
+    +'<div style="background:linear-gradient(135deg,'+pri+','+pri+'CC);padding:'+p(10)+' '+p(14)+'">'
+    +'<div style="color:#fff;font-size:'+p(12)+';font-weight:700;font-family:Georgia,serif">Important Dates</div>'
+    +'</div>'
+    +['Term 2 Begins','Athletics Carnival','Parent Evening'].map(function(t){
+      return '<div style="padding:'+p(10)+' '+p(14)+';border-bottom:1px solid #EEF0F5">'
+        +'<div style="width:'+p(28)+';height:'+p(3)+';background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:'+p(3)+'"></div>'
+        +'<div style="font-size:'+p(10)+';color:#374151">'+t+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'<div style="background:linear-gradient(135deg,#F8FAFF,#EEF2FF);border-left:5px solid '+pri+';border-radius:0 12px 12px 0;padding:'+p(14)+'">'
+    +'<div style="font-size:'+p(11)+';font-weight:700;color:'+pri+';margin-bottom:'+p(6)+'">Quick Links</div>'
+    +['Enrolment','Newsletter','Timetable','Contact Us'].map(function(t){
+      return '<div style="padding:'+p(5)+' 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:'+p(10)+';color:'+pri+';display:flex;justify-content:space-between">'+t+'<span style="color:'+sec+'">→</span></div>';
+    }).join('')
+    +'</div>'
+    +'<div style="background:linear-gradient(135deg,'+pri+','+pri+'CC);border-radius:14px;padding:'+p(16)+'">'
+    +'<div style="color:#fff;font-size:'+p(13)+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+p(6)+'">Enrolments Open</div>'
+    +wfLines(1,'80%',full?5:3,'rgba(255,255,255,.3)')
+    +'<div style="margin-top:'+p(10)+';background:'+sec+';color:#111;padding:'+p(6)+' '+p(16)+';border-radius:20px;font-size:'+p(10)+';font-weight:700;text-align:center">Enrol Now →</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    // Footer
+    +'<div style="background:linear-gradient(135deg,'+pri+','+pri+'EE);padding:'+p(24)+' '+p(48)+';display:flex;gap:'+p(24)+'">'
+    +'<div style="flex:2">'
+    +'<div style="color:#fff;font-size:'+p(14)+';font-weight:700;font-family:Georgia,serif;margin-bottom:'+p(8)+'">'+school+'</div>'
+    +wfLines(2,'70%',full?5:3,'rgba(255,255,255,.25)')
+    +'</div>'
+    +['Programs','Community','Contact'].map(function(t){
+      return '<div style="flex:1"><div style="color:rgba(255,255,255,.6);font-size:'+p(9)+';font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:'+p(8)+'">'+t+'</div>'
+        +wfLines(3,'80%',full?4:2,'rgba(255,255,255,.2)')
+        +'</div>';
+    }).join('')
     +'</div>'
     +'</div>';
 }
@@ -945,6 +1145,15 @@ async function obScan(){
       logoImg.onload=function(){logoImg.style.display='block';if(logoPlaceholder)logoPlaceholder.style.display='none';};
       logoImg.onerror=function(){logoImg.style.display='none';if(logoPlaceholder)logoPlaceholder.style.display='flex';};
       project.logo=data.logo;
+    }
+    if(data.headingFont) project.headingFont=data.headingFont;
+    if(data.bodyFont)    project.bodyFont=data.bodyFont;
+    if(data.googleFontUrl) project.googleFontUrl=data.googleFontUrl;
+    // Show detected fonts
+    if(data.headingFont||data.bodyFont){
+      var fr=g('ob-font-row');if(fr)fr.style.display='block';
+      if(data.headingFont){var hw=g('ob-heading-font-wrap'),hf=g('ob-heading-font');if(hw)hw.style.display='block';if(hf){hf.textContent=data.headingFont;hf.style.fontFamily=data.headingFont;}}
+      if(data.bodyFont){var bw=g('ob-body-font-wrap'),bf=g('ob-body-font');if(bw)bw.style.display='block';if(bf){bf.textContent=data.bodyFont;bf.style.fontFamily=data.bodyFont;}}
     }
 
     // Show detected badge if colors found
@@ -1343,7 +1552,7 @@ async function processNext(){
 async function genHtml(page){
   var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
   var pri=project.primaryColor,sec=project.accentColor;
-  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:3500,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)}]})});
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:4096,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)}]})});
   if(!res.ok)throw new Error('API '+res.status);
   var data=await res.json();
   var html=(data.content&&data.content[0]&&data.content[0].text)||'';
@@ -1352,11 +1561,36 @@ async function genHtml(page){
 }
 
 function sysPrompt(tpl,pri,sec){
+  var googleFont = project.googleFontUrl || '';
+  var headingFont = project.headingFont || '';
+  var bodyFont = project.bodyFont || '';
+  var fontImport = googleFont ? "@import url('" + googleFont + "');" : '';
+  var fontStack = headingFont ? headingFont + ', Georgia, serif' : 'Georgia, serif';
+  var bodyStack = bodyFont ? bodyFont + ', Arial, sans-serif' : 'Arial, Helvetica, sans-serif';
   return 'You redesign Australian school website pages as SharePoint Embed HTML fragments.\n\nCONTENT RULE: Copy ALL text, links and images EXACTLY. Zero rewording. Every URL must be identical.\n\nOUTPUT: Raw HTML fragment only. No DOCTYPE/html/head/body tags. No script tags. No external fonts. System fonts only. One <style> block at top, CSS prefixed sp-. Output ONLY the HTML.\n\nACCESSIBILITY: WCAG 2.1 AA. Alt text on all images. Heading hierarchy h2→h3. Descriptive links. Visible focus styles.\n\nVISUAL IMPACT: The design must look DRAMATICALLY better than the original. Use the full design system. Every page must include the stat strip, decorative elements, and proper card/tile layouts even if inventing plausible placeholder values for stats.\n\n'+tpl.system(pri,sec);
 }
 
 function userPrompt(page){
-  return 'Redesign this page for '+project.schoolName+'.\nPAGE: '+page.title+'\n\nINSTRUCTION: Copy content 100% exactly. Make it visually stunning using the template design system. Include ALL specified visual elements (hero, stat strip, cards, tiles, callouts etc).\n\nSOURCE HTML:\n--- START ---\n'+(page.rawHtml&&page.rawHtml.trim()?page.rawHtml:'(No content scraped — create a beautiful professional placeholder page for: '+page.title+')')+'\n--- END ---\n\nWrap in div max-width:900px. All links target="_blank". Use exact source URLs.';
+  return [
+    'Redesign this page for '+project.schoolName+'.',
+    'PAGE TITLE: '+page.title,
+    '',
+    'CRITICAL RULES:',
+    '1. Copy ALL source content EXACTLY — every word, every link href, every image src',
+    '2. Do NOT truncate or cut off any content — output the COMPLETE page',
+    '3. If source content is sparse, ADD realistic placeholder sections using the template design system',
+    '4. Every page MUST include: hero, body text, at least one card/tile section, stats strip, callout, footer strip',
+    '',
+    'SOURCE HTML (copy all content from this):',
+    '--- START ---',
+    (page.rawHtml&&page.rawHtml.trim() ? page.rawHtml : '(No content scraped — generate a complete professional page for: '+page.title+')'),
+    '--- END ---',
+    '',
+    'Wrap everything in: <div style="max-width:900px;margin:0 auto">',
+    'All external links: target="_blank"',
+    'Use exact URLs from source — do not modify any href or src values',
+    'Output the COMPLETE HTML — do not stop early'
+  ].join('\n');
 }
 
 // ── SELECT ────────────────────────────────────────────────────────
@@ -1599,7 +1833,7 @@ function openVariants(){
   });
 }
 async function genVariant(page,tpl,pri,sec,mod){
-  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:3500,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)+(mod?'\n\nSTYLING VARIATION: '+mod:'')}]})});
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:4096,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)+(mod?'\n\nSTYLING VARIATION: '+mod:'')}]})});
   if(!res.ok)throw new Error('API '+res.status);
   var data=await res.json();
   var html=(data.content&&data.content[0]&&data.content[0].text)||'';
