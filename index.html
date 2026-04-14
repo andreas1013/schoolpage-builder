@@ -26,13 +26,10 @@ function toggleDrawer(){
   var btn = g('btn-add-content');
   if(cdDrawerOpen){
     drawer.classList.add('show');
-    btn.classList.add('active');
-    // Only show if page has content
-    var page = project.pages.find(function(p){return p.id===selId;});
-    if(page&&page.generatedHTML) drawer.style.display='flex';
+    if(btn) btn.classList.add('active');
   } else {
     drawer.classList.remove('show');
-    btn.classList.remove('active');
+    if(btn) btn.classList.remove('active');
   }
 }
 
@@ -352,21 +349,6 @@ var cdImageUrl = '';       // Cloudinary URL if image
 var cdDrawerOpen = false;
 var cdBodyOpen = true;
 
-function toggleDrawer(){
-  cdDrawerOpen = !cdDrawerOpen;
-  var drawer = g('content-drawer');
-  var btn = g('btn-add-content');
-  if(cdDrawerOpen){
-    drawer.classList.add('show');
-    btn.classList.add('active');
-    // Only show if page has content
-    var page = project.pages.find(function(p){return p.id===selId;});
-    if(page&&page.generatedHTML) drawer.style.display='flex';
-  } else {
-    drawer.classList.remove('show');
-    btn.classList.remove('active');
-  }
-}
 
 function toggleDrawerBody(){
   cdBodyOpen = !cdBodyOpen;
@@ -1466,7 +1448,7 @@ function startRedesign(){
   });
   saveProject();
   showProject();
-  processNext();
+  // Pages sit as Pending — user selects which to generate
 }
 
 function showProject(){
@@ -1604,6 +1586,32 @@ function updateGenBtn(){
   else{ btn.classList.remove('show'); hint.textContent='All pages processed'; }
 }
 
+
+// Generate just the currently selected page
+async function genThisPage(){
+  var page = project.pages.find(function(p){return p.id===selId;});
+  if(!page || page.status !== 'pending') return;
+  if(isGen){ alert('Please wait for the current page to finish generating.'); return; }
+  isGen = true; updateGenBtn();
+
+  // Scrape
+  page.status = 'scraping'; saveProject(); updateRow(page.id);
+  showLoading('Loading from your website...');
+  try{
+    var sr = await fetch(WORKER+'/scrape-page',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:page.url})});
+    var sd = await sr.json();
+    if(sd.success){ page.rawHtml=sd.rawHtml||''; page.localNav=sd.localNav||[]; if(sd.title&&sd.title!==page.title)page.title=sd.title; if(page.localNav.length>0)offerSubPages(page); }
+  }catch(e){ page.rawHtml=''; page.localNav=[]; }
+
+  // Generate
+  page.status='generating'; saveProject(); updateRow(page.id);
+  showLoading('AI is redesigning this page...');
+  try{ page.generatedHTML=await genPageHtml(page); page.status='ready'; page.error=''; }
+  catch(e){ page.status='error'; page.error=e.message; }
+  saveProject(); updateRow(page.id); selectPage(page.id);
+  updateProgress(); isGen=false; updateGenBtn();
+}
+
 function genNext(){ if(!isGen) processNext(); }
 
 async function processNext(){
@@ -1695,8 +1703,10 @@ function selectPage(id){
   g('voice-bar').classList.remove('show');
   g('paste-guide').classList.remove('show');
 
-  if(page.status==='pending') showEmpty('\u23F3','Waiting to generate','This page will be redesigned automatically.');
-  else if(page.status==='scraping'||page.status==='generating') showLoading(page.status==='scraping'?'Loading from your website...':'AI is redesigning this page...');
+  if(page.status==='pending'){
+    showEmpty('&#9203;','Ready to generate','Click the button below to redesign this page with AI.');
+    g('prev-empty').innerHTML += '<div style="margin-top:16px"><button onclick="genThisPage()" style="padding:11px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">&#10024; Redesign this page</button></div>';
+  } else if(page.status==='scraping'||page.status==='generating') showLoading(page.status==='scraping'?'Loading from your website...':'AI is redesigning this page...');
   else if(page.status==='error'){
     g('prev-loading').classList.remove('show');
     g('prev-err').textContent='Something went wrong: '+(page.error||'Unknown error')+'. Use the voice bar below to try again or describe what you want.';
@@ -1847,3 +1857,165 @@ function shortUrl(url){try{return new URL(url).pathname;}catch(e){return url;}}
 </script>
 </body>
 </html>
+
+<script>
+// ── CONTENT DRAWER FUNCTIONS (re-declared to ensure availability) ──
+
+var CLOUDINARY_CLOUD  = "dewljixlc";
+var CLOUDINARY_PRESET = "pvsbmdmd";
+var cdFile = null;
+var cdExtracted = '';
+var cdImageUrl = '';
+var cdDrawerOpen = false;
+
+function toggleDrawer(){
+  cdDrawerOpen = !cdDrawerOpen;
+  var drawer = g('content-drawer');
+  var btn = g('btn-add-content');
+  if(cdDrawerOpen){
+    if(drawer) drawer.classList.add('show');
+    if(btn) btn.classList.add('active');
+  } else {
+    if(drawer) drawer.classList.remove('show');
+    if(btn) btn.classList.remove('active');
+  }
+}
+
+function toggleDrawerBody(){
+  var body = g('cd-body');
+  var chev = g('cd-chev');
+  if(!body) return;
+  var isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? '' : 'none';
+  if(chev) chev.classList.toggle('open', !isHidden);
+}
+
+window.addEventListener('load', function(){
+  var dz = g('drop-zone');
+  if(!dz) return;
+  dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function(){ dz.classList.remove('drag-over'); });
+  dz.addEventListener('drop', function(e){ e.preventDefault(); dz.classList.remove('drag-over'); var f=e.dataTransfer.files[0]; if(f)processFile(f); });
+});
+
+function handleFileSelect(input){ var f=input.files[0]; if(f)processFile(f); }
+
+async function processFile(file){
+  cdFile=file; cdExtracted=''; cdImageUrl='';
+  var ext=file.name.split('.').pop().toLowerCase();
+  g('fp-icon').textContent=getFileIcon(ext);
+  g('fp-name').textContent=file.name;
+  g('fp-size').textContent=formatSize(file.size);
+  g('fp-content').innerHTML='<div class="fp-loading"><div class="minispin"></div>Reading file...</div>';
+  g('cd-file-preview').classList.add('show');
+  g('drop-zone').classList.add('has-file');
+  g('drop-zone').querySelector('.dz-t').textContent='File attached \u2713';
+  try{
+    if(['jpg','jpeg','png','webp','gif'].includes(ext)) await handleImage(file);
+    else if(ext==='docx'||ext==='doc') await handleDocx(file);
+    else if(ext==='pdf') await handlePdf(file);
+    else if(['pptx','ppt'].includes(ext)) await handlePptx(file);
+    else if(['txt','csv','md'].includes(ext)) await handleText(file);
+    else throw new Error('File type not supported. Try Word, PDF, image, PowerPoint or text files.');
+  }catch(e){ g('fp-content').innerHTML='<div class="fp-body" style="color:var(--red)">Error: '+esc(e.message)+'</div>'; }
+}
+
+async function handleImage(file){
+  var reader=new FileReader();
+  reader.onload=function(e){ g('fp-content').innerHTML='<img class="fp-img-preview" src="'+e.target.result+'" alt="">'; };
+  reader.readAsDataURL(file);
+  var fd=new FormData(); fd.append('file',file); fd.append('upload_preset',CLOUDINARY_PRESET);
+  var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload',{method:'POST',body:fd});
+  var data=await res.json();
+  if(!data.secure_url) throw new Error('Image upload failed');
+  cdImageUrl=data.secure_url;
+  cdExtracted='[IMAGE: '+file.name+' url: '+cdImageUrl+']';
+  g('fp-content').innerHTML='<img class="fp-img-preview" src="'+cdImageUrl+'" alt="'+esc(file.name)+'">';
+  g('cd-instruction').placeholder='e.g. "Add this image below the hero banner"';
+}
+
+async function handleDocx(file){
+  if(typeof mammoth==='undefined') throw new Error('Word reader not loaded. Please refresh the page.');
+  var ab=await new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(e){res(e.target.result);}; r.onerror=rej; r.readAsArrayBuffer(file); });
+  var result=await mammoth.extractRawText({arrayBuffer:ab});
+  cdExtracted=result.value.trim();
+  if(!cdExtracted) throw new Error('Could not extract text from this Word document.');
+  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+(cdExtracted.length>400?'...':'')+'</div>';
+  g('cd-instruction').placeholder='e.g. "Add this as a new section after the intro"';
+}
+
+async function handlePdf(file){
+  var reader=new FileReader();
+  var text=await new Promise(function(res,rej){ reader.onload=function(e){ var binary=e.target.result; var matches=binary.match(/\(([^)]{2,200})\)/g)||[]; var extracted=matches.map(function(m){return m.slice(1,-1);}).filter(function(t){return /[a-zA-Z]{3,}/.test(t);}).join(' ').replace(/\s+/g,' ').trim(); res(extracted); }; reader.onerror=rej; reader.readAsBinaryString(file); });
+  if(text&&text.length>50){ cdExtracted=text.substring(0,5000); g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'...</div>'; }
+  else{ cdExtracted='[PDF: "'+file.name+'" - add as download link]'; g('fp-content').innerHTML='<div class="fp-body">PDF text could not be extracted. Will be added as a download button.\nNote: Upload this PDF to SharePoint first and paste its URL in the instruction.</div>'; }
+  g('cd-instruction').placeholder='e.g. "Add as a downloadable resource" or paste the SharePoint URL of this file';
+}
+
+async function handlePptx(file){
+  var ab=await new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(e){res(e.target.result);}; r.onerror=rej; r.readAsArrayBuffer(file); });
+  var zip=await JSZip.loadAsync(ab);
+  var slideFiles=Object.keys(zip.files).filter(function(n){return n.match(/ppt\/slides\/slide\d+\.xml$/);}).sort();
+  var texts=[];
+  for(var i=0;i<Math.min(slideFiles.length,20);i++){
+    var content=await zip.files[slideFiles[i]].async('text');
+    var t=content.replace(/<a:r[^>]*>[\s\S]*?<a:t>([^<]*)<\/a:t>[\s\S]*?<\/a:r>/g,'$1 ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+    if(t.length>3) texts.push('Slide '+(i+1)+': '+t);
+  }
+  cdExtracted=texts.join('\n\n');
+  if(!cdExtracted) throw new Error('No text found in presentation.');
+  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'...</div>';
+}
+
+async function handleText(file){
+  var text=await new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(e){res(e.target.result);}; r.onerror=rej; r.readAsText(file); });
+  cdExtracted=text.trim();
+  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+(cdExtracted.length>400?'...':'')+'</div>';
+}
+
+function clearFile(){
+  cdFile=null; cdExtracted=''; cdImageUrl='';
+  g('cd-file-preview').classList.remove('show');
+  g('drop-zone').classList.remove('has-file');
+  g('drop-zone').querySelector('.dz-t').textContent='Drop a file here or click to browse';
+  g('cd-file-input').value='';
+}
+
+async function applyAddedContent(){
+  var page=project.pages.find(function(p){return p.id===selId;});
+  if(!page||!page.generatedHTML){alert('Please generate the page first before adding content.');return;}
+  var hasFile=cdExtracted||cdImageUrl;
+  var hasText=(g('cd-extra-text').value||'').trim();
+  if(!hasFile&&!hasText){alert('Please add a file or paste some text first.');return;}
+  var btn=g('btn-cd-apply'); btn.disabled=true;
+  g('cd-applying').classList.add('show');
+  try{
+    var instruction=(g('cd-instruction').value||'').trim();
+    var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
+    var pri=project.primaryColor, sec=project.accentColor;
+    var additions=[];
+    if(cdImageUrl) additions.push('NEW IMAGE: src="'+cdImageUrl+'" (file: '+cdFile.name+')');
+    else if(cdExtracted) additions.push('NEW CONTENT from "'+cdFile.name+'":\n'+cdExtracted.substring(0,6000));
+    if(hasText) additions.push('ADDITIONAL TEXT:\n'+hasText);
+    var prompt='Add the following content to this school page.\n\nINSTRUCTION: '+(instruction||'Add this content in the most appropriate location and format.')+'\n\nCONTENT TO ADD:\n---\n'+additions.join('\n\n')+'\n---\n\nRULES:\n1. Do NOT remove any existing content\n2. Keep all existing text and links exactly as-is\n3. Style new content to match the existing design\n'+(cdImageUrl?'4. Embed image with: <img src="'+cdImageUrl+'" style="width:100%;border-radius:12px;margin:16px 0;display:block" alt="'+esc(cdFile?cdFile.name:'image')+'">\n':'')+'5. Output the complete updated HTML\n\nCURRENT HTML:\n--- START ---\n'+page.generatedHTML+'\n--- END ---';
+    var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:buildSystem(tpl,pri,sec),messages:[{role:'user',content:prompt}]})});
+    if(!res.ok) throw new Error('API error '+res.status);
+    var data=await res.json();
+    var html=(data.content&&data.content[0]&&data.content[0].text)||'';
+    if(!html) throw new Error('No response');
+    html=html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+    page.generatedHTML=html; page.status=page.approved?'approved':'edited';
+    saveProject(); updateRow(page.id); showIframe(html); setView('preview');
+    clearFile(); g('cd-extra-text').value=''; g('cd-instruction').value='';
+    g('content-drawer').classList.remove('show');
+    if(g('btn-add-content')) g('btn-add-content').classList.remove('active');
+    cdDrawerOpen=false;
+  }catch(e){ alert('Could not add content: '+e.message); }
+  finally{ btn.disabled=false; g('cd-applying').classList.remove('show'); }
+}
+
+function getFileIcon(ext){ var m={docx:'&#128196;',doc:'&#128196;',pdf:'&#128209;',pptx:'&#127912;',ppt:'&#127912;',txt:'&#128220;',csv:'&#128200;',jpg:'&#128247;',jpeg:'&#128247;',png:'&#128247;',webp:'&#128247;',gif:'&#128247;'}; return m[ext]||'&#128196;'; }
+function formatSize(b){ if(b<1024)return b+'B'; if(b<1048576)return Math.round(b/1024)+'KB'; return (b/1048576).toFixed(1)+'MB'; }
+</script>
+
+</body></html>
