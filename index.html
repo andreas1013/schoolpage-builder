@@ -4,592 +4,546 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SchoolPage Builder</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
-/* ── RESET & VARIABLES ── */
+/* ── RESET ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F0EEE9;--white:#fff;--surface:#F8F7F4;
-  --border:#E2DED6;--border2:#C8C4BB;
-  --ink:#1A1A1A;--ink2:#4A4A4A;--ink3:#9A9A9A;
-  --blue:#2B5CE6;--blue-lt:#EEF2FF;
-  --green:#1A9E5C;--green-lt:#ECFDF5;
-  --amber:#D97706;--amber-lt:#FFFBEB;
-  --red:#DC2626;--red-lt:#FEF2F2;
-  --purple:#7C3AED;--purple-lt:#F5F3FF;
-  --r:12px;--rs:8px;
-  --shadow:0 2px 8px rgba(0,0,0,.07),0 8px 24px rgba(0,0,0,.05);
-  --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+  --bg:#F5F5F7;
+  --white:#FFFFFF;
+  --surface:#FBFBFD;
+  --border:rgba(0,0,0,.06);
+  --border-m:rgba(0,0,0,.10);
+  --ink:#1D1D1F;
+  --ink2:#3D3D3F;
+  --ink3:#86868B;
+  --ink4:#AEAEB2;
+  --blue:#0066CC;
+  --blue-lt:#E8F2FF;
+  --green:#34C759;
+  --green-lt:#E8F8EC;
+  --red:#FF3B30;
+  --red-lt:#FFF0EF;
+  --amber:#FF9500;
+  --amber-lt:#FFF5E6;
+  --purple:#AF52DE;
+  --purple-lt:#F5EEFA;
+  --r:14px;--rs:10px;--rl:20px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 20px 60px rgba(0,0,0,.12),0 4px 16px rgba(0,0,0,.08);
 }
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes mic-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes breathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,102,204,.4)}50%{transform:scale(1.04);box-shadow:0 0 0 12px rgba(0,102,204,.0)}}
 
-/* ── TOP BAR ── */
-#topbar{height:54px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0;box-shadow:var(--shadow-sm);z-index:10}
-.logo{font-size:15px;font-weight:700;white-space:nowrap}.logo em{color:var(--blue);font-style:normal}
-.ver{font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 7px;color:var(--ink3)}
-.tb-sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
-#school-name{border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink2);outline:none;width:180px}
-#school-name:focus{background:var(--surface);border-radius:6px;padding:2px 6px}
-.cpills{display:flex;gap:5px}
-.cpill{display:flex;align-items:center;gap:4px;padding:3px 8px 3px 4px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink3);background:var(--surface);cursor:pointer}
-.cpill:hover{border-color:var(--border2)}
-.cdot{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.1);overflow:hidden;flex-shrink:0}
-.cdot input[type=color]{width:27px;height:27px;margin:-6px;border:none;cursor:pointer;background:none}
-#tpl-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--ink2);background:var(--surface);cursor:pointer;transition:all .12s}
-#tpl-pill:hover{border-color:var(--blue);color:var(--blue)}
-.tb-r{margin-left:auto;display:flex;align-items:center;gap:7px}
-.pill-stat{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--ink2)}
-.pill-stat .n{color:var(--green);font-weight:700}
-#btn-zip{padding:7px 13px;background:var(--purple);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:5px}
-#btn-zip.show{display:flex}#btn-zip:hover{opacity:.88}
-#btn-new{padding:7px 13px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;color:var(--ink2);cursor:pointer}
-#btn-new:hover{border-color:var(--border2)}
+/* ── SCREEN MANAGER ── */
+.screen{display:none;position:absolute;inset:0}
+.screen.active{display:flex}
 
-/* ── LAYOUT ── */
-#app{display:flex;height:calc(100vh - 54px);overflow:hidden}
+/* ══════════════════════════════════════════
+   SCREEN 1 — STYLE CHOOSER
+══════════════════════════════════════════ */
+#s-style{flex-direction:column;background:var(--white);animation:fadeUp .4s ease}
+.sc-top{padding:24px 32px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sc-logo{font-size:17px;font-weight:700;letter-spacing:-.3px}.sc-logo em{color:var(--blue);font-style:normal}
+.sc-ver{font-size:10px;color:var(--ink4);background:var(--bg);border-radius:20px;padding:2px 8px;margin-left:6px;border:1px solid var(--border-m)}
+.sc-school-row{display:flex;align-items:center;gap:10px}
+.sc-school-input{border:none;background:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);outline:none;text-align:right;width:180px}
+.sc-school-input:focus{background:var(--bg);border-radius:8px;padding:3px 8px;text-align:left}
+.cpill{display:flex;align-items:center;gap:4px;padding:4px 9px 4px 4px;border:1px solid var(--border-m);border-radius:20px;font-size:11px;color:var(--ink3);background:var(--bg);cursor:pointer;transition:border-color .15s}
+.cpill:hover{border-color:var(--ink4)}
+.cdot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.08);overflow:hidden;flex-shrink:0}
+.cdot input[type=color]{width:24px;height:24px;margin:-5px;border:none;cursor:pointer;background:none}
 
-/* ── LEFT PANEL ── */
-#left{width:280px;min-width:240px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-#left-hd{padding:11px 13px;border-bottom:1px solid var(--border);flex-shrink:0}
-#left-hd h3{font-size:12px;font-weight:700;margin-bottom:1px}
-#left-hd p{font-size:10px;color:var(--ink3)}
-#disc-bar{background:#EFF6FF;border-bottom:1px solid #BFDBFE;padding:9px 13px;display:none;flex-shrink:0}
-#disc-bar.show{display:block}
-#disc-bar strong{font-size:11px;font-weight:700;color:#1E40AF;display:block;margin-bottom:2px}
-#disc-bar span{font-size:10px;color:#3B82F6}
-.disc-btn{margin-top:5px;padding:4px 10px;background:var(--blue);color:#fff;border:none;border-radius:5px;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px}
+.sc-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 32px 0}
+.sc-hero h1{font-size:36px;font-weight:800;letter-spacing:-.8px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,var(--ink),var(--ink2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sc-hero p{font-size:15px;color:var(--ink3);text-align:center;margin-bottom:32px;font-weight:400}
 
-/* PAGE TREE */
+/* Template cards */
+.tpl-cards{display:flex;gap:20px;justify-content:center;margin-bottom:28px}
+.tpl-card{width:260px;border-radius:20px;border:2px solid var(--border-m);overflow:hidden;cursor:pointer;transition:all .2s;background:var(--white);flex-shrink:0;position:relative}
+.tpl-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--blue)}
+.tpl-card.sel{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,102,204,.12),var(--shadow-lg);transform:translateY(-4px)}
+.tpl-card-prev{height:180px;overflow:hidden;pointer-events:none;background:var(--bg)}
+.tpl-card-prev iframe{width:300%;height:540px;transform:scale(.333);transform-origin:top left;border:none}
+.tpl-card-foot{padding:14px 16px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border)}
+.tpl-card-name{font-size:13px;font-weight:700;flex:1}
+.tpl-card-desc{font-size:11px;color:var(--ink3)}
+.tpl-sel-check{width:22px;height:22px;border-radius:50%;background:var(--blue);display:none;align-items:center;justify-content:center;color:#fff;font-size:11px;flex-shrink:0}
+.tpl-card.sel .tpl-sel-check{display:flex}
+
+.sc-cta{display:flex;flex-direction:column;align-items:center;gap:10px;padding-bottom:32px;flex-shrink:0}
+#btn-choose-tpl{padding:16px 48px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,102,204,.3)}
+#btn-choose-tpl:hover{background:#0055AA;transform:scale(1.02)}
+#btn-choose-tpl:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.sc-cta-note{font-size:11px;color:var(--ink4)}
+
+/* ══════════════════════════════════════════
+   SCREEN 2 — URL + PAGE SELECT
+══════════════════════════════════════════ */
+#s-pages{flex-direction:column;align-items:center;justify-content:center;background:var(--bg);animation:fadeUp .3s ease;padding:40px 24px}
+.s-pages-inner{width:100%;max-width:540px;display:flex;flex-direction:column;gap:20px}
+.s-pages-hd{text-align:center}
+.s-pages-hd h2{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.s-pages-hd p{font-size:14px;color:var(--ink3)}
+.url-card{background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.url-card label{font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:8px}
+.url-input-row{display:flex;gap:8px}
+.url-input-row input{flex:1;padding:12px 14px;border:1.5px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:13px;outline:none;transition:all .15s;background:var(--bg)}
+.url-input-row input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(0,102,204,.1)}
+#btn-scan{padding:12px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .2s}
+#btn-scan:hover{background:#0055AA}
+#btn-scan:disabled{opacity:.4;cursor:not-allowed}
+.scan-status{display:none;align-items:center;gap:8px;padding:10px 0 0;font-size:12px;color:var(--blue)}
+.scan-status.show{display:flex}
+.minispin{width:12px;height:12px;border:2px solid rgba(0,102,204,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+.scan-err{display:none;margin-top:10px;padding:10px 12px;background:var(--red-lt);border-radius:var(--rs);font-size:12px;color:#CC2200}
+.scan-err.show{display:block}
+
+/* Page list */
+.pages-found-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:none}
+.pages-found-card.show{display:block}
+.pf-hd{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.pf-hd-label{font-size:12px;font-weight:600;color:var(--ink2)}
+.pf-sel-all{font-size:11px;color:var(--blue);cursor:pointer;font-weight:500}
+.pf-notice{padding:8px 16px;background:var(--amber-lt);border-bottom:1px solid rgba(255,149,0,.15);font-size:11px;color:#7A4600;display:flex;align-items:center;gap:6px}
+.pf-list{max-height:240px;overflow-y:auto}
+.pf-list::-webkit-scrollbar{width:3px}
+.pf-list::-webkit-scrollbar-thumb{background:var(--border-m);border-radius:3px}
+.pf-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border)}
+.pf-item:last-child{border-bottom:none}
+.pf-item:hover{background:var(--bg)}
+.pf-item.selected{background:var(--blue-lt)}
+.pf-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border-m);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.pf-item.selected .pf-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.pf-title{font-size:12px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-url{font-size:10px;color:var(--ink4);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Floating action */
+#float-cta{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;border:none;border-radius:40px;padding:16px 36px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:none;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,102,204,.35);transition:all .2s;white-space:nowrap;z-index:100}
+#float-cta.show{display:flex;animation:fadeUp .3s ease}
+#float-cta:hover{background:#0055AA;transform:translateX(-50%) scale(1.02)}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;padding:6px 0;background:none;border:none;font-family:inherit}
+.back-btn:hover{color:var(--ink)}
+
+/* ══════════════════════════════════════════
+   SCREEN 3 — MAIN WORKSPACE
+══════════════════════════════════════════ */
+#s-main{flex-direction:row}
+
+/* LEFT */
+#ws-left{width:256px;min-width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.wl-hd{padding:14px 16px 10px;flex-shrink:0}
+.wl-school{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl-progress{font-size:10px;color:var(--ink3)}
+.wl-prog-bar{height:3px;background:var(--border-m);border-radius:3px;margin-top:6px;overflow:hidden}
+.wl-prog-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease}
+.disc-bar{background:var(--blue-lt);border-bottom:1px solid rgba(0,102,204,.12);padding:8px 12px;display:none;flex-shrink:0}
+.disc-bar.show{display:block}
+.disc-bar-t{font-size:11px;font-weight:600;color:var(--blue);margin-bottom:2px}
+.disc-bar-s{font-size:10px;color:var(--blue);opacity:.8}
+.disc-bar-btn{margin-top:5px;padding:4px 10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 #tree{flex:1;overflow-y:auto}
 #tree::-webkit-scrollbar{width:3px}
-#tree::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#tree::-webkit-scrollbar-thumb{background:var(--border-m);border-radius:3px}
 .tsec{border-bottom:1px solid var(--border)}
-.tpar{display:flex;align-items:center;gap:7px;padding:8px 11px;cursor:pointer;transition:background .1s;background:var(--surface)}
-.tpar:hover{background:#EDECEA}
-.tpar.sel{background:var(--blue-lt);border-right:3px solid var(--blue)}
-.tchev{font-size:9px;color:var(--ink3);transition:transform .15s;flex-shrink:0;width:11px;line-height:1;display:flex;align-items:center}
+.tpar{display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;transition:background .1s}
+.tpar:hover{background:var(--bg)}
+.tpar.sel{background:var(--blue-lt)}
+.tpar.sel .ttitle{color:var(--blue);font-weight:600}
+.tchev{font-size:8px;color:var(--ink4);width:10px;flex-shrink:0;display:flex;align-items:center;transition:transform .15s}
 .tchev.open{transform:rotate(90deg)}
-.ticon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
-.ttitle{font-size:11px;font-weight:700;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ticon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.ttitle{font-size:11px;font-weight:500;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sdot.pending{background:var(--border-m)}
+.sdot.scraping,.sdot.generating{background:#93C5FD;animation:pulse 1s infinite}
+.sdot.ready{background:var(--amber)}
+.sdot.approved{background:var(--green)}
+.sdot.edited{background:var(--purple)}
+.sdot.error{background:var(--red)}
 .tkids{display:none}
 .tkids.open{display:block}
-.tchild{display:flex;align-items:center;gap:7px;padding:6px 11px 6px 28px;cursor:pointer;border-top:1px solid var(--border);transition:background .1s}
-.tchild:hover{background:var(--surface)}
-.tchild.sel{background:var(--blue-lt);border-left:3px solid var(--blue);padding-left:25px}
-.tctitle{font-size:10px;font-weight:600;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;border:1.5px solid}
-.sdot.pending{background:#E5E5E3;border-color:var(--border2)}
-.sdot.scraping,.sdot.generating{background:#93C5FD;border-color:#3B82F6;animation:pulse 1s infinite}
-.sdot.ready{background:#FCD34D;border-color:#F59E0B}
-.sdot.approved{background:#34D399;border-color:#10B981}
-.sdot.edited{background:#C4B5FD;border-color:#8B5CF6}
-.sdot.error{background:#FCA5A5;border-color:#EF4444}
-
-/* LEFT FOOTER */
-#left-ft{padding:10px 13px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
-.genhint{font-size:10px;color:var(--ink3);text-align:center;margin-bottom:6px}
-#btn-gen-next{width:100%;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.tchild{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 26px;cursor:pointer;border-top:1px solid var(--border);transition:background .1s}
+.tchild:hover{background:var(--bg)}
+.tchild.sel{background:var(--blue-lt)}
+.tchild.sel .tctitle{color:var(--blue);font-weight:600}
+.tctitle{font-size:10px;font-weight:500;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl-ft{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.gen-hint{font-size:9px;color:var(--ink4);text-align:center;margin-bottom:6px}
+#btn-gen-next{width:100%;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:none;align-items:center;justify-content:center;gap:5px}
 #btn-gen-next.show{display:flex}
-#btn-gen-next:hover{background:#1D4ED8;transform:translateY(-1px)}
-#btn-gen-next:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#btn-gen-next:hover{background:#0055AA}
+#btn-gen-next:disabled{opacity:.4;cursor:not-allowed}
 
-/* ── WELCOME ── */
-#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;overflow-y:auto}
-.w-ico{font-size:44px;opacity:.18;margin-bottom:16px}
-.w-title{font-size:22px;font-weight:700;margin-bottom:6px}
-.w-sub{font-size:13px;color:var(--ink3);line-height:1.7;max-width:400px;margin:0 auto 24px}
-.scrape-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:22px;width:100%;max-width:480px;box-shadow:var(--shadow);text-align:left}
-.scrape-box h3{font-size:14px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:7px}
-.scrape-box p{font-size:11px;color:var(--ink3);margin-bottom:12px;line-height:1.6;margin-top:3px}
-.url-row{display:flex;gap:7px}
-.url-row input{flex:1;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;outline:none;transition:border-color .15s}
-.url-row input:focus{border-color:var(--blue)}
-#btn-find{padding:9px 16px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
-#btn-find:hover{background:#1D4ED8}
-#btn-find:disabled{opacity:.4;cursor:not-allowed}
-.sc-status{margin-top:9px;font-size:11px;color:var(--blue);display:none;align-items:center;gap:6px}
-.sc-status.show{display:flex}
-.minispin{width:12px;height:12px;border:2px solid #BFDBFE;border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
-.sc-err{margin-top:9px;padding:9px 11px;background:var(--red-lt);border:1px solid #FCA5A5;border-radius:var(--rs);font-size:11px;color:#991B1B;display:none}
-.sc-err.show{display:block}
-#page-sel{width:100%;max-width:480px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);display:none;margin-top:12px}
-#page-sel.show{display:block}
-.psel-hd{padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.psel-lbl{font-size:11px;font-weight:700;color:var(--ink2)}
-.psel-all{font-size:10px;font-weight:600;color:var(--blue);cursor:pointer}
-.psel-all:hover{text-decoration:underline}
-.psel-notice{padding:7px 14px;background:var(--amber-lt);border-bottom:1px solid #FDE68A;font-size:10px;color:#92400E;display:flex;align-items:center;gap:6px}
-.psel-list{max-height:260px;overflow-y:auto}
-.psel-list::-webkit-scrollbar{width:3px}
-.psel-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.psel-item{display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
-.psel-item:hover{background:var(--surface)}
-.psel-item:last-child{border-bottom:none}
-.psel-item input{width:14px;height:14px;accent-color:var(--blue);cursor:pointer;flex-shrink:0}
-.psel-info{flex:1;min-width:0}
-.psel-title{font-size:11px;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.psel-url{font-size:9px;color:var(--ink3);font-family:monospace;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.psel-ft{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px}
-.psel-cnt{flex:1;font-size:10px;color:var(--ink3)}
-#btn-start{padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
-#btn-start:hover{opacity:.88}
-#btn-start:disabled{opacity:.4;cursor:not-allowed}
+/* RIGHT */
+#ws-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 
-/* ── RIGHT PANEL ── */
-#right{flex:1;display:none;flex-direction:column;overflow:hidden}
-#right.show{display:flex}
+/* Style strip */
+#style-strip{height:72px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;overflow-x:auto;flex-shrink:0}
+#style-strip::-webkit-scrollbar{height:0}
+.ss-label{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.ss-thumb{width:100px;height:52px;border-radius:10px;border:1.5px solid var(--border-m);overflow:hidden;cursor:pointer;transition:all .15s;position:relative;flex-shrink:0}
+.ss-thumb:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow)}
+.ss-thumb.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,102,204,.15)}
+.ss-thumb iframe{width:300%;height:156px;transform:scale(.333);transform-origin:top left;border:none;pointer-events:none}
+.ss-tname{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:8px;font-weight:700;padding:2px 5px;text-align:center}
 
-/* TEMPLATE STRIP */
-#tpl-strip{height:88px;background:var(--white);border-bottom:1px solid var(--border);display:none;align-items:center;padding:0 14px;gap:10px;overflow-x:auto;flex-shrink:0}
-#tpl-strip.show{display:flex}
-#tpl-strip::-webkit-scrollbar{height:3px}
-#tpl-strip::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.tpl-strip-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
-.tpl-thumb{flex-shrink:0;width:120px;height:68px;border-radius:8px;border:2px solid var(--border);overflow:hidden;cursor:pointer;transition:all .15s;position:relative}
-.tpl-thumb:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
-.tpl-thumb.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.15)}
-.tpl-thumb iframe{width:300%;height:204px;transform:scale(.333);transform-origin:top left;border:none;pointer-events:none}
-.tpl-name{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;font-weight:700;padding:3px 6px;text-align:center}
-
-/* PREV TOPBAR */
-#prev-topbar{height:46px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 13px;gap:7px;flex-shrink:0}
-.ptitle{font-size:12px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tb-action{padding:6px 11px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;color:var(--ink2);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .12s}
-.tb-action:hover{border-color:var(--border2);color:var(--ink)}
-#btn-approve{padding:6px 13px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
-#btn-approve.on{background:var(--surface);color:var(--green);border:1.5px solid var(--green)}
+/* Page topbar */
+#page-bar{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;flex-shrink:0}
+.page-title{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.pbar-btn{padding:7px 13px;border:1px solid var(--border-m);border-radius:var(--rs);background:var(--white);font-family:inherit;font-size:11px;font-weight:500;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
+.pbar-btn:hover{border-color:var(--blue);color:var(--blue)}
+.pbar-btn.on{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+#btn-approve{padding:7px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+#btn-approve.approved{background:var(--white);color:var(--green);border:1.5px solid var(--green)}
 #btn-approve:hover{opacity:.88}
-.vtog{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:2px;gap:1px}
-.vbtn{padding:3px 9px;border-radius:5px;background:none;border:none;font-family:inherit;font-size:10px;font-weight:600;color:var(--ink3);cursor:pointer}
-.vbtn.on{background:var(--white);color:var(--ink);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+#btn-try3{padding:7px 13px;border:1.5px solid var(--blue);border-radius:var(--rs);background:var(--blue-lt);font-family:inherit;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+#btn-try3:hover{background:var(--blue);color:#fff}
 
-/* WYSIWYG BAR */
-#wysiwyg-bar{display:none;padding:4px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;align-items:center;gap:3px}
-#wysiwyg-bar.show{display:flex}
-.tbb{padding:4px 7px;background:var(--white);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;color:var(--ink2)}
-.tbb:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
-.tbdiv{width:1px;height:14px;background:var(--border);margin:0 2px}
-
-/* PREVIEW AREA */
-#prev-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
-#prevscroll{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
+/* Preview */
+#preview-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#prevscroll{flex:1;overflow-y:auto;padding:20px}
 #prevscroll::-webkit-scrollbar{width:5px}
-#prevscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-#prev-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;min-height:200px}
-.prev-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:5px}
-.ptdot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-#prev-loading{display:none;flex-direction:column;align-items:center;gap:10px;padding:48px}
+#prevscroll::-webkit-scrollbar-thumb{background:var(--border-m);border-radius:4px}
+#prev-frame{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;min-height:300px}
+.prev-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink4);padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.prev-label-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+#prev-loading{display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;gap:14px}
 #prev-loading.show{display:flex}
-.bigspin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
-.ld-t{font-size:13px;font-weight:600;color:var(--ink2)}
-.ld-s{font-size:11px;color:var(--ink3);text-align:center;max-width:210px;line-height:1.5}
-#prev-err{display:none;margin:12px;padding:12px 14px;background:var(--red-lt);border:1px solid #FCA5A5;border-radius:var(--rs);font-size:11px;color:#991B1B}
+.big-spin{width:32px;height:32px;border:3px solid var(--border-m);border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
+.ld-title{font-size:14px;font-weight:600;color:var(--ink2)}
+.ld-sub{font-size:12px;color:var(--ink3);text-align:center;max-width:220px;line-height:1.6}
+#prev-empty{padding:60px 24px;text-align:center}
+.pe-icon{font-size:40px;color:var(--ink4);margin-bottom:14px;opacity:.4}
+.pe-title{font-size:16px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.pe-sub{font-size:12px;color:var(--ink3);line-height:1.7;max-width:260px;margin:0 auto}
+.pe-action{margin-top:20px}
+.pe-btn{padding:12px 28px;background:var(--blue);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 14px rgba(0,102,204,.25)}
+.pe-btn:hover{background:#0055AA;transform:scale(1.02)}
+#prev-err{display:none;margin:16px;padding:14px 16px;background:var(--red-lt);border-radius:var(--rs);font-size:12px;color:#CC2200}
 #prev-err.show{display:block}
-#prev-empty{padding:52px 24px;text-align:center}
-.pe-ico{font-size:32px;opacity:.14;margin-bottom:10px}
-.pe-t{font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:5px}
-.pe-s{font-size:11px;color:var(--ink3);line-height:1.7;max-width:240px;margin:0 auto}
 #prev-iframe{width:100%;border:none;display:none}
-#wysiwyg-wrap{display:none;padding:14px;background:var(--white)}
-#wysiwyg-editor{outline:none;min-height:300px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
-#code-view{display:none;flex:1;overflow-y:auto;background:#0D1117;padding:14px}
-#code-view pre{font-family:monospace;font-size:10px;color:#8B949E;white-space:pre-wrap;word-break:break-all;line-height:1.7}
+#code-view{display:none;background:#0D1117;overflow-y:auto}
+#code-view pre{font-family:monospace;font-size:10px;color:#8B949E;white-space:pre-wrap;word-break:break-all;line-height:1.7;padding:16px}
 
-/* VOICE BAR */
-#voice-bar{flex-shrink:0;background:var(--white);border-top:1px solid var(--border);padding:10px 14px;display:none;flex-direction:column;gap:8px}
-#voice-bar.show{display:flex}
-.vb-row{display:flex;align-items:center;gap:8px}
-.vb-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;display:flex;align-items:center;gap:5px}
-#voice-transcript{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;background:var(--surface);transition:border-color .15s;resize:none;min-height:36px;max-height:80px}
-#voice-transcript:focus{border-color:var(--blue);background:var(--white)}
-#voice-transcript::placeholder{color:var(--ink3)}
-#btn-mic{width:42px;height:42px;border-radius:50%;border:none;background:var(--blue);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all .15s;box-shadow:0 4px 12px rgba(43,92,230,.3)}
-#btn-mic:hover{background:#1D4ED8;transform:scale(1.05)}
-#btn-mic.listening{background:var(--red);animation:mic-pulse 1.2s infinite;box-shadow:0 4px 16px rgba(220,38,38,.4)}
-#btn-voice-send{padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
-#btn-voice-send:hover{background:#1D4ED8}
-#btn-voice-send:disabled{opacity:.4;cursor:not-allowed}
-.vb-applying{display:none;align-items:center;gap:7px;font-size:11px;color:var(--blue);font-weight:600}
-.vb-applying.show{display:flex}
-.vb-examples{display:flex;gap:5px;flex-wrap:wrap}
-.vb-ex{padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:10px;color:var(--ink2);cursor:pointer;transition:all .12s;white-space:nowrap}
-.vb-ex:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+/* ── VOICE BAR (the hero element) ── */
+#voice-bar{flex-shrink:0;background:var(--white);border-top:1px solid var(--border);padding:12px 16px;display:none}
+#voice-bar.show{display:block}
+.vb-inner{display:flex;align-items:flex-end;gap:10px}
+#btn-mic{width:52px;height:52px;border-radius:50%;border:none;background:var(--blue);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;transition:all .2s;box-shadow:0 4px 16px rgba(0,102,204,.35)}
+#btn-mic:hover{transform:scale(1.06)}
+#btn-mic.listening{background:var(--red);animation:breathe 1.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(255,59,48,.4)}
+.vb-input-wrap{flex:1;display:flex;flex-direction:column;gap:6px}
+#voice-input{width:100%;padding:10px 12px;border:1.5px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:13px;color:var(--ink);outline:none;resize:none;min-height:42px;max-height:100px;transition:all .15s;background:var(--bg);line-height:1.4}
+#voice-input:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(0,102,204,.08)}
+#voice-input::placeholder{color:var(--ink4)}
+.vb-chips{display:flex;gap:5px;flex-wrap:wrap}
+.vb-chip{padding:4px 10px;background:var(--bg);border:1px solid var(--border-m);border-radius:20px;font-size:10px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .12s;white-space:nowrap}
+.vb-chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+#btn-vb-send{padding:12px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all .15s;align-self:flex-end}
+#btn-vb-send:hover{background:#0055AA}
+#btn-vb-send:disabled{opacity:.4;cursor:not-allowed}
+.vb-status{display:none;align-items:center;gap:7px;padding:6px 0 0;font-size:11px;color:var(--blue);font-weight:500}
+.vb-status.show{display:flex}
 
-/* ADD CONTENT DRAWER */
-#content-drawer{flex-shrink:0;background:var(--white);border-top:1px solid var(--border);display:none;flex-direction:column;max-height:340px}
-#content-drawer.show{display:flex}
-#cd-header{display:flex;align-items:center;padding:8px 14px;gap:8px;border-bottom:1px solid var(--border);flex-shrink:0;cursor:pointer;user-select:none}
-#cd-header:hover{background:var(--surface)}
-.cd-title{font-size:11px;font-weight:700;color:var(--ink2);flex:1}
-.cd-chev{font-size:10px;color:var(--ink3);transition:transform .15s;display:flex;align-items:center}
-.cd-chev.open{transform:rotate(180deg)}
-#cd-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-#cd-body::-webkit-scrollbar{width:3px}
-#cd-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.drop-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:18px 16px;text-align:center;cursor:pointer;transition:all .15s;position:relative;background:var(--surface)}
+/* ADD CONTENT */
+#add-content-panel{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);display:none}
+#add-content-panel.show{display:block}
+.acp-hd{display:flex;align-items:center;padding:10px 16px;gap:8px;cursor:pointer;background:var(--white)}
+.acp-hd:hover{background:var(--bg)}
+.acp-title{font-size:11px;font-weight:600;color:var(--ink2);flex:1}
+.acp-chev{font-size:9px;color:var(--ink4);transition:transform .15s}
+.acp-chev.open{transform:rotate(180deg)}
+.acp-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.drop-zone{border:2px dashed var(--border-m);border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;transition:all .15s;position:relative;background:var(--bg)}
 .drop-zone:hover,.drop-zone.drag-over{border-color:var(--blue);background:var(--blue-lt)}
 .drop-zone.has-file{border-style:solid;border-color:var(--green);background:var(--green-lt)}
 .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.dz-ico{font-size:22px;opacity:.35;margin-bottom:5px}
-.dz-t{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:2px}
+.dz-t{font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:2px}
 .dz-s{font-size:10px;color:var(--ink3)}
-.dz-types{display:flex;gap:5px;justify-content:center;margin-top:6px;flex-wrap:wrap}
-.dz-type{padding:2px 7px;background:var(--white);border:1px solid var(--border);border-radius:10px;font-size:9px;font-weight:600;color:var(--ink3)}
-#cd-file-preview{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
-#cd-file-preview.show{display:block}
-.fp-header{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--white)}
-.fp-icon{font-size:18px;flex-shrink:0}
-.fp-name{font-size:11px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fp-size{font-size:10px;color:var(--ink3)}
-.fp-remove{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:15px;padding:0;line-height:1}
-.fp-remove:hover{color:var(--red)}
-.fp-body{padding:10px 12px;max-height:100px;overflow-y:auto;font-size:10px;color:var(--ink2);line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.fp-img-preview{width:100%;max-height:100px;object-fit:cover;display:block}
-.cd-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-#cd-extra-text{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;resize:vertical;min-height:54px;transition:border-color .15s;background:var(--surface)}
-#cd-extra-text:focus{border-color:var(--blue);background:var(--white)}
-#cd-instruction{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;transition:border-color .15s;background:var(--surface)}
-#cd-instruction:focus{border-color:var(--blue);background:var(--white)}
-.cd-applying{display:none;align-items:center;gap:7px;font-size:11px;color:var(--blue);font-weight:600;justify-content:center;padding:4px}
-.cd-applying.show{display:flex}
-#btn-cd-apply{width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-#btn-cd-apply:hover{opacity:.88}
-#btn-cd-apply:disabled{opacity:.4;cursor:not-allowed}
+#fp-preview{display:none;background:var(--white);border:1px solid var(--border-m);border-radius:var(--rs);overflow:hidden}
+#fp-preview.show{display:block}
+.fp-hd{display:flex;align-items:center;gap:7px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.fp-name{font-size:11px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fp-rm{background:none;border:none;color:var(--ink4);cursor:pointer;font-size:14px;padding:0;line-height:1}
+.fp-rm:hover{color:var(--red)}
+.fp-body{padding:8px 10px;max-height:80px;overflow-y:auto;font-size:10px;color:var(--ink2);line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.fp-img{width:100%;max-height:80px;object-fit:cover;display:block}
+.acp-lbl{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.acp-input{width:100%;padding:7px 10px;border:1.5px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;background:var(--white);transition:border-color .15s}
+.acp-input:focus{border-color:var(--blue)}
+.acp-textarea{width:100%;padding:7px 10px;border:1.5px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink);outline:none;background:var(--white);resize:vertical;min-height:48px;transition:border-color .15s}
+.acp-textarea:focus{border-color:var(--blue)}
+.acp-applying{display:none;align-items:center;gap:6px;font-size:11px;color:var(--blue);font-weight:500}
+.acp-applying.show{display:flex}
+#btn-acp-apply{width:100%;padding:9px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+#btn-acp-apply:hover{opacity:.9}
+#btn-acp-apply:disabled{opacity:.4;cursor:not-allowed}
 
-/* PASTE GUIDE */
-#paste-guide{display:none;background:var(--green-lt);border-top:1px solid #A7F3D0;padding:9px 14px;flex-shrink:0;align-items:center;gap:7px}
+/* Paste guide */
+#paste-guide{display:none;padding:8px 16px;background:var(--green-lt);border-top:1px solid rgba(52,199,89,.2);flex-shrink:0;align-items:center;gap:8px}
 #paste-guide.show{display:flex}
-.pg-t{font-size:10px;color:#065F46;line-height:1.5;flex:1}
-.pg-code{background:rgba(0,0,0,.07);border-radius:3px;padding:1px 4px;font-family:monospace;font-size:9px}
+.pg-t{font-size:10px;color:#1A7A35;flex:1;line-height:1.5}
+.pg-code{background:rgba(0,0,0,.06);border-radius:3px;padding:1px 4px;font-family:monospace;font-size:9px}
 
-/* ── TEMPLATE MODAL ── */
-#tpl-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-#tpl-modal.show{display:flex}
-.tpl-modal-card{background:var(--white);border-radius:18px;padding:26px 30px;width:860px;max-width:95vw;box-shadow:0 32px 80px rgba(0,0,0,.25)}
-.tpl-modal-card h2{font-size:17px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:8px}
-.tpl-modal-card p{font-size:11px;color:var(--ink3);margin-bottom:20px}
-.tpl-modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
-.tpl-mo{border:2px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s}
-.tpl-mo:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
-.tpl-mo.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,92,230,.15)}
-.tpl-mo-prev{height:160px;overflow:hidden;pointer-events:none;background:var(--surface)}
-.tpl-mo-prev iframe{width:200%;height:320px;transform:scale(.5);transform-origin:top left;border:none}
-.tpl-mo-label{padding:9px 12px;border-top:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between}
-.tpl-mo-name{font-size:12px;font-weight:700}
-.tpl-mo-desc{font-size:10px;color:var(--ink3)}
-.tpl-active-tag{font-size:9px;font-weight:700;background:var(--blue);color:#fff;padding:2px 6px;border-radius:8px}
-.tpl-modal-ft{display:flex;align-items:center;justify-content:space-between}
-.tpl-modal-note{font-size:10px;color:var(--ink3)}
-#tpl-apply{padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
-#tpl-apply:hover{background:#1D4ED8}
-#tpl-cancel{padding:9px 14px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:11px;color:var(--ink3);cursor:pointer;margin-right:6px}
-
-/* ── VARIANT PANEL ── */
-#variant-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(3px)}
-#variant-overlay.show{display:flex}
-#variant-panel{background:var(--white);width:100%;height:82vh;display:flex;flex-direction:column;border-radius:18px 18px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.2);overflow:hidden}
-#variant-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
-#variant-header h3{font-size:15px;font-weight:700;flex:1;display:flex;align-items:center;gap:8px}
-#variant-header p{font-size:11px;color:var(--ink3)}
-#variant-close{background:none;border:none;color:var(--ink3);font-size:20px;cursor:pointer;padding:4px;line-height:1}
-#variant-close:hover{color:var(--ink)}
-.vtab-row{display:flex;gap:8px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;align-items:center;background:var(--surface)}
-.vtab{padding:6px 16px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:var(--white);color:var(--ink2);transition:all .12s;display:flex;align-items:center;gap:6px}
-.vtab:hover{border-color:var(--blue);color:var(--blue)}
-.vtab.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.vgen-badge{display:none;align-items:center;gap:6px;padding:4px 12px;background:var(--blue-lt);border-radius:20px;font-size:11px;color:var(--blue);font-weight:600;margin-left:auto}
-.vgen-badge.show{display:flex}
-#variant-frames{flex:1;overflow:hidden;position:relative}
-.vframe-pane{position:absolute;inset:0;display:none;overflow-y:auto;padding:16px;background:var(--bg)}
-.vframe-pane.show{display:block}
-.vframe-pane::-webkit-scrollbar{width:5px}
-.vframe-pane::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.vframe-card{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
-.vframe-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:6px}
-.vframe-tag .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
-.vframe-loading{padding:48px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
-.vframe-loading p{font-size:12px;color:var(--ink3)}
-.vframe-iframe{width:100%;border:none;display:block}
-#variant-footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--white);display:flex;align-items:center;gap:10px;flex-shrink:0}
-#btn-use-variant{padding:10px 22px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
-#btn-use-variant:hover{opacity:.88}
-#btn-close-variant{padding:10px 16px;background:none;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:5px}
-.variant-hint{flex:1;font-size:11px;color:var(--ink3)}
+/* ── VARIANTS SHEET ── */
+#var-sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(8px)}
+#var-sheet.show{display:flex}
+#var-panel{background:var(--white);width:100%;height:85vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;box-shadow:0 -12px 60px rgba(0,0,0,.2);overflow:hidden}
+#var-panel-hd{padding:16px 20px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.var-grab{width:36px;height:4px;background:var(--border-m);border-radius:2px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
+#var-panel-hd h3{font-size:15px;font-weight:700;flex:1}
+#var-panel-hd p{font-size:11px;color:var(--ink3)}
+#btn-var-close{background:none;border:none;color:var(--ink4);font-size:22px;cursor:pointer;padding:2px;line-height:1}
+#btn-var-close:hover{color:var(--ink)}
+.var-tabs{display:flex;gap:6px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.var-tab{padding:7px 18px;border:1.5px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--ink2);transition:all .15s;display:flex;align-items:center;gap:6px}
+.var-tab:hover{border-color:var(--blue);color:var(--blue)}
+.var-tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.var-gen-pill{display:none;align-items:center;gap:6px;padding:5px 12px;background:var(--blue-lt);border-radius:20px;font-size:11px;color:var(--blue);font-weight:500;margin-left:auto}
+.var-gen-pill.show{display:flex}
+.var-frames{flex:1;overflow:hidden;position:relative}
+.var-pane{position:absolute;inset:0;display:none;overflow-y:auto;padding:16px}
+.var-pane.show{display:block}
+.var-pane::-webkit-scrollbar{width:5px}
+.var-pane::-webkit-scrollbar-thumb{background:var(--border-m);border-radius:4px}
+.var-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.var-card-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink4);padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:5px}
+.var-card-lbl .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.var-loading{padding:48px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.var-loading p{font-size:12px;color:var(--ink3)}
+.var-iframe{width:100%;border:none;display:block}
+.var-ft{padding:12px 20px;border-top:1px solid var(--border);background:var(--white);display:flex;align-items:center;gap:10px;flex-shrink:0}
+#btn-use-var{padding:11px 28px;background:var(--green);color:#fff;border:none;border-radius:40px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(52,199,89,.3)}
+#btn-use-var:hover{opacity:.9}
+#btn-var-back{padding:11px 16px;background:none;border:1px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:5px}
+.var-hint{flex:1;font-size:11px;color:var(--ink3)}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div id="topbar">
-  <div class="logo">School<em>Page</em> <span class="ver">v1.9</span></div>
-  <div class="tb-sep"></div>
-  <input id="school-name" type="text" value="Western Cape College" oninput="saveProject()" placeholder="School name">
-  <div class="tb-sep"></div>
-  <div class="cpills">
-    <div class="cpill"><div class="cdot" id="d-pri" style="background:#1a3a6b"><input type="color" id="c-pri" value="#1a3a6b" oninput="onColor()"></div>Main</div>
-    <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor()"></div>Accent</div>
+<!-- ══ SCREEN 1: STYLE CHOOSER ══ -->
+<div class="screen active" id="s-style">
+  <div class="sc-top">
+    <div><span class="sc-logo">School<em>Page</em></span><span class="sc-ver">v2.0</span></div>
+    <div class="sc-school-row">
+      <div class="cpill"><div class="cdot" id="d-pri" style="background:#1a3a6b"><input type="color" id="c-pri" value="#1a3a6b" oninput="onColor()"></div>Main</div>
+      <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor()"></div>Accent</div>
+      <input id="school-name" type="text" class="sc-school-input" value="Western Cape College" oninput="saveProject()" placeholder="School name">
+    </div>
   </div>
-  <div class="tb-sep"></div>
-  <div id="tpl-pill" onclick="openTplModal()"><i class="fa-solid fa-swatchbook" style="font-size:11px;color:var(--blue)"></i><span id="tpl-pill-label">Heritage</span> <i class="fa-solid fa-chevron-down" style="font-size:9px"></i></div>
-  <div class="tb-r">
-    <div class="pill-stat" id="prog-pill" style="display:none"><span class="n" id="prog-n">0</span>&nbsp;/&nbsp;<span id="prog-t">0</span>&nbsp;approved</div>
-    <button id="btn-zip" onclick="downloadZip()"><i class="fa-solid fa-file-zipper"></i> Download ZIP</button>
-    <button id="btn-new" onclick="resetProject()"><i class="fa-solid fa-plus"></i> New</button>
+  <div class="sc-hero">
+    <h1>Choose your design style</h1>
+    <p>Pick the style that feels right for your school. You can always change it later.</p>
+    <div class="tpl-cards" id="tpl-cards"><!-- populated by JS --></div>
+  </div>
+  <div class="sc-cta">
+    <button id="btn-choose-tpl" onclick="goToPages()" disabled><i class="fa-solid fa-arrow-right"></i> Continue with this style</button>
+    <div class="sc-cta-note">Your content stays the same — only the design changes</div>
   </div>
 </div>
 
-<div id="app">
-
-  <!-- LEFT -->
-  <div id="left" style="display:none">
-    <div id="left-hd">
-      <h3 id="left-title">Pages</h3>
-      <p id="left-sub">Select pages to review</p>
+<!-- ══ SCREEN 2: PAGE SELECTOR ══ -->
+<div class="screen" id="s-pages" style="flex-direction:column;align-items:center;justify-content:center">
+  <div class="s-pages-inner">
+    <div class="s-pages-hd">
+      <button class="back-btn" onclick="goToStyle()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <h2>Find your pages</h2>
+      <p>Enter your school website and we'll scan every page</p>
     </div>
-    <div id="disc-bar">
-      <strong id="disc-title">Sub-pages found!</strong>
-      <span id="disc-msg"></span><br>
-      <button class="disc-btn" onclick="addDiscovered()"><i class="fa-solid fa-plus"></i> Add to project</button>
+    <div class="url-card">
+      <label>School website address</label>
+      <div class="url-input-row">
+        <input type="url" id="scrape-url" placeholder="https://westerncapecollege.eq.edu.au" oninput="onUrlChange()">
+        <button id="btn-scan" onclick="findPages()"><i class="fa-solid fa-magnifying-glass"></i> Scan</button>
+      </div>
+      <div class="scan-status" id="scan-status"><div class="minispin"></div><span id="scan-msg">Scanning your website…</span></div>
+      <div class="scan-err" id="scan-err"></div>
+    </div>
+    <div class="pages-found-card" id="pages-found">
+      <div class="pf-hd"><span class="pf-hd-label" id="pf-label">0 pages found</span><span class="pf-sel-all" onclick="toggleSelAll()">Select all</span></div>
+      <div class="pf-notice"><i class="fa-solid fa-info-circle" style="color:var(--amber);flex-shrink:0"></i> The homepage is managed by Queensland Education and cannot be redesigned.</div>
+      <div class="pf-list" id="pf-list"></div>
+    </div>
+  </div>
+  <button id="float-cta" onclick="startProject()"><i class="fa-solid fa-wand-magic-sparkles"></i><span id="float-cta-label">Start redesigning</span></button>
+</div>
+
+<!-- ══ SCREEN 3: MAIN WORKSPACE ══ -->
+<div class="screen" id="s-main">
+  <div id="ws-left">
+    <div class="wl-hd">
+      <div class="wl-school" id="wl-school">Western Cape College</div>
+      <div class="wl-progress" id="wl-progress">0 of 0 approved</div>
+      <div class="wl-prog-bar"><div class="wl-prog-fill" id="wl-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="disc-bar" id="disc-bar">
+      <div class="disc-bar-t" id="disc-t">Sub-pages found!</div>
+      <div class="disc-bar-s" id="disc-s"></div>
+      <button class="disc-bar-btn" onclick="addDiscovered()"><i class="fa-solid fa-plus"></i> Add to project</button>
     </div>
     <div id="tree"></div>
-    <div id="left-ft">
-      <div class="genhint" id="genhint">Ready</div>
+    <div class="wl-ft">
+      <div class="gen-hint" id="genhint">Ready</div>
       <button id="btn-gen-next" onclick="genNext()"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate next</button>
     </div>
   </div>
-
-  <!-- WELCOME -->
-  <div id="welcome">
-    <div class="w-ico"><i class="fa-solid fa-building-columns"></i></div>
-    <div class="w-title">Redesign your school website</div>
-    <div class="w-sub">Enter your school website address. We will scan all your pages, redesign them with your branding, and you review and approve each one.</div>
-    <div class="scrape-box">
-      <h3><i class="fa-solid fa-magnifying-glass"></i> Find your pages</h3>
-      <p>Enter your school website address. We will scan and find all the pages.</p>
-      <div class="url-row">
-        <input type="url" id="scrape-url" placeholder="https://westerncapecollege.eq.edu.au" oninput="onUrlChange()">
-        <button id="btn-find" onclick="findPages()"><i class="fa-solid fa-magnifying-glass"></i> Find pages</button>
-      </div>
-      <div class="sc-status" id="sc-status"><div class="minispin"></div><span id="sc-msg">Scanning&hellip;</span></div>
-      <div class="sc-err" id="sc-err"></div>
-    </div>
-    <div id="page-sel">
-      <div class="psel-hd"><span class="psel-lbl" id="psel-lbl">0 pages found</span><span class="psel-all" onclick="psAll()">Select all</span></div>
-      <div class="psel-notice"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);flex-shrink:0"></i><span>The <strong>homepage</strong> is managed by Queensland Education and has been excluded. Only inner pages can be redesigned.</span></div>
-      <div class="psel-list" id="psel-list"></div>
-      <div class="psel-ft"><span class="psel-cnt" id="psel-cnt">0 selected</span><button id="btn-start" onclick="startRedesign()" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Redesign selected</button></div>
-    </div>
-  </div>
-
-  <!-- RIGHT -->
-  <div id="right">
-    <div id="tpl-strip"><div class="tpl-strip-label">Style:</div></div>
-    <div id="prev-topbar">
-      <div class="ptitle" id="ptitle">Select a page</div>
-      <button class="tb-action" onclick="copyPage()"><i class="fa-solid fa-copy"></i> Copy HTML</button>
-      <button class="tb-action" onclick="toggleDrawer()"><i class="fa-solid fa-circle-plus"></i> Add content</button>
-      <button class="tb-action" onclick="openVariations()"><i class="fa-solid fa-wand-magic-sparkles"></i> Try 3 designs</button>
+  <div id="ws-right">
+    <div id="style-strip"><div class="ss-label">Style</div></div>
+    <div id="page-bar">
+      <div class="page-title" id="page-title">Select a page</div>
+      <button class="pbar-btn" id="btn-copy" onclick="copyHtml()"><i class="fa-solid fa-copy"></i> Copy HTML</button>
+      <button class="pbar-btn" id="btn-toggle-add" onclick="toggleAddContent()"><i class="fa-solid fa-circle-plus"></i> Add content</button>
+      <button id="btn-try3" onclick="openVariants()"><i class="fa-solid fa-wand-magic-sparkles"></i> Try 3 designs</button>
       <button id="btn-approve" onclick="toggleApprove()"><i class="fa-solid fa-check"></i> Approve</button>
-      <div class="tb-sep" style="width:1px;height:16px;background:var(--border)"></div>
-      <div class="vtog">
-        <button class="vbtn on" id="vv" onclick="setView('preview')">Preview</button>
-        <button class="vbtn" id="ve" onclick="setView('edit')">Edit</button>
-        <button class="vbtn" id="vc" onclick="setView('code')">HTML</button>
+      <div style="display:flex;background:var(--bg);border:1px solid var(--border-m);border-radius:var(--rs);padding:2px;gap:1px">
+        <button class="pbar-btn on" id="vv" onclick="setView('preview')" style="border:none;padding:5px 10px;border-radius:7px;font-size:10px">Preview</button>
+        <button class="pbar-btn" id="vc" onclick="setView('code')" style="border:none;padding:5px 10px;border-radius:7px;font-size:10px">HTML</button>
       </div>
     </div>
-    <div id="wysiwyg-bar">
-      <button class="tbb" onclick="fmt('bold')"><strong>B</strong></button>
-      <button class="tbb" onclick="fmt('italic')"><em>I</em></button>
-      <button class="tbb" onclick="fmt('underline')"><u>U</u></button>
-      <div class="tbdiv"></div>
-      <button class="tbb" onclick="fmt('insertUnorderedList')"><i class="fa-solid fa-list-ul"></i></button>
-      <button class="tbb" onclick="fmt('removeFormat')">Clear</button>
-      <div class="tbdiv"></div>
-      <button class="tbb" onclick="fmt('fontSize','5')">A+</button>
-      <button class="tbb" onclick="fmt('fontSize','2')">A-</button>
-      <span style="margin-left:auto;font-size:9px;color:var(--ink3)">Click any text to edit</span>
-    </div>
-    <div id="prev-area">
+    <div id="preview-area">
       <div id="prevscroll">
-        <div id="prev-card">
-          <div class="prev-tag"><span class="ptdot"></span>SharePoint Embed preview</div>
-          <div id="prev-loading">
-            <div class="bigspin"></div>
-            <div class="ld-t" id="ld-msg">Working&hellip;</div>
-            <div class="ld-s">About 15&ndash;20 seconds</div>
-          </div>
+        <div id="prev-frame">
+          <div class="prev-label"><span class="prev-label-dot"></span>SharePoint Embed Preview</div>
+          <div id="prev-loading"><div class="big-spin"></div><div class="ld-title" id="ld-msg">Working…</div><div class="ld-sub">Usually takes about 15–20 seconds</div></div>
           <div id="prev-err"></div>
-          <div id="prev-empty">
-            <div class="pe-ico"><i class="fa-solid fa-layer-group"></i></div>
-            <div class="pe-t">Select a page from the left</div>
-            <div class="pe-s">Click any page to see its preview here.</div>
-          </div>
+          <div id="prev-empty"><div class="pe-icon"><i class="fa-regular fa-file-lines"></i></div><div class="pe-title">Select a page to preview</div><div class="pe-sub">Click any page in the sidebar to see its preview here.</div></div>
           <iframe id="prev-iframe" sandbox="allow-same-origin" scrolling="no"></iframe>
-          <div id="wysiwyg-wrap"><div id="wysiwyg-editor" contenteditable="true" oninput="onEdit()"></div></div>
         </div>
       </div>
       <div id="code-view"><pre id="code-out"></pre></div>
     </div>
-    <!-- ADD CONTENT DRAWER -->
-    <div id="content-drawer">
-      <div id="cd-header" onclick="toggleDrawerBody()">
-        <i class="fa-solid fa-file-circle-plus" style="font-size:13px;color:var(--blue)"></i>
-        <span class="cd-title">Add content to this page</span>
-        <span style="font-size:10px;color:var(--ink3);margin-right:4px">Word, images, PDF, PowerPoint, text</span>
-        <span class="cd-chev" id="cd-chev"><i class="fa-solid fa-chevron-up"></i></span>
+    <!-- ADD CONTENT -->
+    <div id="add-content-panel">
+      <div class="acp-hd" onclick="toggleAcpBody()">
+        <i class="fa-solid fa-paperclip" style="font-size:12px;color:var(--blue)"></i>
+        <span class="acp-title">Add content to this page</span>
+        <span class="acp-chev" id="acp-chev"><i class="fa-solid fa-chevron-up"></i></span>
       </div>
-      <div id="cd-body">
-        <div class="drop-zone" id="drop-zone">
-          <input type="file" id="cd-file-input" accept=".docx,.doc,.pdf,.pptx,.ppt,.txt,.jpg,.jpeg,.png,.webp,.gif" onchange="handleFileSelect(this)">
-          <div class="dz-ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-          <div class="dz-t">Drop a file here or click to browse</div>
-          <div class="dz-s">We will extract the content and add it to the page</div>
-          <div class="dz-types">
-            <span class="dz-type"><i class="fa-solid fa-file-word"></i> Word</span>
-            <span class="dz-type"><i class="fa-solid fa-image"></i> Images</span>
-            <span class="dz-type"><i class="fa-solid fa-file-pdf"></i> PDF</span>
-            <span class="dz-type"><i class="fa-solid fa-file-powerpoint"></i> PowerPoint</span>
-          </div>
+      <div id="acp-body">
+        <div class="acp-body">
+          <div class="drop-zone" id="drop-zone"><input type="file" id="file-input" accept=".docx,.doc,.pdf,.pptx,.ppt,.txt,.jpg,.jpeg,.png,.webp,.gif" onchange="handleFile(this)"><div class="dz-t"><i class="fa-solid fa-cloud-arrow-up" style="margin-right:5px;color:var(--blue)"></i>Drop a file or click to browse</div><div class="dz-s">Word, PDF, PowerPoint, images, text</div></div>
+          <div id="fp-preview"><div class="fp-hd"><span id="fp-icon" class="fp-name"></span><span id="fp-name-el" class="fp-name"></span><button class="fp-rm" onclick="clearFile()">&times;</button></div><div id="fp-content"></div></div>
+          <div><div class="acp-lbl">Or paste text</div><textarea class="acp-textarea" id="acp-text" placeholder="Paste any additional text or information to add…"></textarea></div>
+          <div><div class="acp-lbl">Where to add it <span style="text-transform:none;font-weight:400;color:var(--ink4)">(optional)</span></div><input class="acp-input" id="acp-instruction" placeholder='e.g. "Add after the intro" or "Replace the contact section"'></div>
+          <div class="acp-applying" id="acp-applying"><div class="minispin"></div>Adding content to your page…</div>
+          <button id="btn-acp-apply" onclick="applyAddedContent()"><i class="fa-solid fa-circle-plus"></i> Add to page</button>
         </div>
-        <div id="cd-file-preview">
-          <div class="fp-header">
-            <span class="fp-icon" id="fp-icon"></span>
-            <span class="fp-name" id="fp-name"></span>
-            <span class="fp-size" id="fp-size"></span>
-            <button class="fp-remove" onclick="clearFile()">&times;</button>
-          </div>
-          <div id="fp-content"></div>
-        </div>
-        <div>
-          <div class="cd-label">Or paste extra text</div>
-          <textarea id="cd-extra-text" placeholder="Paste any additional text or information to add..."></textarea>
-        </div>
-        <div>
-          <div class="cd-label">Where should this be added? <span style="font-weight:400;color:var(--ink3)">(optional)</span></div>
-          <input type="text" id="cd-instruction" placeholder='e.g. "Add after the intro" or "Replace the contact section"'>
-        </div>
-        <div class="cd-applying" id="cd-applying"><div class="minispin"></div>Adding content&hellip;</div>
-        <button id="btn-cd-apply" onclick="applyAddedContent()"><i class="fa-solid fa-circle-plus"></i> Add to page</button>
       </div>
     </div>
     <!-- VOICE BAR -->
     <div id="voice-bar">
-      <div class="vb-row">
-        <span class="vb-label"><i class="fa-solid fa-microphone"></i> Tell it what to change</span>
-        <div class="vb-applying" id="vb-applying"><div class="minispin"></div>Applying changes&hellip;</div>
-      </div>
-      <div class="vb-row">
+      <div class="vb-inner">
         <button id="btn-mic" onclick="toggleMic()"><i class="fa-solid fa-microphone"></i></button>
-        <textarea id="voice-transcript" rows="1" placeholder='Speak or type... e.g. "Make the hero darker and the tiles bigger"'></textarea>
-        <button id="btn-voice-send" onclick="applyVoiceEdit()"><i class="fa-solid fa-arrow-right"></i> Apply</button>
+        <div class="vb-input-wrap">
+          <div class="vb-chips">
+            <span class="vb-chip" onclick="quickEdit('Make the hero banner bolder with a stronger gradient')">Bolder hero</span>
+            <span class="vb-chip" onclick="quickEdit('Make all cards larger with more padding and shadow')">Bigger cards</span>
+            <span class="vb-chip" onclick="quickEdit('Add a highlighted callout box at the top with key information')">Add callout</span>
+            <span class="vb-chip" onclick="quickEdit('Make all text larger and increase line spacing for readability')">Larger text</span>
+            <span class="vb-chip" onclick="quickEdit('Make buttons more prominent with rounded pill shape')">Bold buttons</span>
+            <span class="vb-chip" onclick="quickEdit('Use a two-column layout for the main content sections')">Two columns</span>
+          </div>
+          <textarea id="voice-input" rows="1" placeholder='Speak or type what you want changed… "Make the tiles bigger and the hero darker"'></textarea>
+        </div>
+        <button id="btn-vb-send" onclick="applyVoiceEdit()"><i class="fa-solid fa-arrow-up"></i></button>
       </div>
-      <div class="vb-examples">
-        <span class="vb-ex" onclick="setPrompt('Make the hero banner darker')">Darker hero</span>
-        <span class="vb-ex" onclick="setPrompt('Make the tiles bigger with more padding')">Bigger tiles</span>
-        <span class="vb-ex" onclick="setPrompt('Add a prominent callout box at the top')">Add callout</span>
-        <span class="vb-ex" onclick="setPrompt('Make the font larger and easier to read')">Larger text</span>
-        <span class="vb-ex" onclick="setPrompt('Use a more modern card layout for content sections')">Modern cards</span>
-        <span class="vb-ex" onclick="setPrompt('Make the buttons more prominent and rounded')">Bold buttons</span>
-      </div>
+      <div class="vb-status" id="vb-status"><div class="minispin"></div>Applying your changes…</div>
     </div>
-    <div id="paste-guide">
-      <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:14px"></i>
-      <span class="pg-t">In SharePoint: Edit page &rarr; <strong>+ Add web part</strong> &rarr; search <span class="pg-code">Embed</span> &rarr; paste HTML &rarr; <strong>Republish</strong></span>
-    </div>
+    <div id="paste-guide"><i class="fa-solid fa-circle-check" style="color:var(--green);font-size:14px;flex-shrink:0"></i><span class="pg-t">In SharePoint: Edit page → <strong>+ Add web part</strong> → search <span class="pg-code">Embed</span> → paste HTML → <strong>Republish</strong></span></div>
   </div>
 </div>
 
-<!-- TEMPLATE MODAL -->
-<div id="tpl-modal" onclick="if(event.target===this)closeTplModal()">
-  <div class="tpl-modal-card">
-    <h2><i class="fa-solid fa-swatchbook" style="color:var(--blue)"></i> Choose a design style</h2>
-    <p>This applies to all pages. Change it any time &mdash; your content stays the same.</p>
-    <div class="tpl-modal-grid" id="tpl-modal-grid"></div>
-    <div class="tpl-modal-ft">
-      <span class="tpl-modal-note"><i class="fa-solid fa-lightbulb" style="color:var(--amber)"></i> After applying, use the voice bar to fine-tune any page.</span>
-      <div><button id="tpl-cancel" onclick="closeTplModal()">Cancel</button><button id="tpl-apply" onclick="applyTpl()"><i class="fa-solid fa-check"></i> Apply this style</button></div>
+<!-- VARIANTS SHEET -->
+<div id="var-sheet" onclick="if(event.target===this)closeVariants()">
+  <div id="var-panel">
+    <div style="position:relative">
+      <div class="var-grab"></div>
     </div>
-  </div>
-</div>
-
-<!-- VARIANT PANEL -->
-<div id="variant-overlay" onclick="if(event.target===this)closeVariations()">
-  <div id="variant-panel">
-    <div id="variant-header">
-      <div>
-        <h3><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue)"></i> Try 3 design variations</h3>
-        <p>All using your chosen template. Scroll each one and pick your favourite.</p>
-      </div>
-      <button id="variant-close" onclick="closeVariations()">&times;</button>
+    <div id="var-panel-hd">
+      <div><h3><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue);margin-right:6px"></i>3 design variations</h3><p>Scroll each and pick your favourite</p></div>
+      <button id="btn-var-close" onclick="closeVariants()">&times;</button>
     </div>
-    <div class="vtab-row">
-      <button class="vtab on" id="vtab-a" onclick="switchVariant('a')"><span id="vstat-a" style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block"></span> Design A</button>
-      <button class="vtab" id="vtab-b" onclick="switchVariant('b')"><span id="vstat-b" style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block"></span> Design B</button>
-      <button class="vtab" id="vtab-c" onclick="switchVariant('c')"><span id="vstat-c" style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block"></span> Design C</button>
-      <div class="vgen-badge" id="vgen-badge"><div class="minispin"></div>Generating&hellip;</div>
+    <div class="var-tabs">
+      <button class="var-tab on" id="vtab-a" onclick="switchVar('a')"><span id="vdot-a" style="width:8px;height:8px;border-radius:50%;background:var(--border-m)"></span>Design A</button>
+      <button class="var-tab" id="vtab-b" onclick="switchVar('b')"><span id="vdot-b" style="width:8px;height:8px;border-radius:50%;background:var(--border-m)"></span>Design B</button>
+      <button class="var-tab" id="vtab-c" onclick="switchVar('c')"><span id="vdot-c" style="width:8px;height:8px;border-radius:50%;background:var(--border-m)"></span>Design C</button>
+      <div class="var-gen-pill" id="var-gen-pill"><div class="minispin"></div>Generating…</div>
     </div>
-    <div id="variant-frames">
-      <div class="vframe-pane show" id="vpane-a"><div class="vframe-card"><div class="vframe-tag"><span class="dot"></span>Design A</div><div class="vframe-loading" id="vload-a"><div class="bigspin"></div><p>Generating Design A&hellip;</p></div><iframe class="vframe-iframe" id="vframe-a" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe></div></div>
-      <div class="vframe-pane" id="vpane-b"><div class="vframe-card"><div class="vframe-tag"><span class="dot"></span>Design B</div><div class="vframe-loading" id="vload-b"><div class="bigspin"></div><p>Generating Design B&hellip;</p></div><iframe class="vframe-iframe" id="vframe-b" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe></div></div>
-      <div class="vframe-pane" id="vpane-c"><div class="vframe-card"><div class="vframe-tag"><span class="dot"></span>Design C</div><div class="vframe-loading" id="vload-c"><div class="bigspin"></div><p>Generating Design C&hellip;</p></div><iframe class="vframe-iframe" id="vframe-c" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe></div></div>
+    <div class="var-frames">
+      <div class="var-pane show" id="vpane-a"><div class="var-card"><div class="var-card-lbl"><span class="dot"></span>Design A</div><div class="var-loading" id="vload-a"><div class="big-spin"></div><p>Generating…</p></div><iframe class="var-iframe" id="vframe-a" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe></div></div>
+      <div class="var-pane" id="vpane-b"><div class="var-card"><div class="var-card-lbl"><span class="dot"></span>Design B</div><div class="var-loading" id="vload-b"><div class="big-spin"></div><p>Generating…</p></div><iframe class="var-iframe" id="vframe-b" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe></div></div>
+      <div class="var-pane" id="vpane-c"><div class="var-card"><div class="var-card-lbl"><span class="dot"></span>Design C</div><div class="var-loading" id="vload-c"><div class="big-spin"></div><p>Generating…</p></div><iframe class="var-iframe" id="vframe-c" sandbox="allow-same-origin" scrolling="no" style="display:none"></iframe></div></div>
     </div>
-    <div id="variant-footer">
-      <button id="btn-close-variant" onclick="closeVariations()"><i class="fa-solid fa-arrow-left"></i> Back</button>
-      <span class="variant-hint">Viewing: <strong id="variant-viewing">Design A</strong></span>
-      <button id="btn-use-variant" onclick="useVariant()"><i class="fa-solid fa-check"></i> Use this design</button>
+    <div class="var-ft">
+      <button id="btn-var-back" onclick="closeVariants()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+      <span class="var-hint">Viewing: <strong id="var-viewing">Design A</strong></span>
+      <button id="btn-use-var" onclick="useVariant()"><i class="fa-solid fa-check"></i> Use this design</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────
+// ── CONFIG ─────────────────────────────────────────────────────
 var WORKER = "https://schoolpage-api.webmaster-349.workers.dev";
-var CLOUDINARY_CLOUD  = "dewljixlc";
+var CLOUDINARY_CLOUD = "dewljixlc";
 var CLOUDINARY_PRESET = "pvsbmdmd";
-// ────────────────────────────────────────────────────────────
 
-// ── TEMPLATES ───────────────────────────────────────────────
+// ── TEMPLATES ───────────────────────────────────────────────────
 var TEMPLATES = {
-  heritage:{name:'Heritage',desc:'Classic · Refined · Trusted',
-    designSystem:function(pri,sec){return 'TEMPLATE: Heritage — classic serif, refined.\nHERO: background:linear-gradient(135deg,'+pri+' 0%,'+pri+'BB 100%);border-radius:14px;padding:44px 48px;margin-bottom:28px.\n  Title: font-family:Georgia,serif;font-size:34px;font-weight:700;color:#fff;letter-spacing:-.5px;margin:0 0 10px.\n  Subtitle: color:rgba(255,255,255,.82);font-size:16px;font-style:italic.\nH2: color:'+pri+';font-family:Georgia,serif;font-size:22px;font-weight:700;border-bottom:2px solid '+pri+';padding-bottom:8px;margin:32px 0 18px.\nBODY: font-size:15px;line-height:1.8;color:#2D2D2D.\nCARDS: background:#fff;border:1px solid #DDE3EF;border-left:4px solid '+pri+';border-radius:0 10px 10px 0;padding:20px 22px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05).\n  :hover — border-left-color:'+sec+';box-shadow:0 4px 16px rgba(0,0,0,.09).\nTILES: 3-col (2-col<600px);gap:14px. Each: background:#fff;border:1px solid #DDE3EF;border-top:3px solid '+pri+';border-radius:0 0 10px 10px;padding:24px 16px;flex-col center;min-height:150px. Logo: max-height:72px;max-width:110px;object-fit:contain;margin-bottom:12px. Label: 13px;font-weight:700;color:'+pri+';font-family:Georgia,serif;text-align:center. :hover — border-top-color:'+sec+'.\nCALLOUTS: background:#F0F4FF;border-left:5px solid '+pri+';border-radius:0 8px 8px 0;padding:16px 20px;margin:18px 0;font-size:14px;color:#1A2A4A.\nBUTTONS: background:'+pri+';color:#fff;padding:11px 22px;border-radius:6px;font-weight:700;font-size:14px;font-family:Georgia,serif;text-decoration:none;display:inline-block. :hover — background:'+sec+'.\nTABLES: width:100%;border-collapse:collapse;margin:16px 0. Header: background:'+pri+';color:#fff;font-weight:700;padding:11px 14px;font-family:Georgia,serif. Rows: alternating #fff/#F5F7FC;padding:10px 14px;border-bottom:1px solid #DDE3EF.\nWRAPPER: max-width:900px.';}},
-  metro:{name:'Metro',desc:'Bold · Modern · Dynamic',
-    designSystem:function(pri,sec){return 'TEMPLATE: Metro — bold, geometric, energetic.\nHERO: background:'+pri+';border-radius:16px;padding:48px 52px;margin-bottom:32px;position:relative;overflow:hidden. Accent stripe: position:absolute;top:0;right:0;width:8px;height:100%;background:'+sec+'. Geo circle: position:absolute;bottom:-30px;right:60px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06). Title: font-family:Arial,sans-serif;font-size:38px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:-1px;margin:0 0 8px;position:relative. Subtitle: color:'+sec+';font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px;position:relative.\nH2: background:'+pri+';color:#fff;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:7px 14px;border-radius:6px;display:inline-block;margin:28px 0 14px.\nBODY: font-size:15px;line-height:1.75;color:#1A1A2E.\nCARDS: background:#fff;border-radius:14px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.08);border:none. :hover — transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.14).\nTILES: 3-col (2-col<580px);gap:16px. Each: background:#fff;border-radius:14px;padding:28px 16px;flex-col center;min-height:160px;box-shadow:0 4px 20px rgba(0,0,0,.07). Logo: max-height:80px;max-width:120px;object-fit:contain;margin-bottom:14px. Label: 12px;font-weight:900;color:'+pri+';text-transform:uppercase;letter-spacing:.5px;text-align:center. :hover — transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,.14).\nCALLOUTS: background:'+pri+';color:#fff;border-radius:12px;padding:18px 22px;margin:18px 0;font-size:14px.\nBUTTONS: background:'+sec+';color:#111;padding:13px 28px;border-radius:40px;font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:.5px;text-decoration:none;display:inline-block. :hover — background:'+pri+';color:#fff.\nTABLES: border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07). Header: background:'+pri+';color:#fff;font-weight:900;padding:13px 16px;text-transform:uppercase. Rows: background:#fff;padding:11px 16px;border-bottom:2px solid #F0F0F0.\nWRAPPER: max-width:900px.';}},
-  canvas:{name:'Canvas',desc:'Elegant · Spacious · Premium',
-    designSystem:function(pri,sec){return 'TEMPLATE: Canvas — elegant, layered, premium.\nHERO: background:linear-gradient(135deg,'+pri+' 0%,'+pri+'EE 45%,'+sec+'BB 100%);border-radius:20px;padding:52px 52px;margin-bottom:36px;position:relative;overflow:hidden. Radial overlay: position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 55%). Decorative ring: position:absolute;bottom:-50px;right:-50px;width:240px;height:240px;border-radius:50%;border:50px solid rgba(255,255,255,.07). Title: font-family:Georgia,serif;font-size:38px;font-weight:700;color:#fff;line-height:1.15;margin:0 0 12px;position:relative. Subtitle: color:rgba(255,255,255,.9);font-size:17px;font-weight:400;position:relative.\nH2: color:'+pri+';font-family:Georgia,serif;font-size:24px;font-weight:700;margin:40px 0 6px. Accent bar: display:block;width:56px;height:4px;background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin:8px 0 20px.\nBODY: font-size:16px;line-height:1.85;color:#374151.\nCARDS: background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07);border-top:4px solid '+sec+';padding:28px. :hover — box-shadow:0 12px 40px rgba(0,0,0,.12);transform:translateY(-3px).\nTILES: 3-col (2-col<600px);gap:20px. Each: background:#fff;border-radius:16px;padding:32px 20px;flex-col center;min-height:170px;box-shadow:0 4px 24px rgba(0,0,0,.07);border-top:4px solid '+sec+'. Logo: max-height:84px;max-width:128px;object-fit:contain;margin-bottom:16px. Label: 14px;font-weight:700;color:'+pri+';font-family:Georgia,serif;text-align:center. :hover — box-shadow:0 16px 48px rgba(0,0,0,.12);transform:translateY(-4px).\nCALLOUTS: background:linear-gradient(135deg,#F8FAFF,#EEF2FF);border:1px solid #C7D2FE;border-left:6px solid '+pri+';border-radius:0 14px 14px 0;padding:20px 24px;margin:20px 0;font-size:15px;color:#1E293B.\nBUTTONS: background:linear-gradient(135deg,'+pri+','+pri+'CC);color:#fff;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.15). :hover — transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2).\nTABLES: border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.07). Header: background:linear-gradient(135deg,'+pri+','+pri+'DD);color:#fff;padding:14px 18px;font-weight:700. Rows: alternating #fff/#FAFBFF;padding:12px 18px;border-bottom:1px solid #E8ECF4.\nWRAPPER: max-width:900px.';}}
+  heritage:{name:'Heritage',desc:'Classic & Trusted',
+    prev:function(p,s){return'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:12px;background:#f9f9f7;font-family:Georgia,serif}</style></head><body><div style="background:linear-gradient(135deg,'+p+','+p+'BB);border-radius:10px;padding:18px 20px;margin-bottom:12px"><div style="color:#fff;font-size:16px;font-weight:700;font-family:Georgia,serif">Our College</div><div style="color:rgba(255,255,255,.8);font-size:10px;font-style:italic;margin-top:3px">Excellence in Education since 1962</div></div><div style="color:'+p+';font-size:14px;font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+p+';padding-bottom:5px;margin-bottom:9px">Our Programs</div><div style="border:1px solid #dde3ef;border-left:4px solid '+p+';border-radius:0 7px 7px 0;padding:10px 12px;margin-bottom:7px;background:#fff;font-size:10px;color:#333;line-height:1.5">Comprehensive curriculum for every student.</div><div style="border:1px solid #dde3ef;border-left:4px solid '+s+';border-radius:0 7px 7px 0;padding:10px 12px;background:#fff;font-size:10px;color:#333;line-height:1.5">Vibrant extra-curricular activities.</div><a style="background:'+p+';color:#fff;padding:7px 14px;border-radius:5px;text-decoration:none;font-size:10px;font-weight:700;display:inline-block;margin-top:10px;font-family:Georgia,serif">Learn More</a></body></html>';},
+    system:function(p,s){return'TEMPLATE: Heritage — classical serif, prestigious, warm.\n\nKEY VISUAL ELEMENTS TO INCLUDE:\n1. HERO: Full-width gradient ('+p+' to '+p+'BB) with rounded corners, big serif title, italic subtitle, decorative underline rule\n2. SECTION BREAKS: h2 in Georgia serif, navy, full-width 2px bottom border in '+p+', accent bar in '+s+' (48px wide, 4px tall)\n3. CONTENT CARDS: white bg, 1px border #DDE3EF, prominent left border 5px in '+p+', gentle box-shadow, rounded right corners only\n4. TILE GRID (for linked items like programs, activities): 3-col, each tile has border-top 3px solid '+p+', white bg, centred logo (max 80px tall), label in Georgia bold '+p+'\n5. CALLOUT BOX: cream background (#FFFBF0), left border 5px solid '+s+', italic text inside\n6. STAT BOXES: display 2–3 key numbers in large Georgia serif '+p+' with small caption below, arrange in a 3-col flex row with dividers\n7. DOWNLOAD BUTTONS: for PDF links — outlined style, border 2px solid '+p+', '+p+' text, icon prefix, hover fill\n8. FOOTER STRIP: narrow band, background '+p+', white small text, contact info\nBODY TEXT: 15px Georgia, #2D2D2D, line-height 1.9\nWRAPPER: max-width 900px, font-family Georgia,serif\nEFFECTS: card :hover — translateY(-3px), border-left-color '+s+'; button :hover — background '+s+';}'}
+  },
+  metro:{name:'Metro',desc:'Bold & Contemporary',
+    prev:function(p,s){return'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:12px;background:#f0f0f0;font-family:Arial,sans-serif}</style></head><body><div style="background:'+p+';border-radius:12px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden"><div style="position:absolute;top:0;right:0;width:5px;height:100%;background:'+s+'"></div><div style="position:absolute;bottom:-15px;right:35px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.07)"></div><div style="color:#fff;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;position:relative">Our College</div><div style="color:'+s+';font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;position:relative">Excellence in Education</div></div><div style="background:'+p+';color:#fff;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:5px 10px;border-radius:5px;display:inline-block;margin-bottom:10px">Programs</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#fff;border-radius:9px;padding:11px;box-shadow:0 3px 12px rgba(0,0,0,.08)"><div style="font-size:9px;font-weight:900;color:'+p+';text-transform:uppercase">Curriculum</div></div><div style="background:#fff;border-radius:9px;padding:11px;box-shadow:0 3px 12px rgba(0,0,0,.08)"><div style="font-size:9px;font-weight:900;color:'+p+';text-transform:uppercase">Activities</div></div></div></body></html>';},
+    system:function(p,s){return'TEMPLATE: Metro — bold, geometric, modern energy.\n\nKEY VISUAL ELEMENTS TO INCLUDE:\n1. HERO: Solid '+p+' background, large bold ALL-CAPS title (font-weight:900), accent stripe right edge 8px '+s+', geometric circles as decorations (position:absolute, low opacity), subtitle in '+s+' uppercase small caps\n2. SECTION HEADINGS: styled as badge labels — inline-block, background '+p+', white text, ALL-CAPS, 900 weight, small border-radius, letter-spacing\n3. CONTENT CARDS: borderless, heavy drop shadow (0 8px 32px rgba 15%), border-radius 16px, hover: translateY(-6px) with deeper shadow. Group in 2-col grid where multiple cards\n4. TILE GRID: 3-col, NO border, pure white cards with big shadow, border-radius 16px, logo centred (max 90px), label ALL-CAPS 900 weight '+p+'\n5. STAT STRIP: horizontal band background '+p+', 3–4 large white numbers (font-size 36px, 900 weight) with '+s+' captions below — e.g. "1200+ Students", "45 Years"\n6. CTA BUTTONS: pill shape (border-radius 40px), background '+s+', dark text, ALL-CAPS, 900 weight, :hover swap to '+p+' white\n7. DIVIDER LINES: 2px solid '+s+' full-width, used between major sections\n8. HIGHLIGHT BOX: background '+p+', white text, border-radius 14px, for important notices/callouts\nBODY TEXT: 15px Arial, #1A1A2E, line-height 1.75\nWRAPPER: max-width 900px, font-family Arial,Helvetica,sans-serif\nEFFECTS: all cards hover — bold shadow + lift;}'}
+  },
+  canvas:{name:'Canvas',desc:'Elegant & Premium',
+    prev:function(p,s){return'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:12px;background:#eef0f5;font-family:Arial,sans-serif}</style></head><body><div style="background:linear-gradient(135deg,'+p+','+p+'EE 45%,'+s+'BB 100%);border-radius:16px;padding:22px 24px;margin-bottom:14px;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 55%)"></div><div style="position:absolute;bottom:-25px;right:-25px;width:120px;height:120px;border-radius:50%;border:25px solid rgba(255,255,255,.07)"></div><div style="color:#fff;font-size:17px;font-weight:700;font-family:Georgia,serif;position:relative">Our College</div><div style="color:rgba(255,255,255,.88);font-size:10px;margin-top:4px;position:relative">Excellence in Education</div></div><div style="color:'+p+';font-family:Georgia,serif;font-size:14px;font-weight:700;margin-bottom:3px">Programs</div><div style="width:36px;height:3px;background:linear-gradient(90deg,'+s+','+s+'33);border-radius:2px;margin-bottom:10px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#fff;border-radius:11px;padding:12px;border-top:3px solid '+s+';box-shadow:0 3px 14px rgba(0,0,0,.07)"><div style="font-size:9px;font-weight:700;color:'+p+';font-family:Georgia,serif">Curriculum</div></div><div style="background:#fff;border-radius:11px;padding:12px;border-top:3px solid '+p+';box-shadow:0 3px 14px rgba(0,0,0,.07)"><div style="font-size:9px;font-weight:700;color:'+p+';font-family:Georgia,serif">Activities</div></div></div></body></html>';},
+    system:function(p,s){return'TEMPLATE: Canvas — layered, elegant, premium visual depth.\n\nKEY VISUAL ELEMENTS TO INCLUDE:\n1. HERO: Multi-stop gradient ('+p+' → '+p+'EE → '+s+'BB), border-radius 20px, radial light overlay (position:absolute, rgba white), decorative ring (position:absolute, bottom-right, large circle, border only, low opacity). Title in Georgia 38px 700, white. Subtitle rgba white .9.\n2. SECTION HEADINGS: Georgia serif '+p+', 24px 700, followed by a gradient accent bar (56px wide, 4px, gradient '+s+' to transparent)\n3. FEATURED CARDS: white, border-radius 18px, border-top 4px solid '+s+', deep shadow (0 8px 40px rgba 10%), padding 32px. :hover — deeper shadow + lift 4px\n4. TILE GRID: 3-col, each tile white, border-radius 18px, border-top 4px solid '+s+', centred logo (max 90px), label Georgia bold '+p+', subtle shadow. :hover — lift + deepen shadow\n5. GRADIENT CALLOUT: background linear-gradient(135deg, #F8FAFF, #EEF2FF), thick left border 6px '+p+', rounded right corners, inside text in '+p+'\n6. IMAGE TREATMENT: wrap images in figure with border-radius 16px, overflow hidden, box-shadow 0 12px 40px rgba 15%\n7. GRADIENT BUTTONS: linear-gradient '+p+' to '+p+'CC, border-radius 12px, white text, box-shadow, arrow suffix →, :hover — swap to '+s+' gradient + lift\n8. INFO STRIP: 3-col flex row, each item has large Georgia number in '+s+' (36px), label in '+p+' below, separated by thin '+p+' dividers\nBODY TEXT: 16px Arial, #374151, line-height 1.9\nWRAPPER: max-width 900px\nEFFECTS: all interactive elements have smooth 0.2s transitions;}'}
+  }
 };
 
-// Template preview HTML — all on single lines to avoid JS string issues
-function tplPreviewHtml(id,pri,sec){
-  if(id==='heritage') return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:12px;background:#f9f9f7;font-family:Georgia,serif}</style></head><body><div style="background:linear-gradient(135deg,'+pri+','+pri+'BB);border-radius:10px;padding:18px 20px;margin-bottom:12px"><div style="color:#fff;font-size:16px;font-weight:700;font-family:Georgia,serif">Our College</div><div style="color:rgba(255,255,255,.8);font-size:10px;font-style:italic;margin-top:3px">Excellence in Education</div></div><div style="color:'+pri+';font-size:14px;font-weight:700;font-family:Georgia,serif;border-bottom:2px solid '+pri+';padding-bottom:5px;margin-bottom:9px">Our Programs</div><div style="border:1px solid #dde3ef;border-left:4px solid '+pri+';border-radius:0 7px 7px 0;padding:10px 12px;margin-bottom:7px;background:#fff;font-size:10px;color:#333;line-height:1.5">Comprehensive curriculum for all year levels.</div><a style="background:'+pri+';color:#fff;padding:7px 14px;border-radius:5px;text-decoration:none;font-size:10px;font-weight:700;display:inline-block;margin-top:10px;font-family:Georgia,serif">Learn More</a></body></html>';
-  if(id==='metro') return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:12px;background:#f0f0f0;font-family:Arial,sans-serif}</style></head><body><div style="background:'+pri+';border-radius:12px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden"><div style="position:absolute;top:0;right:0;width:5px;height:100%;background:'+sec+'"></div><div style="color:#fff;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:-0.5px;position:relative">Our College</div><div style="color:'+sec+';font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;position:relative">Excellence in Education</div></div><div style="background:'+pri+';color:#fff;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:5px 10px;border-radius:5px;display:inline-block;margin-bottom:10px">Our Programs</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#fff;border-radius:9px;padding:11px;box-shadow:0 3px 12px rgba(0,0,0,.08)"><div style="font-size:9px;font-weight:900;color:'+pri+';text-transform:uppercase">Programs</div></div><div style="background:#fff;border-radius:9px;padding:11px;box-shadow:0 3px 12px rgba(0,0,0,.08)"><div style="font-size:9px;font-weight:900;color:'+pri+';text-transform:uppercase">Activities</div></div></div></body></html>';
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:12px;background:#eef0f5;font-family:Arial,sans-serif}</style></head><body><div style="background:linear-gradient(135deg,'+pri+','+pri+'EE 45%,'+sec+'BB 100%);border-radius:16px;padding:22px 24px;margin-bottom:14px;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 55%)"></div><div style="color:#fff;font-size:17px;font-weight:700;font-family:Georgia,serif;position:relative">Our College</div><div style="color:rgba(255,255,255,.88);font-size:10px;margin-top:4px;position:relative">Excellence in Education</div></div><div style="color:'+pri+';font-family:Georgia,serif;font-size:14px;font-weight:700;margin-bottom:3px">Our Programs</div><div style="width:36px;height:3px;background:linear-gradient(90deg,'+sec+','+sec+'33);border-radius:2px;margin-bottom:10px"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#fff;border-radius:11px;padding:12px;border-top:3px solid '+sec+';box-shadow:0 3px 14px rgba(0,0,0,.07)"><div style="font-size:9px;font-weight:700;color:'+pri+';font-family:Georgia,serif">Programs</div></div><div style="background:#fff;border-radius:11px;padding:12px;border-top:3px solid '+pri+';box-shadow:0 3px 14px rgba(0,0,0,.07)"><div style="font-size:9px;font-weight:700;color:'+pri+';font-family:Georgia,serif">Activities</div></div></div></body></html>';
-}
-
-// ── STATE ────────────────────────────────────────────────────
+// ── STATE ───────────────────────────────────────────────────────
 var project={schoolName:'Western Cape College',siteUrl:'',primaryColor:'#1a3a6b',accentColor:'#f07f24',template:'heritage',pages:[]};
-var selId=null,curView='preview',isGen=false,navPages=[],psAllSel=false,discovered=[];
+var selId=null,curView='preview',isGen=false,navPages=[],selAll=false,discovered=[];
 var recognition=null,isListening=false;
-var cdFile=null,cdExtracted='',cdImageUrl='',cdDrawerOpen=false;
-var variantResults={a:'',b:'',c:''},activeVariant='a',pendingTpl='heritage';
+var cdFile=null,cdExtracted='',cdImageUrl='';
+var varResults={a:'',b:'',c:''},activeVar='a',pendingTpl='heritage';
+var acpOpen=true;
 
 function g(id){return document.getElementById(id);}
 function gv(id){return g(id)?g(id).value:'';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function shortUrl(url){try{return new URL(url).pathname;}catch(e){return url;}}
 
-// ── INIT ─────────────────────────────────────────────────────
+// ── SCREENS ─────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  g(id).classList.add('active');
+}
+function goToStyle(){showScreen('s-style');}
+function goToPages(){showScreen('s-pages');}
+function goToMain(){showScreen('s-main');}
+
+// ── INIT ────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',function(){
   loadProject();
-  renderTplStrip();
+  renderTemplateCards();
+  renderStyleStrip();
   updateTplPill();
-  if(project.pages.length>0) showProject();
+  if(project.pages.length>0){goToMain();renderTree();updateProgress();}
   initVoice();
-  // drag/drop for content drawer
   var dz=g('drop-zone');
   if(dz){
     dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over');});
@@ -601,18 +555,19 @@ window.addEventListener('DOMContentLoaded',function(){
 function onColor(){
   project.primaryColor=gv('c-pri');project.accentColor=gv('c-sec');
   g('d-pri').style.background=project.primaryColor;g('d-sec').style.background=project.accentColor;
-  renderTplStrip();saveProject();
+  renderTemplateCards();renderStyleStrip();saveProject();
 }
 
-// ── SAVE/LOAD ────────────────────────────────────────────────
+// ── SAVE/LOAD ────────────────────────────────────────────────────
 function saveProject(){
   project.schoolName=gv('school-name')||project.schoolName;
   project.template=project.template||'heritage';
-  try{localStorage.setItem('spb_v18',JSON.stringify(project));}catch(e){}
+  if(g('wl-school'))g('wl-school').textContent=project.schoolName;
+  try{localStorage.setItem('spb_v20',JSON.stringify(project));}catch(e){}
 }
 function loadProject(){
   try{
-    var s=JSON.parse(localStorage.getItem('spb_v18'));
+    var s=JSON.parse(localStorage.getItem('spb_v20'));
     if(!s)return;
     project=s;
     g('school-name').value=project.schoolName||'';
@@ -622,140 +577,159 @@ function loadProject(){
     g('d-sec').style.background=project.accentColor;
   }catch(e){}
 }
-function resetProject(){
-  if(!confirm('Start a new project? This clears all current pages.'))return;
-  project.pages=[];project.siteUrl='';saveProject();
-  navPages=[];selId=null;discovered=[];
-  g('welcome').style.display='';g('left').style.display='none';
-  g('right').classList.remove('show');g('page-sel').classList.remove('show');
-  g('scrape-url').value='';g('prog-pill').style.display='none';
-  g('btn-zip').classList.remove('show');g('tpl-strip').classList.remove('show');
-}
 
-// ── TEMPLATES ────────────────────────────────────────────────
-function renderTplStrip(){
-  var strip=g('tpl-strip');if(!strip)return;
-  strip.querySelectorAll('.tpl-thumb').forEach(function(el){el.remove();});
+// ── TEMPLATES ────────────────────────────────────────────────────
+function renderTemplateCards(){
+  var el=g('tpl-cards');if(!el)return;el.innerHTML='';
   var pri=project.primaryColor,sec=project.accentColor;
   Object.keys(TEMPLATES).forEach(function(id){
     var tpl=TEMPLATES[id];
     var div=document.createElement('div');
-    div.className='tpl-thumb'+(id===project.template?' on':'');
-    div.title=tpl.name+' — '+tpl.desc;
+    div.className='tpl-card'+(id===project.template?' sel':'');
+    div.id='tcard-'+id;
+    div.onclick=function(){
+      pendingTpl=id;
+      document.querySelectorAll('.tpl-card').forEach(function(c){c.classList.remove('sel');});
+      div.classList.add('sel');
+      g('btn-choose-tpl').disabled=false;
+    };
+    var iframe=document.createElement('iframe');
+    iframe.srcdoc=tpl.prev(pri,sec);
+    iframe.style.cssText='width:300%;height:540px;transform:scale(.333);transform-origin:top left;border:none';
+    div.innerHTML='<div class="tpl-card-prev"></div><div class="tpl-card-foot"><div><div class="tpl-card-name">'+tpl.name+'</div><div class="tpl-card-desc">'+tpl.desc+'</div></div><div class="tpl-sel-check"><i class="fa-solid fa-check" style="font-size:10px"></i></div></div>';
+    div.querySelector('.tpl-card-prev').appendChild(iframe);
+    el.appendChild(div);
+  });
+  if(project.template) g('btn-choose-tpl').disabled=false;
+}
+
+function renderStyleStrip(){
+  var strip=g('style-strip');if(!strip)return;
+  strip.querySelectorAll('.ss-thumb').forEach(function(e){e.remove();});
+  var pri=project.primaryColor,sec=project.accentColor;
+  Object.keys(TEMPLATES).forEach(function(id){
+    var tpl=TEMPLATES[id];
+    var div=document.createElement('div');
+    div.className='ss-thumb'+(id===project.template?' on':'');
+    div.title=tpl.name;
     div.onclick=function(){applyTemplate(id);};
     var iframe=document.createElement('iframe');
-    iframe.srcdoc=tplPreviewHtml(id,pri,sec);
-    iframe.style.cssText='width:300%;height:204px;transform:scale(.333);transform-origin:top left;border:none;pointer-events:none';
-    var nameDiv=document.createElement('div');nameDiv.className='tpl-name';nameDiv.textContent=tpl.name;
-    div.appendChild(iframe);div.appendChild(nameDiv);
+    iframe.srcdoc=tpl.prev(pri,sec);
+    iframe.style.cssText='width:300%;height:156px;transform:scale(.333);transform-origin:top left;border:none;pointer-events:none';
+    div.appendChild(iframe);
+    var nm=document.createElement('div');nm.className='ss-tname';nm.textContent=tpl.name;
+    div.appendChild(nm);
     strip.appendChild(div);
   });
 }
-function updateTplPill(){
-  var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
-  g('tpl-pill-label').textContent=tpl.name;
-}
-function applyTemplate(id){
-  project.template=id;saveProject();updateTplPill();renderTplStrip();
-}
-function openTplModal(){
-  pendingTpl=project.template;
-  var grid=g('tpl-modal-grid');grid.innerHTML='';
-  var pri=project.primaryColor,sec=project.accentColor;
-  Object.keys(TEMPLATES).forEach(function(id){
-    var tpl=TEMPLATES[id];
-    var div=document.createElement('div');
-    div.className='tpl-mo'+(id===project.template?' on':'');
-    div.id='tmo-'+id;
-    div.onclick=function(){pendingTpl=id;document.querySelectorAll('.tpl-mo').forEach(function(el){el.classList.remove('on');});div.classList.add('on');};
-    div.innerHTML='<div class="tpl-mo-prev"><iframe srcdoc="'+escAttr(tplPreviewHtml(id,pri,sec))+'"></iframe></div>'
-      +'<div class="tpl-mo-label"><div><div class="tpl-mo-name">'+tpl.name+(id===project.template?' <span class="tpl-active-tag">Current</span>':'')+'</div><div class="tpl-mo-desc">'+tpl.desc+'</div></div></div>';
-    grid.appendChild(div);
-  });
-  g('tpl-modal').classList.add('show');
-}
-function closeTplModal(){g('tpl-modal').classList.remove('show');}
-function applyTpl(){applyTemplate(pendingTpl);closeTplModal();}
 
-// ── SCRAPING ─────────────────────────────────────────────────
-function onUrlChange(){g('sc-err').classList.remove('show');g('page-sel').classList.remove('show');navPages=[];}
+function updateTplPill(){}
+
+function applyTemplate(id){
+  project.template=id;saveProject();renderStyleStrip();
+  document.querySelectorAll('.tpl-card').forEach(function(c){c.classList.remove('sel');});
+  var tc=g('tcard-'+id);if(tc)tc.classList.add('sel');
+}
+
+function goToMain_fromPages(){
+  project.template=pendingTpl||project.template;
+  saveProject();
+  applyTemplate(project.template);
+  goToMain();
+}
+
+// ── SCRAPING ────────────────────────────────────────────────────
+function onUrlChange(){g('scan-err').classList.remove('show');g('pages-found').classList.remove('show');navPages=[];}
 
 async function findPages(){
   var url=gv('scrape-url').trim();
   if(!url){alert('Please enter your school website address.');return;}
   if(!url.startsWith('http'))url='https://'+url;
-  g('btn-find').disabled=true;
-  g('sc-msg').textContent='Scanning '+url+'...';
-  g('sc-status').classList.add('show');
-  g('sc-err').classList.remove('show');
-  g('page-sel').classList.remove('show');
+  g('btn-scan').disabled=true;
+  g('scan-msg').textContent='Scanning '+url+'…';
+  g('scan-status').classList.add('show');
+  g('scan-err').classList.remove('show');
+  g('pages-found').classList.remove('show');
+  g('float-cta').classList.remove('show');
   try{
     var res=await fetch(WORKER+'/scrape',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url})});
     var data=await res.json();
-    if(!data.success)throw new Error(data.error||'Could not load the website. Check the address and try again.');
+    if(!data.success)throw new Error(data.error||'Could not load the website.');
     navPages=data.nav||[];
     if(!navPages.length)throw new Error('No pages found. The site may block automated access.');
     project.siteUrl=url;
-    var siteOrigin=data.origin||'';
+    var origin=data.origin||'';
     navPages=navPages.filter(function(p){
       var path='';try{path=new URL(p.url).pathname;}catch(e){}
-      return path!=='/'&&path!==''&&p.url!==url&&p.url!==siteOrigin&&p.url!==siteOrigin+'/';
+      return path!=='/'&&path!==''&&p.url!==url&&p.url!==origin&&p.url!==origin+'/';
     });
-    renderPageSel(navPages);
-  }catch(e){g('sc-err').textContent=e.message;g('sc-err').classList.add('show');}
-  finally{g('btn-find').disabled=false;g('sc-status').classList.remove('show');}
+    renderPageList(navPages);
+  }catch(e){g('scan-err').textContent=e.message;g('scan-err').classList.add('show');}
+  finally{g('btn-scan').disabled=false;g('scan-status').classList.remove('show');}
 }
 
-function renderPageSel(pages){
-  var list=g('psel-list');list.innerHTML='';
+function renderPageList(pages){
+  var list=g('pf-list');list.innerHTML='';
   pages.forEach(function(p,i){
-    var item=document.createElement('div');item.className='psel-item';
-    item.innerHTML='<input type="checkbox" id="pc'+i+'" onchange="psCnt()">'
-      +'<div class="psel-info" onclick="g(\'pc'+i+'\').click();psCnt()">'
-      +'<span class="psel-title">'+esc(p.title)+'</span>'
-      +'<span class="psel-url">'+esc(shortUrl(p.url))+'</span>'
-      +'</div>';
+    var item=document.createElement('div');item.className='pf-item';item.dataset.i=i;
+    item.innerHTML='<div class="pf-check" id="pfc'+i+'"></div><div style="flex:1;min-width:0"><div class="pf-title">'+esc(p.title)+'</div><div class="pf-url">'+esc(shortUrl(p.url))+'</div></div>';
+    item.onclick=function(){togglePage(i,item);};
     list.appendChild(item);
   });
-  g('psel-lbl').textContent=pages.length+' pages found';
-  g('page-sel').classList.add('show');
-  psCnt();
-}
-function psAll(){psAllSel=!psAllSel;navPages.forEach(function(_,i){var c=g('pc'+i);if(c)c.checked=psAllSel;});psCnt();}
-function psCnt(){
-  var n=navPages.filter(function(_,i){var c=g('pc'+i);return c&&c.checked;}).length;
-  g('psel-cnt').textContent=n+' page'+(n!==1?'s':'')+' selected';
-  g('btn-start').disabled=n===0;
-}
-function startRedesign(){
-  var sel=navPages.filter(function(_,i){var c=g('pc'+i);return c&&c.checked;});
-  if(!sel.length)return;
-  var nextId=project.pages.length>0?Math.max.apply(null,project.pages.map(function(p){return p.id;}))+1:0;
-  var ex=project.pages.map(function(p){return p.url;});
-  sel.forEach(function(p){
-    if(ex.indexOf(p.url)===-1)
-      project.pages.push({id:nextId++,url:p.url,title:p.title,rawHtml:'',localNav:[],generatedHTML:'',status:'pending',approved:false});
-  });
-  saveProject();showProject();
-  // No auto-generate — user selects which pages to generate
-}
-function showProject(){
-  g('welcome').style.display='none';g('left').style.display='flex';
-  g('right').classList.add('show');g('tpl-strip').classList.add('show');
-  g('prog-pill').style.display='';
-  renderTree();updateProgress();
-  var first=project.pages.find(function(p){return p.status==='ready'||p.status==='approved';})||project.pages[0];
-  if(first)selectPage(first.id);
+  g('pf-label').textContent=pages.length+' pages found';
+  g('pages-found').classList.add('show');
+  updateFloatCta();
 }
 
-// ── PAGE TREE ────────────────────────────────────────────────
+function togglePage(i,item){
+  item.classList.toggle('selected');
+  if(item.classList.contains('selected')){
+    item.querySelector('.pf-check').innerHTML='<i class="fa-solid fa-check" style="font-size:9px;color:#fff"></i>';
+  } else {
+    item.querySelector('.pf-check').innerHTML='';
+  }
+  updateFloatCta();
+}
+
+function toggleSelAll(){
+  selAll=!selAll;
+  document.querySelectorAll('.pf-item').forEach(function(item,i){
+    item.classList.toggle('selected',selAll);
+    item.querySelector('.pf-check').innerHTML=selAll?'<i class="fa-solid fa-check" style="font-size:9px;color:#fff"></i>':'';
+  });
+  updateFloatCta();
+}
+
+function updateFloatCta(){
+  var sel=document.querySelectorAll('.pf-item.selected').length;
+  var btn=g('float-cta');
+  if(sel>0){btn.classList.add('show');g('float-cta-label').textContent='Redesign '+sel+' page'+(sel!==1?'s':'');}
+  else btn.classList.remove('show');
+}
+
+function startProject(){
+  var selected=[];
+  document.querySelectorAll('.pf-item.selected').forEach(function(item){
+    var i=parseInt(item.dataset.i);selected.push(navPages[i]);
+  });
+  if(!selected.length)return;
+  var nextId=project.pages.length>0?Math.max.apply(null,project.pages.map(function(p){return p.id;}))+1:0;
+  var ex=project.pages.map(function(p){return p.url;});
+  selected.forEach(function(p){
+    if(ex.indexOf(p.url)===-1)project.pages.push({id:nextId++,url:p.url,title:p.title,rawHtml:'',localNav:[],generatedHTML:'',status:'pending',approved:false});
+  });
+  saveProject();
+  goToMain_fromPages();
+  renderTree();updateProgress();
+  var first=project.pages[0];if(first)selectPage(first.id);
+}
+
+// ── PAGE TREE ────────────────────────────────────────────────────
 function buildTree(pages){
-  var byUrl={};
-  pages.forEach(function(p){byUrl[p.url]={page:p,children:[]};});
+  var byUrl={};pages.forEach(function(p){byUrl[p.url]={page:p,children:[]};});
   var roots=[];
   pages.forEach(function(p){
-    var node=byUrl[p.url],found=false;
-    var u=p.url.replace(/\/$/,'');
+    var node=byUrl[p.url],found=false,u=p.url.replace(/\/$/,'');
     while(u.includes('/')&&!found){
       var par=u.substring(0,u.lastIndexOf('/'));
       if(byUrl[par]&&byUrl[par].page.id!==p.id){byUrl[par].children.push(node);found=true;break;}
@@ -767,22 +741,18 @@ function buildTree(pages){
   return roots;
 }
 function renderTree(){
-  var tree=g('tree');tree.innerHTML='';
-  var approved=project.pages.filter(function(p){return p.approved;}).length;
-  g('left-title').textContent=project.schoolName;
-  g('left-sub').textContent=approved+' of '+project.pages.length+' approved';
-  buildTree(project.pages).forEach(function(node){renderNode(node,tree);});
+  var t=g('tree');t.innerHTML='';
+  buildTree(project.pages).forEach(function(n){renderNode(n,t);});
   updateGenBtn();
 }
 function renderNode(node,container){
   var page=node.page,hasKids=node.children.length>0,isSel=page.id===selId;
   var wrap=document.createElement('div');wrap.className='tsec';wrap.id='tsec'+page.id;
-  var row=document.createElement('div');
-  row.className='tpar'+(isSel?' sel':'');row.id='prow'+page.id;
-  row.innerHTML='<span class="tchev" id="chev'+page.id+'">'+(hasKids?'<i class="fa-solid fa-chevron-right" style="font-size:8px"></i>':'')+'</span>'
+  var row=document.createElement('div');row.className='tpar'+(isSel?' sel':'');row.id='prow'+page.id;
+  row.innerHTML='<span class="tchev" id="chev'+page.id+'">'+(hasKids?'<i class="fa-solid fa-chevron-right" style="font-size:7px"></i>':'')+'</span>'
     +'<div class="ticon" style="background:'+stBg(page.status)+'">'+stIco(page.status)+'</div>'
     +'<span class="ttitle">'+esc(page.title)+'</span>'
-    +'<span class="sdot '+page.status+'" title="'+stLabel(page.status)+'"></span>';
+    +'<span class="sdot '+page.status+'"></span>';
   row.onclick=function(){if(hasKids)toggleKids(page.id);selectPage(page.id);};
   wrap.appendChild(row);
   if(hasKids){
@@ -794,22 +764,10 @@ function renderNode(node,container){
 }
 function renderChild(node,container){
   var page=node.page,isSel=page.id===selId;
-  var row=document.createElement('div');
-  row.className='tchild'+(isSel?' sel':'');row.id='prow'+page.id;
-  row.innerHTML='<span class="sdot '+page.status+'" title="'+stLabel(page.status)+'"></span>'
-    +'<span class="tctitle">'+esc(page.title)+'</span>';
+  var row=document.createElement('div');row.className='tchild'+(isSel?' sel':'');row.id='prow'+page.id;
+  row.innerHTML='<span class="sdot '+page.status+'" style="flex-shrink:0"></span><span class="tctitle">'+esc(page.title)+'</span>';
   row.onclick=function(){selectPage(page.id);};
   container.appendChild(row);
-  if(node.children&&node.children.length){
-    node.children.forEach(function(gc){
-      var gcr=document.createElement('div');
-      gcr.className='tchild'+(gc.page.id===selId?' sel':'');gcr.id='prow'+gc.page.id;
-      gcr.style.paddingLeft='44px';
-      gcr.innerHTML='<span class="sdot '+gc.page.status+'"></span><span class="tctitle" style="font-size:9px;color:var(--ink3)">'+esc(gc.page.title)+'</span>';
-      gcr.onclick=function(){selectPage(gc.page.id);};
-      container.appendChild(gcr);
-    });
-  }
 }
 function toggleKids(id){var k=g('kids'+id),ch=g('chev'+id);if(k){k.classList.toggle('open');if(ch)ch.classList.toggle('open');}}
 function openParentOf(page){
@@ -824,23 +782,20 @@ function openParentOf(page){
 function updateRow(id){
   var page=project.pages.find(function(p){return p.id===id;});if(!page)return;
   var row=g('prow'+id);if(!row)return;
-  var dot=row.querySelector('.sdot');if(dot){dot.className='sdot '+page.status;dot.title=stLabel(page.status);}
+  var dot=row.querySelector('.sdot');if(dot)dot.className='sdot '+page.status;
   var ico=row.querySelector('.ticon');if(ico){ico.style.background=stBg(page.status);ico.innerHTML=stIco(page.status);}
-  var approved=project.pages.filter(function(p){return p.approved;}).length;
-  if(g('left-sub'))g('left-sub').textContent=approved+' of '+project.pages.length+' approved';
 }
-function stLabel(s){return{pending:'Not generated yet — click to generate',generating:'Generating with AI...',scraping:'Loading from website...',ready:'Ready to review',approved:'Approved',edited:'Edited — ready to approve',error:'Error — try again'}[s]||s;}
-function stBg(s){return{pending:'#F5F5F4',generating:'#EFF6FF',scraping:'#EFF6FF',ready:'#FFFBEB',approved:'#ECFDF5',edited:'#F5F3FF',error:'#FEF2F2'}[s]||'#F5F5F4';}
-function stIco(s){return{pending:'<i class="fa-regular fa-circle" style="font-size:9px;color:var(--ink3)"></i>',generating:'<i class="fa-solid fa-rotate fa-spin" style="font-size:9px;color:#3B82F6"></i>',scraping:'<i class="fa-solid fa-rotate fa-spin" style="font-size:9px;color:#3B82F6"></i>',ready:'<i class="fa-solid fa-star" style="font-size:9px;color:#D97706"></i>',approved:'<i class="fa-solid fa-check" style="font-size:9px;color:#1A9E5C"></i>',edited:'<i class="fa-solid fa-pencil" style="font-size:9px;color:#7C3AED"></i>',error:'<i class="fa-solid fa-triangle-exclamation" style="font-size:9px;color:#DC2626"></i>'}[s]||'';}
+function stBg(s){return{pending:'#F5F5F7',generating:'#E8F2FF',scraping:'#E8F2FF',ready:''+(function(){return'#FFF5E6';})(),approved:'#E8F8EC',edited:'#F5EEFA',error:'#FFF0EF'}[s]||'#F5F5F7';}
+function stIco(s){return{pending:'<i class="fa-regular fa-circle" style="font-size:8px;color:#AEAEB2"></i>',generating:'<i class="fa-solid fa-rotate fa-spin" style="font-size:8px;color:#0066CC"></i>',scraping:'<i class="fa-solid fa-rotate fa-spin" style="font-size:8px;color:#0066CC"></i>',ready:'<i class="fa-solid fa-star" style="font-size:8px;color:#FF9500"></i>',approved:'<i class="fa-solid fa-check" style="font-size:8px;color:#34C759"></i>',edited:'<i class="fa-solid fa-pencil" style="font-size:8px;color:#AF52DE"></i>',error:'<i class="fa-solid fa-triangle-exclamation" style="font-size:8px;color:#FF3B30"></i>'}[s]||'';}
 
-// ── SUB-PAGE DISCOVERY ───────────────────────────────────────
+// ── DISCOVERY ─────────────────────────────────────────────────────
 function offerSubPages(page){
   var ex=project.pages.map(function(p){return p.url;});
   var newP=(page.localNav||[]).filter(function(lp){return ex.indexOf(lp.url)===-1;});
   if(!newP.length)return;
   newP.forEach(function(np){if(!discovered.find(function(p){return p.url===np.url;}))discovered.push({url:np.url,title:np.title});});
-  g('disc-title').textContent=discovered.length+' sub-page'+(discovered.length!==1?'s':'')+' found!';
-  g('disc-msg').textContent='Found inside "'+page.title+'"';
+  g('disc-t').textContent=discovered.length+' sub-page'+(discovered.length!==1?'s':'')+' found';
+  g('disc-s').textContent='Inside "'+page.title+'"';
   g('disc-bar').classList.add('show');
 }
 function addDiscovered(){
@@ -851,347 +806,321 @@ function addDiscovered(){
   saveProject();renderTree();updateProgress();
 }
 
-// ── GENERATE ────────────────────────────────────────────────
+// ── GENERATE ──────────────────────────────────────────────────────
 function updateGenBtn(){
   var pend=project.pages.filter(function(p){return p.status==='pending';});
   var btn=g('btn-gen-next'),hint=g('genhint');
-  if(pend.length>0&&!isGen){btn.classList.add('show');btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> Generate next ('+pend.length+')';btn.disabled=false;hint.textContent=pend.length+' page'+(pend.length!==1?'s':'')+' waiting';}
-  else if(isGen){btn.classList.add('show');btn.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> Generating...';btn.disabled=true;hint.textContent='Please wait...';}
-  else{btn.classList.remove('show');hint.textContent='All pages processed';}
+  if(pend.length>0&&!isGen){btn.classList.add('show');btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> Generate next ('+pend.length+')';btn.disabled=false;hint.textContent=pend.length+' waiting';}
+  else if(isGen){btn.classList.add('show');btn.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> Generating…';btn.disabled=true;hint.textContent='Please wait…';}
+  else{btn.classList.remove('show');hint.textContent='All done';}
 }
 function genNext(){if(!isGen)processNext();}
 
 async function genThisPage(){
   var page=project.pages.find(function(p){return p.id===selId;});
-  if(!page||page.status!=='pending')return;
-  if(isGen){alert('Please wait for the current page to finish.');return;}
+  if(!page||page.status!=='pending'||isGen)return;
   isGen=true;updateGenBtn();
-  page.status='scraping';saveProject();updateRow(page.id);showLoading('Loading from your website...');
-  try{
-    var sr=await fetch(WORKER+'/scrape-page',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:page.url})});
-    var sd=await sr.json();
-    if(sd.success){page.rawHtml=sd.rawHtml||'';page.localNav=sd.localNav||[];if(sd.title&&sd.title!==page.title)page.title=sd.title;if(page.localNav.length>0)offerSubPages(page);}
-  }catch(e){page.rawHtml='';page.localNav=[];}
-  page.status='generating';saveProject();updateRow(page.id);showLoading('AI is redesigning this page...');
-  try{page.generatedHTML=await genPageHtml(page);page.status='ready';page.error='';}
-  catch(e){page.status='error';page.error=e.message;}
-  saveProject();updateRow(page.id);selectPage(page.id);
-  updateProgress();isGen=false;updateGenBtn();
+  page.status='scraping';saveProject();updateRow(page.id);showLoading('Loading from your website…');
+  try{var sr=await fetch(WORKER+'/scrape-page',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:page.url})});var sd=await sr.json();if(sd.success){page.rawHtml=sd.rawHtml||'';page.localNav=sd.localNav||[];if(sd.title&&sd.title!==page.title)page.title=sd.title;if(page.localNav.length>0)offerSubPages(page);}}catch(e){page.rawHtml='';page.localNav=[];}
+  page.status='generating';saveProject();updateRow(page.id);showLoading('AI is creating your new design…');
+  try{page.generatedHTML=await genHtml(page);page.status='ready';page.error='';}catch(e){page.status='error';page.error=e.message;}
+  saveProject();updateRow(page.id);selectPage(page.id);updateProgress();isGen=false;updateGenBtn();
 }
 
 async function processNext(){
   var page=project.pages.find(function(p){return p.status==='pending';});if(!page){isGen=false;updateGenBtn();return;}
   isGen=true;updateGenBtn();
-  page.status='scraping';saveProject();updateRow(page.id);if(selId===page.id)showLoading('Loading from your website...');
+  page.status='scraping';saveProject();updateRow(page.id);if(selId===page.id)showLoading('Loading from your website…');
   try{var sr=await fetch(WORKER+'/scrape-page',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:page.url})});var sd=await sr.json();if(sd.success){page.rawHtml=sd.rawHtml||'';page.localNav=sd.localNav||[];if(sd.title&&sd.title!==page.title)page.title=sd.title;if(page.localNav.length>0)offerSubPages(page);}}catch(e){page.rawHtml='';page.localNav=[];}
-  page.status='generating';saveProject();updateRow(page.id);if(selId===page.id)showLoading('AI is redesigning this page...');
-  try{page.generatedHTML=await genPageHtml(page);page.status='ready';page.error='';}catch(e){page.status='error';page.error=e.message;}
-  saveProject();updateRow(page.id);if(selId===page.id)selectPage(page.id);
-  updateProgress();isGen=false;updateGenBtn();
+  page.status='generating';saveProject();updateRow(page.id);if(selId===page.id)showLoading('AI is creating your new design…');
+  try{page.generatedHTML=await genHtml(page);page.status='ready';page.error='';}catch(e){page.status='error';page.error=e.message;}
+  saveProject();updateRow(page.id);if(selId===page.id)selectPage(page.id);updateProgress();isGen=false;updateGenBtn();
 }
 
-async function genPageHtml(page){
+async function genHtml(page){
   var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
   var pri=project.primaryColor,sec=project.accentColor;
-  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:3000,system:buildSystem(tpl,pri,sec),messages:[{role:'user',content:buildPrompt(page)}]})});
-  if(!res.ok)throw new Error('API error '+res.status);
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:3500,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)}]})});
+  if(!res.ok)throw new Error('API '+res.status);
   var data=await res.json();
   var html=(data.content&&data.content[0]&&data.content[0].text)||'';
-  if(!html)throw new Error('No content returned');
+  if(!html)throw new Error('No content');
   return html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
 }
 
-function buildSystem(tpl,pri,sec){
-  return 'You rebuild Australian school website pages as SharePoint Embed HTML fragments.\n\nCRITICAL — CONTENT: Copy ALL content EXACTLY. Zero rewording. Every word, link URL, and image URL must be identical to the source.\n\nOUTPUT:\n1. Raw HTML fragment only — no DOCTYPE, html, head, body tags\n2. No script tags\n3. No external fonts or CDN links\n4. System fonts only: Georgia, Arial, Helvetica, sans-serif\n5. One <style> block at top, all CSS prefixed sp-\n6. Output ONLY the HTML — no markdown, no backticks\n\nACCESSIBILITY — WCAG 2.1 AA:\nEvery img needs alt text. Heading hierarchy h2 then h3. Descriptive link text. Visible focus styles. Semantic ul/li for lists.\n\n'+tpl.designSystem(pri,sec);
+function sysPrompt(tpl,pri,sec){
+  return 'You redesign Australian school website pages as SharePoint Embed HTML fragments.\n\nCONTENT RULE: Copy ALL text, links and images EXACTLY. Zero rewording. Every URL must be identical.\n\nOUTPUT: Raw HTML fragment only. No DOCTYPE/html/head/body tags. No script tags. No external fonts. System fonts only. One <style> block at top, CSS prefixed sp-. Output ONLY the HTML.\n\nACCESSIBILITY: WCAG 2.1 AA. Alt text on all images. Heading hierarchy h2→h3. Descriptive links. Visible focus styles.\n\nVISUAL IMPACT: The design must look DRAMATICALLY better than the original. Use the full design system. Every page must include the stat strip, decorative elements, and proper card/tile layouts even if inventing plausible placeholder values for stats.\n\n'+tpl.system(pri,sec);
 }
 
-function buildPrompt(page){
-  return 'Redesign this page for '+project.schoolName+'.\nPAGE: '+page.title+'\n\nSOURCE HTML — copy all content EXACTLY, apply design system:\n--- START ---\n'+(page.rawHtml&&page.rawHtml.trim()?page.rawHtml:'(No content — create professional placeholder for: '+page.title+')')+'\n--- END ---\n\nWrap in div max-width:900px. Use exact URLs from source. All links open target="_blank".';
+function userPrompt(page){
+  return 'Redesign this page for '+project.schoolName+'.\nPAGE: '+page.title+'\n\nINSTRUCTION: Copy content 100% exactly. Make it visually stunning using the template design system. Include ALL specified visual elements (hero, stat strip, cards, tiles, callouts etc).\n\nSOURCE HTML:\n--- START ---\n'+(page.rawHtml&&page.rawHtml.trim()?page.rawHtml:'(No content scraped — create a beautiful professional placeholder page for: '+page.title+')')+'\n--- END ---\n\nWrap in div max-width:900px. All links target="_blank". Use exact source URLs.';
 }
 
-// ── SELECT + VIEW ────────────────────────────────────────────
+// ── SELECT ────────────────────────────────────────────────────────
 function selectPage(id){
   selId=id;
   var page=project.pages.find(function(p){return p.id===id;});if(!page)return;
   document.querySelectorAll('.tpar,.tchild').forEach(function(r){r.classList.remove('sel');});
   var row=g('prow'+id);if(row){row.classList.add('sel');row.scrollIntoView({block:'nearest'});}
   openParentOf(page);
-  g('ptitle').textContent=page.title;
+  g('page-title').textContent=page.title;
   var ab=g('btn-approve');
-  if(page.approved){ab.innerHTML='<i class="fa-solid fa-check"></i> Approved';ab.classList.add('on');}
-  else{ab.innerHTML='<i class="fa-solid fa-check"></i> Approve';ab.classList.remove('on');}
-  g('prev-err').classList.remove('show');g('prev-empty').style.display='none';
+  if(page.approved){ab.innerHTML='<i class="fa-solid fa-check"></i> Approved';ab.classList.add('approved');}
+  else{ab.innerHTML='<i class="fa-solid fa-check"></i> Approve';ab.classList.remove('approved');}
+  g('prev-err').classList.remove('show');g('prev-err').style.display='none';
   g('voice-bar').classList.remove('show');g('paste-guide').classList.remove('show');
+
   if(page.status==='pending'){
-    showEmpty('<i class="fa-regular fa-circle" style="font-size:32px;opacity:.14"></i>','Ready to generate','<div style="margin-top:14px"><button onclick="genThisPage()" style="padding:11px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px"><i class=\'fa-solid fa-wand-magic-sparkles\'></i> Redesign this page</button></div>');
-  }else if(page.status==='scraping'||page.status==='generating'){
-    showLoading(page.status==='scraping'?'Loading from your website...':'AI is redesigning this page...');
-  }else if(page.status==='error'){
-    g('prev-loading').classList.remove('show');
-    g('prev-err').textContent='Something went wrong: '+(page.error||'Unknown error')+'. Use the voice bar below or try again.';
-    g('prev-err').classList.add('show');g('prev-iframe').style.display='none';g('wysiwyg-wrap').style.display='none';
+    showEmpty();
+  } else if(page.status==='scraping'||page.status==='generating'){
+    showLoading(page.status==='scraping'?'Loading from your website…':'AI is creating your new design…');
+  } else if(page.status==='error'){
+    g('prev-loading').classList.remove('show');g('prev-iframe').style.display='none';
+    g('prev-empty').style.display='none';
+    g('prev-err').textContent='Something went wrong: '+(page.error||'Unknown error')+'. Use the voice bar to try again.';
+    g('prev-err').style.display='block';g('prev-err').classList.add('show');
     g('voice-bar').classList.add('show');
-  }else if(page.generatedHTML){
+  } else if(page.generatedHTML){
     setView('preview');showIframe(page.generatedHTML);
     g('voice-bar').classList.add('show');g('paste-guide').classList.add('show');
   }
 }
-function showLoading(msg){g('ld-msg').textContent=msg||'Working...';g('prev-loading').classList.add('show');g('prev-iframe').style.display='none';g('wysiwyg-wrap').style.display='none';g('prev-empty').style.display='none';}
-function showEmpty(ico,t,s){g('prev-loading').classList.remove('show');g('prev-iframe').style.display='none';g('wysiwyg-wrap').style.display='none';var e=g('prev-empty');e.innerHTML='<div class="pe-ico">'+ico+'</div><div class="pe-t">'+t+'</div><div class="pe-s">'+s+'</div>';e.style.display='block';}
+
+function showLoading(msg){
+  g('ld-msg').textContent=msg;g('prev-loading').classList.add('show');
+  g('prev-iframe').style.display='none';g('prev-empty').style.display='none';
+  g('prev-err').style.display='none';
+}
+
+function showEmpty(){
+  g('prev-loading').classList.remove('show');g('prev-iframe').style.display='none';g('prev-err').style.display='none';
+  g('prev-empty').style.display='block';
+  g('prev-empty').innerHTML='<div class="pe-icon"><i class="fa-regular fa-file-lines"></i></div><div class="pe-title">Ready to redesign</div><div class="pe-sub">Click the button below to generate a new design for this page.</div><div class="pe-action"><button class="pe-btn" onclick="genThisPage()"><i class="fa-solid fa-wand-magic-sparkles"></i> Redesign this page</button></div>';
+}
 
 function showIframe(html){
   var iframe=g('prev-iframe');
   iframe.style.display='block';
-  g('prev-loading').classList.remove('show');
-  g('prev-empty').style.display='none';
-  var bodyHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:16px;line-height:1.5}</style></head><body>'+html+'</body></html>';
-  iframe.srcdoc=bodyHtml;
-  iframe.onload=function(){try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+20)+'px';}catch(e){iframe.style.height='700px';}};
+  g('prev-loading').classList.remove('show');g('prev-empty').style.display='none';
+  var doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:20px;line-height:1.5}</style></head><body>'+html+'</body></html>';
+  iframe.srcdoc=doc;
+  iframe.onload=function(){try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+24)+'px';}catch(e){iframe.style.height='800px';}};
   g('code-out').textContent=html;
 }
 
 function setView(mode){
   curView=mode;
   g('prevscroll').style.display='none';g('code-view').style.display='none';
-  g('wysiwyg-bar').classList.remove('show');g('prev-iframe').style.display='none';g('wysiwyg-wrap').style.display='none';
-  document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('on');});
+  g('prev-iframe').style.display='none';
+  document.querySelectorAll('#vv,#vc').forEach(function(b){b.classList.remove('on');});
   var page=project.pages.find(function(p){return p.id===selId;});
   if(mode==='preview'){g('prevscroll').style.display='';if(page&&page.generatedHTML)g('prev-iframe').style.display='block';g('vv').classList.add('on');}
-  else if(mode==='edit'){if(!page||!page.generatedHTML){setView('preview');return;}g('prevscroll').style.display='';g('wysiwyg-editor').innerHTML=page.generatedHTML;g('wysiwyg-wrap').style.display='block';g('wysiwyg-bar').classList.add('show');g('ve').classList.add('on');setTimeout(function(){g('wysiwyg-editor').focus();},100);}
   else if(mode==='code'){g('code-view').style.display='block';g('code-out').textContent=page?(page.generatedHTML||''):'';g('vc').classList.add('on');}
 }
-function onEdit(){var page=project.pages.find(function(p){return p.id===selId;});if(!page)return;page.generatedHTML=g('wysiwyg-editor').innerHTML;page.status=page.approved?'approved':'edited';saveProject();updateRow(page.id);}
-function fmt(cmd,val){document.execCommand(cmd,false,val||null);g('wysiwyg-editor').focus();onEdit();}
 
-// ── PAGE ACTIONS ─────────────────────────────────────────────
+// ── PAGE ACTIONS ──────────────────────────────────────────────────
 function toggleApprove(){
   var page=project.pages.find(function(p){return p.id===selId;});if(!page)return;
   page.approved=!page.approved;page.status=page.approved?'approved':'ready';
   saveProject();updateRow(page.id);updateProgress();
   var ab=g('btn-approve');
-  if(page.approved){ab.innerHTML='<i class="fa-solid fa-check"></i> Approved';ab.classList.add('on');var next=project.pages.find(function(p){return !p.approved&&(p.status==='ready'||p.status==='edited');});if(next)setTimeout(function(){selectPage(next.id);},350);}
-  else{ab.innerHTML='<i class="fa-solid fa-check"></i> Approve';ab.classList.remove('on');}
+  if(page.approved){
+    ab.innerHTML='<i class="fa-solid fa-check"></i> Approved';ab.classList.add('approved');
+    var next=project.pages.find(function(p){return !p.approved&&(p.status==='ready'||p.status==='edited');});
+    if(next)setTimeout(function(){selectPage(next.id);},400);
+  } else {ab.innerHTML='<i class="fa-solid fa-check"></i> Approve';ab.classList.remove('approved');}
 }
-function copyPage(){
+
+function copyHtml(){
   var page=project.pages.find(function(p){return p.id===selId;});if(!page||!page.generatedHTML)return;
-  var html=curView==='edit'?g('wysiwyg-editor').innerHTML:page.generatedHTML;
-  if(navigator.clipboard){navigator.clipboard.writeText(html).then(function(){var b=g('btn-approve').parentElement.querySelector('[onclick="copyPage()"]');if(b){b.innerHTML='<i class="fa-solid fa-check"></i> Copied!';setTimeout(function(){b.innerHTML='<i class="fa-solid fa-copy"></i> Copy HTML';},2000);}});}
+  if(navigator.clipboard){navigator.clipboard.writeText(page.generatedHTML).then(function(){var b=g('btn-copy');b.innerHTML='<i class="fa-solid fa-check"></i> Copied!';setTimeout(function(){b.innerHTML='<i class="fa-solid fa-copy"></i> Copy HTML';},2000);});}
 }
+
 function updateProgress(){
   var approved=project.pages.filter(function(p){return p.approved;}).length;
   var total=project.pages.length;
-  g('prog-n').textContent=approved;g('prog-t').textContent=total;
-  if(approved>0)g('btn-zip').classList.add('show');
-  if(g('left-sub'))g('left-sub').textContent=approved+' of '+total+' approved';
+  if(g('wl-progress'))g('wl-progress').textContent=approved+' of '+total+' approved';
+  var pct=total>0?Math.round(approved/total*100):0;
+  if(g('wl-prog-fill'))g('wl-prog-fill').style.width=pct+'%';
+  if(g('wl-school'))g('wl-school').textContent=project.schoolName;
 }
 
-// ── VOICE ────────────────────────────────────────────────────
+// ── VOICE ─────────────────────────────────────────────────────────
 function initVoice(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){g('btn-mic').style.opacity='0.3';g('btn-mic').title='Voice requires Chrome or Edge';return;}
+  if(!SR){g('btn-mic').style.opacity='0.3';return;}
   recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang='en-AU';
-  recognition.onresult=function(e){var t='';for(var i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;g('voice-transcript').value=t;autoResizeTA(g('voice-transcript'));};
-  recognition.onend=function(){isListening=false;g('btn-mic').classList.remove('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>';if(g('voice-transcript').value.trim())applyVoiceEdit();};
-  recognition.onerror=function(e){isListening=false;g('btn-mic').classList.remove('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>';if(e.error!=='no-speech')alert('Mic error: '+e.error);};
+  recognition.onresult=function(e){var t='';for(var i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;g('voice-input').value=t;};
+  recognition.onend=function(){isListening=false;g('btn-mic').classList.remove('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>';if(g('voice-input').value.trim())applyVoiceEdit();};
+  recognition.onerror=function(e){isListening=false;g('btn-mic').classList.remove('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>';};
 }
 function toggleMic(){
   if(!recognition){alert('Voice input requires Chrome or Edge.');return;}
   if(isListening){recognition.stop();isListening=false;g('btn-mic').classList.remove('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>';}
-  else{g('voice-transcript').value='';recognition.start();isListening=true;g('btn-mic').classList.add('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-stop"></i>';}
+  else{g('voice-input').value='';recognition.start();isListening=true;g('btn-mic').classList.add('listening');g('btn-mic').innerHTML='<i class="fa-solid fa-stop"></i>';}
 }
-function setPrompt(t){g('voice-transcript').value=t;autoResizeTA(g('voice-transcript'));g('voice-transcript').focus();}
-function autoResizeTA(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+function quickEdit(text){g('voice-input').value=text;applyVoiceEdit();}
 
 async function applyVoiceEdit(){
-  var instruction=g('voice-transcript').value.trim();if(!instruction){g('voice-transcript').focus();return;}
-  var page=project.pages.find(function(p){return p.id===selId;});if(!page||!page.generatedHTML){alert('Please wait for the page to generate first.');return;}
-  var btn=g('btn-voice-send');btn.disabled=true;g('vb-applying').classList.add('show');
-  try{
-    var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
-    var pri=project.primaryColor,sec=project.accentColor;
-    var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:buildSystem(tpl,pri,sec),messages:[{role:'user',content:'Edit this page per the instruction.\nINSTRUCTION: "'+instruction+'"\nKeep all content EXACTLY the same — only change what the instruction asks.\nCURRENT HTML:\n--- START ---\n'+page.generatedHTML+'\n--- END ---\nOutput complete updated HTML only.'}]})});
-    if(!res.ok)throw new Error('API error '+res.status);
-    var data=await res.json();
-    var html=(data.content&&data.content[0]&&data.content[0].text)||'';
-    if(!html)throw new Error('No response');
-    html=html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
-    page.generatedHTML=html;page.status=page.approved?'approved':'edited';
-    saveProject();updateRow(page.id);showIframe(html);
-    if(curView==='edit')g('wysiwyg-editor').innerHTML=html;
-    g('voice-transcript').value='';g('voice-transcript').style.height='auto';
-    setView('preview');
-  }catch(e){alert('Could not apply: '+e.message);}
-  finally{btn.disabled=false;g('vb-applying').classList.remove('show');}
-}
-
-// ── CONTENT DRAWER ───────────────────────────────────────────
-function toggleDrawer(){
-  cdDrawerOpen=!cdDrawerOpen;
-  var drawer=g('content-drawer'),btn=document.querySelector('[onclick="toggleDrawer()"]');
-  if(cdDrawerOpen){if(drawer)drawer.classList.add('show');if(btn)btn.classList.add('active');}
-  else{if(drawer)drawer.classList.remove('show');if(btn)btn.classList.remove('active');}
-}
-function toggleDrawerBody(){var body=g('cd-body'),chev=g('cd-chev');if(!body)return;var hidden=body.style.display==='none';body.style.display=hidden?'':'none';if(chev)chev.classList.toggle('open',!hidden);}
-function handleFileSelect(input){var f=input.files[0];if(f)processFile(f);}
-
-async function processFile(file){
-  cdFile=file;cdExtracted='';cdImageUrl='';
-  var ext=file.name.split('.').pop().toLowerCase();
-  g('fp-icon').innerHTML=getFileIcon(ext);g('fp-name').textContent=file.name;g('fp-size').textContent=formatSize(file.size);
-  g('fp-content').innerHTML='<div style="padding:12px;text-align:center;font-size:11px;color:var(--blue);display:flex;align-items:center;justify-content:center;gap:6px"><div class="minispin"></div>Reading file...</div>';
-  g('cd-file-preview').classList.add('show');
-  g('drop-zone').classList.add('has-file');g('drop-zone').querySelector('.dz-t').textContent='File attached';
-  try{
-    if(['jpg','jpeg','png','webp','gif'].includes(ext))await handleImage(file);
-    else if(ext==='docx'||ext==='doc')await handleDocx(file);
-    else if(ext==='pdf')await handlePdf(file);
-    else if(['pptx','ppt'].includes(ext))await handlePptx(file);
-    else if(['txt','csv','md'].includes(ext))await handleText(file);
-    else throw new Error('File type not supported.');
-  }catch(e){g('fp-content').innerHTML='<div class="fp-body" style="color:var(--red)">'+esc(e.message)+'</div>';}
-}
-
-async function handleImage(file){
-  var reader=new FileReader();
-  reader.onload=function(e){g('fp-content').innerHTML='<img class="fp-img-preview" src="'+e.target.result+'" alt="">';};
-  reader.readAsDataURL(file);
-  var fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLOUDINARY_PRESET);
-  var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload',{method:'POST',body:fd});
-  var data=await res.json();
-  if(!data.secure_url)throw new Error('Image upload failed');
-  cdImageUrl=data.secure_url;cdExtracted='[IMAGE: '+file.name+' url: '+cdImageUrl+']';
-  g('fp-content').innerHTML='<img class="fp-img-preview" src="'+cdImageUrl+'" alt="'+esc(file.name)+'">';
-  g('cd-instruction').placeholder='e.g. "Add this image below the hero banner"';
-}
-async function handleDocx(file){
-  if(typeof mammoth==='undefined')throw new Error('Word reader not loaded. Please refresh the page.');
-  var ab=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
-  var result=await mammoth.extractRawText({arrayBuffer:ab});
-  cdExtracted=result.value.trim();
-  if(!cdExtracted)throw new Error('Could not extract text from this Word document.');
-  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+(cdExtracted.length>400?'...':'')+'</div>';
-}
-async function handlePdf(file){
-  var reader=new FileReader();
-  var text=await new Promise(function(res,rej){reader.onload=function(e){var binary=e.target.result;var matches=binary.match(/\(([^)]{2,200})\)/g)||[];var extracted=matches.map(function(m){return m.slice(1,-1);}).filter(function(t){return /[a-zA-Z]{3,}/.test(t);}).join(' ').replace(/\s+/g,' ').trim();res(extracted);};reader.onerror=rej;reader.readAsBinaryString(file);});
-  if(text&&text.length>50){cdExtracted=text.substring(0,5000);g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'...</div>';}
-  else{cdExtracted='[PDF: "'+file.name+'" — will be added as download link]';g('fp-content').innerHTML='<div class="fp-body">PDF text could not be extracted. Will be added as a download button. Paste the SharePoint URL of this file in the instruction field.</div>';}
-}
-async function handlePptx(file){
-  var ab=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
-  var zip=await JSZip.loadAsync(ab);
-  var slideFiles=Object.keys(zip.files).filter(function(n){return n.match(/ppt\/slides\/slide\d+\.xml$/);}).sort();
-  var texts=[];
-  for(var i=0;i<Math.min(slideFiles.length,20);i++){
-    var content=await zip.files[slideFiles[i]].async('text');
-    var t=content.replace(/<a:r[^>]*>[\s\S]*?<a:t>([^<]*)<\/a:t>[\s\S]*?<\/a:r>/g,'$1 ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
-    if(t.length>3)texts.push('Slide '+(i+1)+': '+t);
-  }
-  cdExtracted=texts.join('\n\n');
-  if(!cdExtracted)throw new Error('No text found in presentation.');
-  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'...</div>';
-}
-async function handleText(file){
-  var text=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsText(file);});
-  cdExtracted=text.trim();g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'</div>';
-}
-function clearFile(){cdFile=null;cdExtracted='';cdImageUrl='';g('cd-file-preview').classList.remove('show');g('drop-zone').classList.remove('has-file');g('drop-zone').querySelector('.dz-t').textContent='Drop a file here or click to browse';g('cd-file-input').value='';}
-
-async function applyAddedContent(){
+  var instruction=g('voice-input').value.trim();if(!instruction)return;
   var page=project.pages.find(function(p){return p.id===selId;});
-  if(!page||!page.generatedHTML){alert('Please generate the page first before adding content.');return;}
-  var hasFile=cdExtracted||cdImageUrl,hasText=(g('cd-extra-text').value||'').trim();
-  if(!hasFile&&!hasText){alert('Please add a file or paste some text first.');return;}
-  var btn=g('btn-cd-apply');btn.disabled=true;g('cd-applying').classList.add('show');
+  if(!page||!page.generatedHTML){alert('Please generate a page first.');return;}
+  g('btn-vb-send').disabled=true;g('vb-status').classList.add('show');
   try{
-    var instruction=(g('cd-instruction').value||'').trim();
     var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
     var pri=project.primaryColor,sec=project.accentColor;
-    var additions=[];
-    if(cdImageUrl)additions.push('NEW IMAGE: src="'+cdImageUrl+'" (file: '+cdFile.name+')');
-    else if(cdExtracted)additions.push('NEW CONTENT from "'+cdFile.name+'":\n'+cdExtracted.substring(0,6000));
-    if(hasText)additions.push('ADDITIONAL TEXT:\n'+hasText);
-    var prompt='Add the following content to this school page.\nINSTRUCTION: '+(instruction||'Add this content in the most appropriate location.')+'\nCONTENT TO ADD:\n---\n'+additions.join('\n\n')+'\n---\nRULES: 1. Do NOT remove existing content. 2. Keep existing text and links as-is. 3. Style new content to match existing design.'+(cdImageUrl?' 4. Embed image: <img src="'+cdImageUrl+'" style="width:100%;border-radius:12px;margin:16px 0;display:block" alt="'+esc(cdFile?cdFile.name:'image')+'">':'')+' Output the complete updated HTML.\nCURRENT HTML:\n--- START ---\n'+page.generatedHTML+'\n--- END ---';
-    var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:buildSystem(tpl,pri,sec),messages:[{role:'user',content:prompt}]})});
-    if(!res.ok)throw new Error('API error '+res.status);
+    var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:'Apply this change to the page.\n\nINSTRUCTION: "'+instruction+'"\n\nKeep all content exactly the same. Only change what is asked.\n\nCURRENT HTML:\n--- START ---\n'+page.generatedHTML+'\n--- END ---\n\nReturn the complete updated HTML only.'}]})});
+    if(!res.ok)throw new Error('API '+res.status);
     var data=await res.json();
     var html=(data.content&&data.content[0]&&data.content[0].text)||'';
     if(!html)throw new Error('No response');
     html=html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
     page.generatedHTML=html;page.status=page.approved?'approved':'edited';
     saveProject();updateRow(page.id);showIframe(html);setView('preview');
-    clearFile();g('cd-extra-text').value='';g('cd-instruction').value='';
-    g('content-drawer').classList.remove('show');cdDrawerOpen=false;
-  }catch(e){alert('Could not add content: '+e.message);}
-  finally{btn.disabled=false;g('cd-applying').classList.remove('show');}
+    g('voice-input').value='';
+  }catch(e){alert('Could not apply: '+e.message);}
+  finally{g('btn-vb-send').disabled=false;g('vb-status').classList.remove('show');}
 }
-function getFileIcon(ext){var m={docx:'<i class="fa-solid fa-file-word" style="color:#2B5CE6"></i>',doc:'<i class="fa-solid fa-file-word" style="color:#2B5CE6"></i>',pdf:'<i class="fa-solid fa-file-pdf" style="color:#DC2626"></i>',pptx:'<i class="fa-solid fa-file-powerpoint" style="color:#D97706"></i>',ppt:'<i class="fa-solid fa-file-powerpoint" style="color:#D97706"></i>',txt:'<i class="fa-solid fa-file-lines" style="color:#9A9A9A"></i>',csv:'<i class="fa-solid fa-file-csv" style="color:#1A9E5C"></i>',jpg:'<i class="fa-solid fa-image" style="color:#7C3AED"></i>',jpeg:'<i class="fa-solid fa-image" style="color:#7C3AED"></i>',png:'<i class="fa-solid fa-image" style="color:#7C3AED"></i>',webp:'<i class="fa-solid fa-image" style="color:#7C3AED"></i>',gif:'<i class="fa-solid fa-image" style="color:#7C3AED"></i>'};return m[ext]||'<i class="fa-solid fa-file"></i>';}
-function formatSize(b){if(b<1024)return b+'B';if(b<1048576)return Math.round(b/1024)+'KB';return(b/1048576).toFixed(1)+'MB';}
 
-// ── VARIATIONS ───────────────────────────────────────────────
-var variantMods=['','Increase padding on all sections and cards. Make the hero taller. Use more whitespace.','Make typography larger and bolder throughout. Make CTA buttons more prominent.'];
+// ── ADD CONTENT ────────────────────────────────────────────────────
+function toggleAddContent(){
+  var panel=g('add-content-panel'),btn=g('btn-toggle-add');
+  var isOpen=panel.classList.contains('show');
+  panel.classList.toggle('show',!isOpen);
+  btn.classList.toggle('on',!isOpen);
+}
+function toggleAcpBody(){var body=g('acp-body'),chev=g('acp-chev');if(!body)return;var h=body.style.display==='none';body.style.display=h?'':'none';if(chev)chev.classList.toggle('open',!h);}
+function handleFile(input){var f=input.files[0];if(f)processFile(f);}
 
-function openVariations(){
+async function processFile(file){
+  cdFile=file;cdExtracted='';cdImageUrl='';
+  var ext=file.name.split('.').pop().toLowerCase();
+  g('fp-icon').innerHTML=fileIcon(ext);g('fp-name-el').textContent=file.name;
+  g('fp-content').innerHTML='<div style="padding:10px;font-size:11px;color:var(--blue);display:flex;align-items:center;gap:6px"><div class="minispin"></div>Reading…</div>';
+  g('fp-preview').classList.add('show');
+  g('drop-zone').classList.add('has-file');g('drop-zone').querySelector('.dz-t').textContent='File attached';
+  try{
+    if(['jpg','jpeg','png','webp','gif'].includes(ext))await doImage(file);
+    else if(ext==='docx'||ext==='doc')await doDocx(file);
+    else if(ext==='pdf')await doPdf(file);
+    else if(['pptx','ppt'].includes(ext))await doPptx(file);
+    else if(['txt','csv'].includes(ext))await doText(file);
+    else throw new Error('File type not supported.');
+  }catch(e){g('fp-content').innerHTML='<div style="padding:8px 10px;font-size:11px;color:var(--red)">'+esc(e.message)+'</div>';}
+}
+async function doImage(file){
+  var r=new FileReader();r.onload=function(e){g('fp-content').innerHTML='<img class="fp-img" src="'+e.target.result+'" alt="">';};r.readAsDataURL(file);
+  var fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLOUDINARY_PRESET);
+  var res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload',{method:'POST',body:fd});
+  var data=await res.json();if(!data.secure_url)throw new Error('Upload failed');
+  cdImageUrl=data.secure_url;cdExtracted='[IMAGE url:'+cdImageUrl+']';
+  g('fp-content').innerHTML='<img class="fp-img" src="'+cdImageUrl+'" alt="'+esc(file.name)+'">';
+}
+async function doDocx(file){
+  if(typeof mammoth==='undefined')throw new Error('Please refresh the page.');
+  var ab=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
+  var result=await mammoth.extractRawText({arrayBuffer:ab});
+  cdExtracted=result.value.trim();if(!cdExtracted)throw new Error('No text found.');
+  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'…</div>';
+}
+async function doPdf(file){
+  var r=new FileReader();
+  var text=await new Promise(function(res,rej){r.onload=function(e){var m=e.target.result.match(/\(([^)]{2,200})\)/g)||[];var t=m.map(function(x){return x.slice(1,-1);}).filter(function(t){return /[a-zA-Z]{3,}/.test(t);}).join(' ').replace(/\s+/g,' ').trim();res(t);};r.onerror=rej;r.readAsBinaryString(file);});
+  if(text&&text.length>50){cdExtracted=text.substring(0,5000);g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'…</div>';}
+  else{cdExtracted='[PDF "'+file.name+'" — add as download]';g('fp-content').innerHTML='<div class="fp-body">PDF text could not be extracted. Will be added as a download button.</div>';}
+}
+async function doPptx(file){
+  var ab=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsArrayBuffer(file);});
+  var zip=await JSZip.loadAsync(ab);
+  var slides=Object.keys(zip.files).filter(function(n){return n.match(/ppt\/slides\/slide\d+\.xml$/);}).sort();
+  var texts=[];
+  for(var i=0;i<Math.min(slides.length,20);i++){var c=await zip.files[slides[i]].async('text');var t=c.replace(/<a:r[^>]*>[\s\S]*?<a:t>([^<]*)<\/a:t>[\s\S]*?<\/a:r>/g,'$1 ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();if(t.length>3)texts.push('Slide '+(i+1)+': '+t);}
+  cdExtracted=texts.join('\n\n');if(!cdExtracted)throw new Error('No text in presentation.');
+  g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'…</div>';
+}
+async function doText(file){
+  var t=await new Promise(function(res,rej){var r=new FileReader();r.onload=function(e){res(e.target.result);};r.onerror=rej;r.readAsText(file);});
+  cdExtracted=t.trim();g('fp-content').innerHTML='<div class="fp-body">'+esc(cdExtracted.substring(0,400))+'</div>';
+}
+function clearFile(){cdFile=null;cdExtracted='';cdImageUrl='';g('fp-preview').classList.remove('show');g('drop-zone').classList.remove('has-file');g('drop-zone').querySelector('.dz-t').textContent='Drop a file or click to browse';g('file-input').value='';}
+function fileIcon(ext){var m={docx:'<i class="fa-solid fa-file-word" style="color:#0066CC"></i>',doc:'<i class="fa-solid fa-file-word" style="color:#0066CC"></i>',pdf:'<i class="fa-solid fa-file-pdf" style="color:#FF3B30"></i>',pptx:'<i class="fa-solid fa-file-powerpoint" style="color:#FF9500"></i>',ppt:'<i class="fa-solid fa-file-powerpoint" style="color:#FF9500"></i>',txt:'<i class="fa-solid fa-file-lines"></i>',jpg:'<i class="fa-solid fa-image" style="color:#AF52DE"></i>',jpeg:'<i class="fa-solid fa-image" style="color:#AF52DE"></i>',png:'<i class="fa-solid fa-image" style="color:#AF52DE"></i>',webp:'<i class="fa-solid fa-image" style="color:#AF52DE"></i>',gif:'<i class="fa-solid fa-image" style="color:#AF52DE"></i>'};return m[ext]||'<i class="fa-solid fa-file"></i>';}
+
+async function applyAddedContent(){
   var page=project.pages.find(function(p){return p.id===selId;});
-  if(!page||!page.generatedHTML){alert('Please generate this page first before trying variations.');return;}
-  variantResults={a:'',b:'',c:''};activeVariant='a';
-  ['a','b','c'].forEach(function(v){g('vload-'+v).style.display='flex';g('vframe-'+v).style.display='none';g('vframe-'+v).srcdoc='';g('vstat-'+v).style.background='var(--border)';g('vtab-'+v).classList.remove('on');});
+  if(!page||!page.generatedHTML){alert('Generate the page first.');return;}
+  var hasFile=cdExtracted||cdImageUrl,hasText=(g('acp-text').value||'').trim();
+  if(!hasFile&&!hasText){alert('Add a file or paste some text first.');return;}
+  g('btn-acp-apply').disabled=true;g('acp-applying').classList.add('show');
+  try{
+    var instruction=(g('acp-instruction').value||'').trim();
+    var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
+    var pri=project.primaryColor,sec=project.accentColor;
+    var additions=[];
+    if(cdImageUrl)additions.push('NEW IMAGE src="'+cdImageUrl+'" file:"'+cdFile.name+'"');
+    else if(cdExtracted)additions.push('NEW CONTENT from "'+cdFile.name+'":\n'+cdExtracted.substring(0,6000));
+    if(hasText)additions.push('ADDITIONAL TEXT:\n'+hasText);
+    var prompt='Add content to this page.\nINSTRUCTION: '+(instruction||'Add in the most appropriate location.')+'\nCONTENT:\n'+additions.join('\n\n')+'\nRULES: Keep ALL existing content. Style new content to match design.'+(cdImageUrl?' Embed: <img src="'+cdImageUrl+'" style="width:100%;border-radius:14px;margin:20px 0" alt="'+esc(cdFile?cdFile.name:'image')+'">':'')+'\nReturn complete updated HTML.\nCURRENT:\n'+page.generatedHTML;
+    var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:prompt}]})});
+    if(!res.ok)throw new Error('API '+res.status);
+    var data=await res.json();
+    var html=(data.content&&data.content[0]&&data.content[0].text)||'';
+    html=html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+    page.generatedHTML=html;page.status=page.approved?'approved':'edited';
+    saveProject();updateRow(page.id);showIframe(html);setView('preview');
+    clearFile();g('acp-text').value='';g('acp-instruction').value='';
+    g('add-content-panel').classList.remove('show');g('btn-toggle-add').classList.remove('on');
+  }catch(e){alert('Could not add content: '+e.message);}
+  finally{g('btn-acp-apply').disabled=false;g('acp-applying').classList.remove('show');}
+}
+
+// ── VARIANTS ──────────────────────────────────────────────────────
+var varMods=['','More generous whitespace. Larger hero padding. Cards with more breathing room.','Bolder typography throughout. Larger headings. More prominent CTA buttons. Two-column content layout.'];
+
+function openVariants(){
+  var page=project.pages.find(function(p){return p.id===selId;});
+  if(!page||!page.generatedHTML){alert('Generate this page first.');return;}
+  varResults={a:'',b:'',c:''};activeVar='a';
+  ['a','b','c'].forEach(function(v){g('vload-'+v).style.display='flex';g('vframe-'+v).style.display='none';g('vframe-'+v).srcdoc='';g('vdot-'+v).style.background='var(--border-m)';g('vtab-'+v).classList.remove('on');});
   g('vtab-a').classList.add('on');['vpane-a','vpane-b','vpane-c'].forEach(function(id){g(id).classList.remove('show');});
-  g('vpane-a').classList.add('show');g('variant-viewing').textContent='Design A';
-  g('vgen-badge').classList.add('show');g('variant-overlay').classList.add('show');document.body.style.overflow='hidden';
+  g('vpane-a').classList.add('show');g('var-viewing').textContent='Design A';
+  g('var-gen-pill').classList.add('show');g('var-sheet').classList.add('show');document.body.style.overflow='hidden';
   var tpl=TEMPLATES[project.template]||TEMPLATES.heritage,pri=project.primaryColor,sec=project.accentColor;
   ['a','b','c'].forEach(function(v,i){
-    generateOneVariant(page,tpl,pri,sec,variantMods[i]).then(function(html){
-      variantResults[v]=html;g('vstat-'+v).style.background='#34D399';showVariantFrame(v,html);
-      if(variantResults.a&&variantResults.b&&variantResults.c)g('vgen-badge').classList.remove('show');
+    genVariant(page,tpl,pri,sec,varMods[i]).then(function(html){
+      varResults[v]=html;g('vdot-'+v).style.background='#34C759';showVarFrame(v,html);
+      if(varResults.a&&varResults.b&&varResults.c)g('var-gen-pill').classList.remove('show');
     }).catch(function(){
-      g('vstat-'+v).style.background='#FCA5A5';
+      g('vdot-'+v).style.background='#FF3B30';
       g('vload-'+v).innerHTML='<p style="color:var(--red);font-size:12px;padding:20px">Failed. Try again.</p>';
-      if(variantResults.a!==''&&variantResults.b!==''&&variantResults.c!=='')g('vgen-badge').classList.remove('show');
     });
   });
 }
-async function generateOneVariant(page,tpl,pri,sec,mod){
-  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:3000,system:buildSystem(tpl,pri,sec),messages:[{role:'user',content:buildPrompt(page)+(mod?'\n\nADDITIONAL STYLING: '+mod:'')}]})});
+async function genVariant(page,tpl,pri,sec,mod){
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:3500,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)+(mod?'\n\nSTYLING VARIATION: '+mod:'')}]})});
   if(!res.ok)throw new Error('API '+res.status);
   var data=await res.json();
   var html=(data.content&&data.content[0]&&data.content[0].text)||'';
-  if(!html)throw new Error('Empty');
   return html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
 }
-function showVariantFrame(v,html){
+function showVarFrame(v,html){
   var iframe=g('vframe-'+v),loading=g('vload-'+v);
-  var full='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:16px;line-height:1.5}</style></head><body>'+html+'</body></html>';
-  iframe.srcdoc=full;
-  iframe.onload=function(){try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+20)+'px';}catch(e){iframe.style.height='600px';}loading.style.display='none';iframe.style.display='block';};
+  var doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;padding:20px;line-height:1.5}</style></head><body>'+html+'</body></html>';
+  iframe.srcdoc=doc;
+  iframe.onload=function(){try{var h=iframe.contentDocument.body.scrollHeight;if(h>50)iframe.style.height=(h+24)+'px';}catch(e){iframe.style.height='700px';}loading.style.display='none';iframe.style.display='block';};
 }
-function switchVariant(v){activeVariant=v;['a','b','c'].forEach(function(x){g('vpane-'+x).classList.remove('show');g('vtab-'+x).classList.remove('on');});g('vpane-'+v).classList.add('show');g('vtab-'+v).classList.add('on');g('variant-viewing').textContent={a:'Design A',b:'Design B',c:'Design C'}[v];}
+function switchVar(v){
+  activeVar=v;['a','b','c'].forEach(function(x){g('vpane-'+x).classList.remove('show');g('vtab-'+x).classList.remove('on');});
+  g('vpane-'+v).classList.add('show');g('vtab-'+v).classList.add('on');
+  g('var-viewing').textContent={a:'Design A',b:'Design B',c:'Design C'}[v];
+}
 function useVariant(){
-  var html=variantResults[activeVariant];
-  if(!html){alert('This design is still generating. Please wait.');return;}
+  var html=varResults[activeVar];if(!html){alert('Still generating. Please wait.');return;}
   var page=project.pages.find(function(p){return p.id===selId;});if(!page)return;
   page.generatedHTML=html;page.status=page.approved?'approved':'ready';
-  saveProject();updateRow(page.id);updateProgress();showIframe(html);g('paste-guide').classList.add('show');closeVariations();
+  saveProject();updateRow(page.id);updateProgress();showIframe(html);g('paste-guide').classList.add('show');
+  closeVariants();
 }
-function closeVariations(){g('variant-overlay').classList.remove('show');document.body.style.overflow='';}
-
-// ── ZIP ──────────────────────────────────────────────────────
-async function downloadZip(){
-  var approved=project.pages.filter(function(p){return p.approved&&p.generatedHTML;});
-  if(!approved.length){alert('No approved pages yet.');return;}
-  var btn=g('btn-zip');btn.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> Preparing...';btn.disabled=true;
-  var zip=new JSZip(),folder=zip.folder('sharepoint-pages');
-  approved.forEach(function(page){folder.file(page.title.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'.html','<!-- '+page.title+' -->\n<!-- Paste into SharePoint Embed web part -->\n\n'+page.generatedHTML);});
-  folder.file('README.txt','SchoolPage Builder\nSchool: '+project.schoolName+'\nExported: '+new Date().toLocaleDateString()+'\n\nHOW TO USE:\n1. Edit your SharePoint page\n2. Add Embed web part\n3. Paste HTML from matching file\n4. Republish');
-  try{var blob=await zip.generateAsync({type:'blob'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(project.schoolName.replace(/[^a-z0-9]/gi,'_').toLowerCase()||'school')+'_pages.zip';document.body.appendChild(a);a.click();document.body.removeChild(a);}
-  catch(e){alert('ZIP failed: '+e.message);}
-  btn.innerHTML='<i class="fa-solid fa-file-zipper"></i> Download ZIP';btn.disabled=false;
-}
-
-// ── HELPERS ──────────────────────────────────────────────────
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function escAttr(s){return(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-function shortUrl(url){try{return new URL(url).pathname;}catch(e){return url;}}
+function closeVariants(){g('var-sheet').classList.remove('show');document.body.style.overflow='';}
 </script>
 </body>
 </html>
