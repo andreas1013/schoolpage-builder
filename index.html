@@ -203,44 +203,49 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 ══════════════════════════════════════════ */
 #s-main{flex-direction:row}
 
-/* LEFT */
-#ws-left{width:256px;min-width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.wl-hd{padding:14px 16px 10px;flex-shrink:0}
+/* LEFT PANEL */
+#ws-left{width:268px;min-width:240px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.wl-hd{padding:12px 14px 10px;flex-shrink:0;border-bottom:1px solid var(--border)}
 .wl-school{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wl-progress{font-size:10px;color:var(--ink3)}
 .wl-prog-bar{height:3px;background:var(--border-m);border-radius:3px;margin-top:6px;overflow:hidden}
 .wl-prog-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease}
+.wl-add-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;font-size:11px;font-weight:500;color:var(--blue);cursor:pointer;border-bottom:1px solid var(--border);background:var(--bg);transition:background .1s;border:none;width:100%;font-family:inherit;justify-content:flex-start}
+.wl-add-btn:hover{background:var(--blue-lt)}
 .disc-bar{background:var(--blue-lt);border-bottom:1px solid rgba(0,102,204,.12);padding:8px 12px;display:none;flex-shrink:0}
 .disc-bar.show{display:block}
 .disc-bar-t{font-size:11px;font-weight:600;color:var(--blue);margin-bottom:2px}
 .disc-bar-s{font-size:10px;color:var(--blue);opacity:.8}
 .disc-bar-btn{margin-top:5px;padding:4px 10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+/* PAGE CARD LIST */
 #tree{flex:1;overflow-y:auto}
 #tree::-webkit-scrollbar{width:3px}
 #tree::-webkit-scrollbar-thumb{background:var(--border-m);border-radius:3px}
-.tsec{border-bottom:1px solid var(--border)}
-.tpar{display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;transition:background .1s}
-.tpar:hover{background:var(--bg)}
-.tpar.sel{background:var(--blue-lt)}
-.tpar.sel .ttitle{color:var(--blue);font-weight:600}
-.tchev{font-size:8px;color:var(--ink4);width:10px;flex-shrink:0;display:flex;align-items:center;transition:transform .15s}
-.tchev.open{transform:rotate(90deg)}
-.ticon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
-.ttitle{font-size:11px;font-weight:500;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pg-group{padding:0}
+.pg-group-hd{padding:6px 14px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink4);background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1}
+.pcard{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border)}
+.pcard:hover{background:var(--bg)}
+.pcard.sel{background:var(--blue-lt);border-left:3px solid var(--blue);padding-left:9px}
+.pcard-thumb{width:44px;height:30px;border-radius:5px;background:var(--bg);border:1px solid var(--border-m);overflow:hidden;flex-shrink:0;position:relative}
+.pcard-thumb iframe{width:400%;height:400%;transform:scale(.25);transform-origin:top left;border:none;pointer-events:none}
+.pcard-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink4)}
+.pcard-info{flex:1;min-width:0}
+.pcard-title{font-size:11px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.pcard.sel .pcard-title{color:var(--blue)}
+.pcard-status{font-size:9px;color:var(--ink4);margin-top:1px;display:flex;align-items:center;gap:4px}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;display:inline-block}
 .sdot.pending{background:var(--border-m)}
 .sdot.scraping,.sdot.generating{background:#93C5FD;animation:pulse 1s infinite}
 .sdot.ready{background:var(--amber)}
 .sdot.approved{background:var(--green)}
 .sdot.edited{background:var(--purple)}
 .sdot.error{background:var(--red)}
-.tkids{display:none}
-.tkids.open{display:block}
-.tchild{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 26px;cursor:pointer;border-top:1px solid var(--border);transition:background .1s}
-.tchild:hover{background:var(--bg)}
-.tchild.sel{background:var(--blue-lt)}
-.tchild.sel .tctitle{color:var(--blue);font-weight:600}
-.tctitle{font-size:10px;font-weight:500;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* validation badge */
+.val-badge{font-size:8px;padding:1px 5px;border-radius:8px;font-weight:600;margin-left:4px}
+.val-ok{background:var(--green-lt);color:#1A7A35}
+.val-warn{background:var(--amber-lt);color:#7A4600}
+.val-err{background:var(--red-lt);color:#CC2200}
+/* gen footer */
 .wl-ft{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface)}
 .gen-hint{font-size:9px;color:var(--ink4);text-align:center;margin-bottom:6px}
 #btn-gen-next{width:100%;padding:9px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:none;align-items:center;justify-content:center;gap:5px}
@@ -391,6 +396,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 #btn-use-var:hover{opacity:.9}
 #btn-var-back{padding:11px 16px;background:none;border:1px solid var(--border-m);border-radius:var(--rs);font-family:inherit;font-size:12px;color:var(--ink3);cursor:pointer;display:flex;align-items:center;gap:5px}
 .var-hint{flex:1;font-size:11px;color:var(--ink3)}
+
+/* ── STYLE PROMPT BANNER ── */
+#style-prompt{display:none;padding:10px 16px;background:linear-gradient(135deg,#E8F2FF,#D0E4FF);border-bottom:1px solid rgba(0,102,204,.15);flex-shrink:0;align-items:center;gap:10px}
+#style-prompt.show{display:flex}
+.sp-text{font-size:12px;color:#003A8C;flex:1;font-weight:500;line-height:1.4}
+.sp-text strong{font-weight:700}
+#btn-sp-try{padding:7px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+#btn-sp-try:hover{background:#0055AA}
+#btn-sp-dismiss{background:none;border:none;color:#003A8C;cursor:pointer;font-size:18px;padding:0 4px;opacity:.5;line-height:1}
+#btn-sp-dismiss:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -555,6 +570,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
       <div class="wl-progress" id="wl-progress">0 of 0 approved</div>
       <div class="wl-prog-bar"><div class="wl-prog-fill" id="wl-prog-fill" style="width:0%"></div></div>
     </div>
+    <button class="wl-add-btn" onclick="showAddPages()">
+      <i class="fa-solid fa-plus" style="font-size:10px"></i> Add more pages
+    </button>
     <div class="disc-bar" id="disc-bar">
       <div class="disc-bar-t" id="disc-t">Sub-pages found!</div>
       <div class="disc-bar-s" id="disc-s"></div>
@@ -568,6 +586,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
   </div>
   <div id="ws-right">
     <div id="style-strip"><div class="ss-label">Style</div></div>
+    <div id="style-prompt">
+      <span class="sp-text"><strong>First page done!</strong> Want to see it in all 3 design styles before continuing?</span>
+      <button id="btn-sp-try" onclick="openVariants();dismissStylePrompt()"><i class="fa-solid fa-wand-magic-sparkles"></i> Try all 3 styles</button>
+      <button id="btn-sp-dismiss" onclick="dismissStylePrompt()" title="Dismiss">&times;</button>
+    </div>
     <div id="page-bar">
       <div class="page-title" id="page-title">Select a page</div>
       <button class="pbar-btn" id="btn-copy" onclick="copyHtml()"><i class="fa-solid fa-copy"></i> Copy HTML</button>
@@ -1271,6 +1294,12 @@ function startFromOnboarding(){
 }
 
 // ── SAVE/LOAD ────────────────────────────────────────────────────
+function showAddPages(){
+  // Go back to page selector with existing project
+  navPages=[];g('scrape-url').value=project.siteUrl||'';
+  showScreen('s-pages');
+}
+
 function saveProject(){
   project.schoolName=gv('school-name')||project.schoolName;
   project.template=project.template||'heritage';
@@ -1437,65 +1466,162 @@ function startProject(){
 }
 
 // ── PAGE TREE ────────────────────────────────────────────────────
-function buildTree(pages){
-  var byUrl={};pages.forEach(function(p){byUrl[p.url]={page:p,children:[]};});
-  var roots=[];
-  pages.forEach(function(p){
-    var node=byUrl[p.url],found=false,u=p.url.replace(/\/$/,'');
-    while(u.includes('/')&&!found){
-      var par=u.substring(0,u.lastIndexOf('/'));
-      if(byUrl[par]&&byUrl[par].page.id!==p.id){byUrl[par].children.push(node);found=true;break;}
-      if(byUrl[par+'/']&&byUrl[par+'/'].page.id!==p.id){byUrl[par+'/'].children.push(node);found=true;break;}
-      u=par;
-    }
-    if(!found)roots.push(node);
-  });
-  return roots;
+// ── PAGE CARD LIST ──────────────────────────────────────────────
+// Groups pages by topic inferred from URL path segments or title keywords
+function inferGroup(page){
+  try{
+    var parts = new URL(page.url).pathname.split('/').filter(Boolean);
+    if(parts.length > 1) return parts[0].replace(/-/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();});
+  }catch(e){}
+  // Fallback: infer from title keywords
+  var title = page.title.toLowerCase();
+  if(/about|principal|vision|mission|staff|history/.test(title)) return 'About';
+  if(/curriculum|subject|program|learn|study|course/.test(title)) return 'Curriculum';
+  if(/sport|activity|extra|club|music|art/.test(title)) return 'Extra-curricular';
+  if(/enrol|admission|enlist|apply/.test(title)) return 'Enrolments';
+  if(/news|event|notice|update|calendar/.test(title)) return 'News & Events';
+  if(/contact|location|map|direct/.test(title)) return 'Contact';
+  if(/parent|family|communit/.test(title)) return 'Community';
+  return 'General';
 }
+
 function renderTree(){
-  var t=g('tree');t.innerHTML='';
-  buildTree(project.pages).forEach(function(n){renderNode(n,t);});
+  var t = g('tree'); if(!t) return;
+  t.innerHTML = '';
+  var approved = project.pages.filter(function(p){return p.approved;}).length;
+  g('wl-school').textContent = project.schoolName;
+  g('wl-progress').textContent = approved + ' of ' + project.pages.length + ' approved';
+  var pct = project.pages.length > 0 ? Math.round(approved/project.pages.length*100) : 0;
+  g('wl-prog-fill').style.width = pct + '%';
+
+  // Group pages
+  var groups = {}, groupOrder = [];
+  project.pages.forEach(function(page){
+    var grp = inferGroup(page);
+    if(!groups[grp]){ groups[grp] = []; groupOrder.push(grp); }
+    groups[grp].push(page);
+  });
+
+  groupOrder.forEach(function(grp){
+    var gDiv = document.createElement('div');
+    gDiv.className = 'pg-group';
+    var hd = document.createElement('div');
+    hd.className = 'pg-group-hd';
+    hd.textContent = grp;
+    gDiv.appendChild(hd);
+    groups[grp].forEach(function(page){
+      gDiv.appendChild(buildPageCard(page));
+    });
+    t.appendChild(gDiv);
+  });
+
   updateGenBtn();
 }
-function renderNode(node,container){
-  var page=node.page,hasKids=node.children.length>0,isSel=page.id===selId;
-  var wrap=document.createElement('div');wrap.className='tsec';wrap.id='tsec'+page.id;
-  var row=document.createElement('div');row.className='tpar'+(isSel?' sel':'');row.id='prow'+page.id;
-  row.innerHTML='<span class="tchev" id="chev'+page.id+'">'+(hasKids?'<i class="fa-solid fa-chevron-right" style="font-size:7px"></i>':'')+'</span>'
-    +'<div class="ticon" style="background:'+stBg(page.status)+'">'+stIco(page.status)+'</div>'
-    +'<span class="ttitle">'+esc(page.title)+'</span>'
-    +'<span class="sdot '+page.status+'"></span>';
-  row.onclick=function(){if(hasKids)toggleKids(page.id);selectPage(page.id);};
-  wrap.appendChild(row);
-  if(hasKids){
-    var kids=document.createElement('div');kids.className='tkids';kids.id='kids'+page.id;
-    node.children.forEach(function(ch){renderChild(ch,kids);});
-    wrap.appendChild(kids);
+
+function buildPageCard(page){
+  var isSel = page.id === selId;
+  var card = document.createElement('div');
+  card.className = 'pcard' + (isSel ? ' sel' : '');
+  card.id = 'prow' + page.id;
+  card.onclick = function(){ selectPage(page.id); };
+
+  // Thumbnail
+  var thumb = document.createElement('div');
+  thumb.className = 'pcard-thumb';
+  thumb.id = 'pthumb' + page.id;
+  if(page.generatedHTML){
+    var iframe = document.createElement('iframe');
+    iframe.sandbox = 'allow-same-origin';
+    iframe.scrolling = 'no';
+    iframe.style.cssText = 'width:400%;height:400%;transform:scale(.25);transform-origin:top left;border:none;pointer-events:none';
+    var doc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:8px;font-family:Arial,sans-serif;line-height:1.3;font-size:6px}</style></head><body>' + page.generatedHTML + '</body></html>';
+    iframe.srcdoc = doc;
+    thumb.appendChild(iframe);
+  } else {
+    var ph = document.createElement('div');
+    ph.className = 'pcard-thumb-placeholder';
+    ph.innerHTML = stPlaceholderIcon(page.status);
+    thumb.appendChild(ph);
   }
-  container.appendChild(wrap);
+  card.appendChild(thumb);
+
+  // Info
+  var info = document.createElement('div');
+  info.className = 'pcard-info';
+
+  var title = document.createElement('span');
+  title.className = 'pcard-title';
+  title.textContent = page.title;
+  info.appendChild(title);
+
+  var status = document.createElement('div');
+  status.className = 'pcard-status';
+  status.id = 'pstatus' + page.id;
+  status.innerHTML = statusRow(page);
+  info.appendChild(status);
+
+  card.appendChild(info);
+  return card;
 }
-function renderChild(node,container){
-  var page=node.page,isSel=page.id===selId;
-  var row=document.createElement('div');row.className='tchild'+(isSel?' sel':'');row.id='prow'+page.id;
-  row.innerHTML='<span class="sdot '+page.status+'" style="flex-shrink:0"></span><span class="tctitle">'+esc(page.title)+'</span>';
-  row.onclick=function(){selectPage(page.id);};
-  container.appendChild(row);
-}
-function toggleKids(id){var k=g('kids'+id),ch=g('chev'+id);if(k){k.classList.toggle('open');if(ch)ch.classList.toggle('open');}}
-function openParentOf(page){
-  var u=page.url.replace(/\/$/,'');
-  while(u.includes('/')){
-    var par=u.substring(0,u.lastIndexOf('/'));
-    var p=project.pages.find(function(p){return p.url===par||p.url===par+'/';});
-    if(p){var k=g('kids'+p.id),ch=g('chev'+p.id);if(k&&!k.classList.contains('open')){k.classList.add('open');if(ch)ch.classList.add('open');}break;}
-    u=par;
+
+function statusRow(page){
+  var label = stLabel(page.status);
+  var dot = '<span class="sdot ' + page.status + '"></span>';
+  var val = '';
+  if(page.lastValidation && page.generatedHTML){
+    if(page.lastValidation.score >= 95) val = '<span class="val-badge val-ok">✓ ' + page.lastValidation.score + '%</span>';
+    else if(page.lastValidation.score >= 75) val = '<span class="val-badge val-warn">⚠ ' + page.lastValidation.score + '%</span>';
+    else if(page.lastValidation.score < 75) val = '<span class="val-badge val-err">✗ ' + page.lastValidation.score + '%</span>';
   }
+  return dot + ' <span>' + label + '</span>' + val;
 }
+
+function stPlaceholderIcon(status){
+  if(status==='pending') return '<i class="fa-regular fa-file" style="font-size:11px;color:var(--ink4)"></i>';
+  if(status==='generating'||status==='scraping') return '<i class="fa-solid fa-rotate fa-spin" style="font-size:11px;color:#93C5FD"></i>';
+  if(status==='ready') return '<i class="fa-solid fa-star" style="font-size:11px;color:var(--amber)"></i>';
+  if(status==='approved') return '<i class="fa-solid fa-check" style="font-size:11px;color:var(--green)"></i>';
+  if(status==='error') return '<i class="fa-solid fa-triangle-exclamation" style="font-size:11px;color:var(--red)"></i>';
+  return '<i class="fa-regular fa-file" style="font-size:11px;color:var(--ink4)"></i>';
+}
+
+function stLabel(s){
+  return{pending:'Not generated yet',generating:'Generating...',scraping:'Loading from website...',
+    ready:'Ready to review',approved:'Approved',edited:'Edited',error:'Generation failed'}[s]||s;
+}
+function stBg(s){return{pending:'#F5F5F7',generating:'#E8F2FF',scraping:'#E8F2FF',ready:''+(function(){return'#FFF5E6';})(),approved:'#E8F8EC',edited:'#F5EEFA',error:'#FFF0EF'}[s]||'#F5F5F7';}
+function stIco(s){return{pending:'<i class="fa-regular fa-circle" style="font-size:8px;color:#AEAEB2"></i>',generating:'<i class="fa-solid fa-rotate fa-spin" style="font-size:8px;color:#0066CC"></i>',scraping:'<i class="fa-solid fa-rotate fa-spin" style="font-size:8px;color:#0066CC"></i>',ready:'<i class="fa-solid fa-star" style="font-size:8px;color:#FF9500"></i>',approved:'<i class="fa-solid fa-check" style="font-size:8px;color:#34C759"></i>',edited:'<i class="fa-solid fa-pencil" style="font-size:8px;color:#AF52DE"></i>',error:'<i class="fa-solid fa-triangle-exclamation" style="font-size:8px;color:#FF3B30"></i>'}[s]||'';}
+
+
 function updateRow(id){
-  var page=project.pages.find(function(p){return p.id===id;});if(!page)return;
-  var row=g('prow'+id);if(!row)return;
-  var dot=row.querySelector('.sdot');if(dot)dot.className='sdot '+page.status;
-  var ico=row.querySelector('.ticon');if(ico){ico.style.background=stBg(page.status);ico.innerHTML=stIco(page.status);}
+  var page = project.pages.find(function(p){return p.id===id;}); if(!page) return;
+  var card = g('prow'+id); if(!card) return;
+
+  // Update status row
+  var statusEl = g('pstatus'+id);
+  if(statusEl) statusEl.innerHTML = statusRow(page);
+
+  // Update thumbnail — if page now has HTML, swap placeholder for iframe
+  var thumb = g('pthumb'+id);
+  if(thumb && page.generatedHTML && !thumb.querySelector('iframe')){
+    thumb.innerHTML = '';
+    var iframe = document.createElement('iframe');
+    iframe.sandbox = 'allow-same-origin';
+    iframe.scrolling = 'no';
+    iframe.style.cssText = 'width:400%;height:400%;transform:scale(.25);transform-origin:top left;border:none;pointer-events:none';
+    var doc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{padding:8px;font-family:Arial,sans-serif;line-height:1.3;font-size:6px}</style></head><body>' + page.generatedHTML + '</body></html>';
+    iframe.srcdoc = doc;
+    thumb.appendChild(iframe);
+  } else if(thumb && !page.generatedHTML){
+    var ph = thumb.querySelector('.pcard-thumb-placeholder');
+    if(ph) ph.innerHTML = stPlaceholderIcon(page.status);
+  }
+
+  // Update progress bar
+  var approved = project.pages.filter(function(p){return p.approved;}).length;
+  var total = project.pages.length;
+  var prog = g('wl-progress'); if(prog) prog.textContent = approved + ' of ' + total + ' approved';
+  var fill = g('wl-prog-fill'); if(fill) fill.style.width = (total>0?Math.round(approved/total*100):0) + '%';
 }
 function stBg(s){return{pending:'#F5F5F7',generating:'#E8F2FF',scraping:'#E8F2FF',ready:''+(function(){return'#FFF5E6';})(),approved:'#E8F8EC',edited:'#F5EEFA',error:'#FFF0EF'}[s]||'#F5F5F7';}
 function stIco(s){return{pending:'<i class="fa-regular fa-circle" style="font-size:8px;color:#AEAEB2"></i>',generating:'<i class="fa-solid fa-rotate fa-spin" style="font-size:8px;color:#0066CC"></i>',scraping:'<i class="fa-solid fa-rotate fa-spin" style="font-size:8px;color:#0066CC"></i>',ready:'<i class="fa-solid fa-star" style="font-size:8px;color:#FF9500"></i>',approved:'<i class="fa-solid fa-check" style="font-size:8px;color:#34C759"></i>',edited:'<i class="fa-solid fa-pencil" style="font-size:8px;color:#AF52DE"></i>',error:'<i class="fa-solid fa-triangle-exclamation" style="font-size:8px;color:#FF3B30"></i>'}[s]||'';}
@@ -1536,7 +1662,7 @@ async function genThisPage(){
   try{var sr=await fetch(WORKER+'/scrape-page',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:page.url})});var sd=await sr.json();if(sd.success){page.rawHtml=sd.rawHtml||'';page.localNav=sd.localNav||[];if(sd.title&&sd.title!==page.title)page.title=sd.title;if(page.localNav.length>0)offerSubPages(page);}}catch(e){page.rawHtml='';page.localNav=[];}
   page.status='generating';saveProject();updateRow(page.id);showLoading('AI is creating your new design…');
   try{page.generatedHTML=await genHtml(page);page.status='ready';page.error='';}catch(e){page.status='error';page.error=e.message;}
-  saveProject();updateRow(page.id);selectPage(page.id);updateProgress();isGen=false;updateGenBtn();
+  saveProject();updateRow(page.id);selectPage(page.id);updateProgress();isGen=false;updateGenBtn();showStylePromptIfFirstPage();
 }
 
 async function processNext(){
@@ -1549,15 +1675,95 @@ async function processNext(){
   saveProject();updateRow(page.id);if(selId===page.id)selectPage(page.id);updateProgress();isGen=false;updateGenBtn();
 }
 
+// ── INVENTORY ────────────────────────────────────────────────────
+function extractInventory(rawHtml){
+  if(!rawHtml) return {headings:[],links:[],images:[],tiles:0};
+  var headings=[],links=[],images=[],m;
+  var hRe=/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi;
+  while((m=hRe.exec(rawHtml))!==null){
+    var t=m[1].replace(/<[^>]+>/g,'').trim();
+    if(t&&t.length>1&&t.length<120) headings.push(t);
+  }
+  var lRe=/href="(https?:[^"]+)"/gi;
+  while((m=lRe.exec(rawHtml))!==null){if(links.indexOf(m[1])<0)links.push(m[1]);}
+  var iRe=/src="(https?:[^"]+\.(jpg|jpeg|png|gif|svg|webp|JPG|PNG)[^"]*)"/gi;
+  while((m=iRe.exec(rawHtml))!==null){if(images.indexOf(m[1])<0)images.push(m[1]);}
+  var tiles=(rawHtml.match(/<li[\s>]/gi)||[]).length;
+  return {headings:headings.slice(0,20),links:links.slice(0,30),images:images.slice(0,15),tiles:tiles};
+}
+
+function validateOutput(html,inv){
+  if(!inv||(!inv.headings.length&&!inv.links.length&&!inv.images.length)) return {isValid:true,missing:{headings:[],links:[],images:[]},truncated:false,score:100};
+  var missing={headings:[],links:[],images:[]};
+  inv.headings.forEach(function(hd){if(html.indexOf(hd)<0) missing.headings.push(hd);});
+  inv.links.forEach(function(l){if(html.indexOf(l)<0) missing.links.push(l);});
+  inv.images.forEach(function(i){if(html.indexOf(i)<0) missing.images.push(i);});
+  // Truncation check — well-formed HTML ends with a closing tag
+  var trimmed=html.trim();
+  var truncated=!/(<\/div>|<\/section>|<\/article>|<\/main>)\s*$/.test(trimmed);
+  var totalItems=inv.headings.length+inv.links.length+inv.images.length;
+  var missingCount=missing.headings.length+missing.links.length+missing.images.length;
+  var score=totalItems>0?Math.round((1-missingCount/totalItems)*100):100;
+  var isValid=score>=80&&!truncated;
+  return {isValid:isValid,missing:missing,truncated:truncated,score:score};
+}
+
+async function correctionPass(page,tpl,pri,sec,html,validation){
+  var parts=['The generated page is missing content. Fix it — add the missing elements WITHOUT removing anything existing.',''];
+  if(validation.truncated) parts.push('⚠ THE HTML IS TRUNCATED — complete it properly to a closing </div>','');
+  if(validation.missing.headings.length) parts.push('MISSING HEADINGS — add these back:\n'+validation.missing.headings.join('\n'),'');
+  if(validation.missing.links.length) parts.push('MISSING LINKS — these hrefs must appear:\n'+validation.missing.links.join('\n'),'');
+  if(validation.missing.images.length) parts.push('MISSING IMAGES — these srcs must appear:\n'+validation.missing.images.join('\n'),'');
+  parts.push('','CURRENT HTML TO FIX:','--- START ---',html,'--- END ---','','Return the COMPLETE corrected HTML only. No explanation.');
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:6000,
+      system:sysPrompt(tpl,pri,sec),
+      messages:[{role:'user',content:parts.join('\n')}]})});
+  if(!res.ok) return html; // if correction fails, keep original
+  var data=await res.json();
+  var fixed=(data.content&&data.content[0]&&data.content[0].text)||'';
+  return fixed?fixed.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim():html;
+}
+
+// ── GENERATION PIPELINE ──────────────────────────────────────────
 async function genHtml(page){
   var tpl=TEMPLATES[project.template]||TEMPLATES.heritage;
   var pri=project.primaryColor,sec=project.accentColor;
-  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:4096,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)}]})});
-  if(!res.ok)throw new Error('API '+res.status);
+
+  // Step 1: build inventory from scraped content
+  var inv=extractInventory(page.rawHtml);
+  page.inventory=inv; // store for reference
+
+  // Step 2: generate
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:4096,
+      system:sysPrompt(tpl,pri,sec,inv),
+      messages:[{role:'user',content:userPrompt(page,inv)}]})});
+  if(!res.ok) throw new Error('API '+res.status);
   var data=await res.json();
   var html=(data.content&&data.content[0]&&data.content[0].text)||'';
-  if(!html)throw new Error('No content');
-  return html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+  if(!html) throw new Error('No content returned');
+  html=html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+
+  // Step 3: validate
+  var validation=validateOutput(html,inv);
+  page.lastValidation=validation; // store for UI
+
+  // Step 4: auto-correct if needed
+  if(!validation.isValid&&inv.headings.length+inv.links.length>0){
+    updateGenStatus(page.id,'Fixing missing content ('+validation.score+'% complete)...');
+    html=await correctionPass(page,tpl,pri,sec,html,validation);
+    // Re-validate after correction
+    page.lastValidation=validateOutput(html,inv);
+  }
+
+  return html;
+}
+
+function updateGenStatus(id,msg){
+  var row=g('prow'+id);
+  if(row){var t=row.querySelector('.pcard-title');if(t)t.title=msg;}
+  var hint=g('genhint');if(hint)hint.textContent=msg;
 }
 
 function sysPrompt(tpl,pri,sec){
@@ -1567,29 +1773,91 @@ function sysPrompt(tpl,pri,sec){
   var fontImport = googleFont ? "@import url('" + googleFont + "');" : '';
   var fontStack = headingFont ? headingFont + ', Georgia, serif' : 'Georgia, serif';
   var bodyStack = bodyFont ? bodyFont + ', Arial, sans-serif' : 'Arial, Helvetica, sans-serif';
-  return 'You redesign Australian school website pages as SharePoint Embed HTML fragments.\n\nCONTENT RULE: Copy ALL text, links and images EXACTLY. Zero rewording. Every URL must be identical.\n\nOUTPUT: Raw HTML fragment only. No DOCTYPE/html/head/body tags. No script tags. No external fonts. System fonts only. One <style> block at top, CSS prefixed sp-. Output ONLY the HTML.\n\nACCESSIBILITY: WCAG 2.1 AA. Alt text on all images. Heading hierarchy h2→h3. Descriptive links. Visible focus styles.\n\nVISUAL IMPACT: The design must look DRAMATICALLY better than the original. Use the full design system. Every page must include the stat strip, decorative elements, and proper card/tile layouts even if inventing plausible placeholder values for stats.\n\n'+tpl.system(pri,sec);
+  var inv = arguments[3] || null;
+  var invSection = inv ? [
+    'CONTENT CHECKLIST — your output MUST contain ALL of these:',
+    inv.headings.length ? 'HEADINGS (' + inv.headings.length + '): ' + inv.headings.join(' | ') : '',
+    inv.links.length ? 'LINKS (' + inv.links.length + ') — every href must appear in output: ' + inv.links.slice(0,15).join(' ') : '',
+    inv.images.length ? 'IMAGES (' + inv.images.length + ') — every src must appear in output: ' + inv.images.slice(0,8).join(' ') : '',
+    inv.tiles > 0 ? 'TILES/LIST ITEMS: source had ' + inv.tiles + ' — recreate all of them' : '',
+    'Validator will check every item above. Missing items = automatic correction pass.',
+    ''
+  ].filter(Boolean).join('\n') : '';
+
+  return [
+    'You redesign Australian school website pages as SharePoint Embed HTML fragments.',
+    '',
+    '═══ NEVER DO — HARD RULES (these break SharePoint) ═══',
+    '❌ No <script> tags — SharePoint strips them silently, breaking layout',
+    '❌ No <link> stylesheets — blocked by SharePoint CSP',
+    '❌ No <form> elements — SharePoint blocks form submission from Embed',
+    '❌ No <iframe> elements — nested iframes break in SharePoint',
+    '❌ No position:fixed or position:sticky — breaks inside SharePoint embed context',
+    '❌ No vh or vw units — the embed box has no viewport reference',
+    '❌ No z-index above 100 — conflicts with SharePoint navigation overlays',
+    '❌ No CSS custom properties (var(--x)) — IE11 compatibility for some DET schools',
+    '❌ No !important overrides — SharePoint own CSS wins regardless',
+    '❌ Never invent contact details, phone numbers, email addresses, staff names',
+    '❌ Never change dates, times, prices or statistics from source',
+    '❌ Never remove a link that exists in the source',
+    '❌ Never change an href or src URL — copy them character-for-character',
+    '❌ Never add enrolment CTAs not in source — Queensland DET policy',
+    '❌ Never truncate — output the COMPLETE page, every tile, every link',
+    '',
+    '═══ ALWAYS DO ═══',
+    '✓ One <style> block at the very top, all CSS class names prefixed sp-',
+    '✓ External fonts via @import inside <style> only (not <link>)',
+    '✓ Minimum 14px body text, 18px headings — DET accessibility requirement',
+    '✓ All images must have descriptive alt text — WCAG AA',
+    '✓ All interactive elements need visible :focus outline — WCAG AA',
+    '✓ Heading hierarchy: h2 for sections, h3 for sub-sections',
+    '✓ Semantic HTML: ul/li for lists, table/th/td for data tables',
+    '✓ Colour contrast minimum 4.5:1 for body text on backgrounds',
+    '✓ All external links: target="_blank" rel="noopener"',
+    '✓ Max wrapper width 900px — SharePoint adds its own page padding',
+    '',
+    '═══ OUTPUT FORMAT ═══',
+    'Raw HTML fragment ONLY — no DOCTYPE, html, head, body tags',
+    'Output the HTML immediately — no preamble, no explanation, no markdown fences',
+    'End with a proper closing </div> — do not truncate mid-content',
+    '',
+    fontImport ? '═══ SCHOOL TYPOGRAPHY (USE THESE) ═══' : '',
+    fontImport ? fontImport + ' ← include this @import in your <style> block' : '',
+    fontImport ? 'Heading font: ' + fontStack : '',
+    fontImport ? 'Body font: ' + bodyStack : '',
+    '',
+    '═══ DESIGN SYSTEM ═══',
+    invSection,
+    tpl.system(pri, sec)
+  ].filter(function(l){return l!==false&&l!==null&&l!==undefined;}).join('\n');
 }
 
-function userPrompt(page){
+function userPrompt(page, inv){
+  var invChecklist = '';
+  if(inv && (inv.headings.length||inv.links.length||inv.images.length||inv.tiles>0)){
+    var parts = ['YOUR OUTPUT MUST CONTAIN ALL OF THE FOLLOWING:'];
+    if(inv.headings.length) parts.push('ALL ' + inv.headings.length + ' HEADINGS: ' + inv.headings.join(' | '));
+    if(inv.links.length)    parts.push('ALL ' + inv.links.length + ' LINKS — exact href values: ' + inv.links.slice(0,20).join(' '));
+    if(inv.images.length)   parts.push('ALL ' + inv.images.length + ' IMAGES — exact src values: ' + inv.images.slice(0,10).join(' '));
+    if(inv.tiles>0)         parts.push('ALL ' + inv.tiles + ' LIST/TILE ITEMS — recreate every single one');
+    invChecklist = parts.join('\n') + '\n\n';
+  }
   return [
-    'Redesign this page for '+project.schoolName+'.',
-    'PAGE TITLE: '+page.title,
+    'Redesign this page for ' + project.schoolName + '.',
+    'PAGE TITLE: ' + page.title,
     '',
-    'CRITICAL RULES:',
-    '1. Copy ALL source content EXACTLY — every word, every link href, every image src',
-    '2. Do NOT truncate or cut off any content — output the COMPLETE page',
-    '3. If source content is sparse, ADD realistic placeholder sections using the template design system',
-    '4. Every page MUST include: hero, body text, at least one card/tile section, stats strip, callout, footer strip',
+    invChecklist,
+    'RULES:',
+    '1. Copy ALL source text EXACTLY — not one word changed',
+    '2. Every link href and image src must be identical to source',
+    '3. Do NOT stop early — output the complete page including all tiles/cards/links',
+    '4. If source content is sparse, add realistic school placeholder sections',
+    '5. Wrap in: <div style="max-width:900px;margin:0 auto;font-family:' + (project.bodyFont||'Arial,Helvetica') + ',sans-serif">',
     '',
-    'SOURCE HTML (copy all content from this):',
+    'SOURCE HTML:',
     '--- START ---',
-    (page.rawHtml&&page.rawHtml.trim() ? page.rawHtml : '(No content scraped — generate a complete professional page for: '+page.title+')'),
-    '--- END ---',
-    '',
-    'Wrap everything in: <div style="max-width:900px;margin:0 auto">',
-    'All external links: target="_blank"',
-    'Use exact URLs from source — do not modify any href or src values',
-    'Output the COMPLETE HTML — do not stop early'
+    (page.rawHtml && page.rawHtml.trim() ? page.rawHtml : '(No content — generate a complete professional placeholder for: ' + page.title + ')'),
+    '--- END ---'
   ].join('\n');
 }
 
@@ -1853,9 +2121,21 @@ function switchVar(v){
 function useVariant(){
   var html=varResults[activeVar];if(!html){alert('Still generating. Please wait.');return;}
   var page=project.pages.find(function(p){return p.id===selId;});if(!page)return;
+  // Apply selected template as the project template
+  var tplMap={a:project.template,b:Object.keys(TEMPLATES)[1]||'metro',c:Object.keys(TEMPLATES)[2]||'canvas'};
+  if(activeVar!=='a'&&tplMap[activeVar]){applyTemplate(tplMap[activeVar]);}
   page.generatedHTML=html;page.status=page.approved?'approved':'ready';
   saveProject();updateRow(page.id);updateProgress();showIframe(html);g('paste-guide').classList.add('show');
   closeVariants();
+}
+
+function dismissStylePrompt(){g('style-prompt').classList.remove('show');}
+
+function showStylePromptIfFirstPage(){
+  var done=project.pages.filter(function(p){return p.generatedHTML;});
+  if(done.length===1&&!project.stylePromptDismissed){
+    g('style-prompt').classList.add('show');
+  }
 }
 function closeVariants(){g('var-sheet').classList.remove('show');document.body.style.overflow='';}
 </script>
