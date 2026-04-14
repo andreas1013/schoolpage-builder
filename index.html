@@ -1008,6 +1008,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     </div>
     <div id="page-sel">
       <div class="psel-hd"><span class="psel-lbl" id="psel-lbl">0 pages found</span><span class="psel-all" onclick="psAll()">Select all</span></div>
+      <div style="padding:7px 14px;background:#FFFBEB;border-bottom:1px solid #FDE68A;font-size:10px;color:#92400E;display:flex;align-items:center;gap:6px">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#D97706;flex-shrink:0"></i>
+        <span>The <strong>homepage</strong> is managed by Queensland Education and has been excluded. Only inner pages can be redesigned.</span>
+      </div>
       <div class="psel-list" id="psel-list"></div>
       <div class="psel-ft"><span class="psel-cnt" id="psel-cnt">0 selected</span><button id="btn-start" onclick="startRedesign()" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Redesign selected</button></div>
     </div>
@@ -1399,6 +1403,14 @@ async function findPages(){
     navPages = data.nav||[];
     if(!navPages.length) throw new Error('No pages found. The site may block automated access, or try a different URL.');
     project.siteUrl = url;
+    // Filter out the homepage — it is managed by Queensland Education and cannot be redesigned
+    var siteOrigin = data.origin || '';
+    navPages = navPages.filter(function(p){
+      var path = '';
+      try{ path = new URL(p.url).pathname; }catch(e){}
+      // Exclude homepage (root path or just the domain)
+      return path !== '/' && path !== '' && p.url !== url && p.url !== siteOrigin && p.url !== siteOrigin+'/';
+    });
     renderPageSel(navPages);
   }catch(e){
     g('sc-err').textContent = e.message;
