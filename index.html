@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SchoolPage Builder</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
 
 // ══════════════════════════════════════════════════════════
@@ -324,8 +325,8 @@ async function applyAddedContent(){
 
 // ── HELPERS ──
 function getFileIcon(ext){
-  var icons = {docx:'&#128196;',doc:'&#128196;',pdf:'&#128209;',pptx:'&#127912;',ppt:'&#127912;',txt:'&#128220;',csv:'&#128200;',jpg:'&#128247;',jpeg:'&#128247;',png:'&#128247;',webp:'&#128247;',gif:'&#128247;'};
-  return icons[ext]||'&#128196;';
+  var icons = {docx:'<i class="fa-solid fa-file-lines"></i>',doc:'<i class="fa-solid fa-file-lines"></i>',pdf:'<i class="fa-solid fa-file-pdf"></i>',pptx:'<i class="fa-solid fa-file-powerpoint"></i>',ppt:'<i class="fa-solid fa-file-powerpoint"></i>',txt:'<i class="fa-solid fa-file-lines"></i>',csv:'<i class="fa-solid fa-file-csv"></i>',jpg:'<i class="fa-solid fa-image"></i>',jpeg:'<i class="fa-solid fa-image"></i>',png:'<i class="fa-solid fa-image"></i>',webp:'<i class="fa-solid fa-image"></i>',gif:'<i class="fa-solid fa-image"></i>'};
+  return icons[ext]||'<i class="fa-solid fa-file-lines"></i>';
 }
 function formatSize(bytes){
   if(bytes<1024) return bytes+'B';
@@ -641,8 +642,8 @@ async function applyAddedContent(){
 
 // ── HELPERS ──
 function getFileIcon(ext){
-  var icons = {docx:'&#128196;',doc:'&#128196;',pdf:'&#128209;',pptx:'&#127912;',ppt:'&#127912;',txt:'&#128220;',csv:'&#128200;',jpg:'&#128247;',jpeg:'&#128247;',png:'&#128247;',webp:'&#128247;',gif:'&#128247;'};
-  return icons[ext]||'&#128196;';
+  var icons = {docx:'<i class="fa-solid fa-file-lines"></i>',doc:'<i class="fa-solid fa-file-lines"></i>',pdf:'<i class="fa-solid fa-file-pdf"></i>',pptx:'<i class="fa-solid fa-file-powerpoint"></i>',ppt:'<i class="fa-solid fa-file-powerpoint"></i>',txt:'<i class="fa-solid fa-file-lines"></i>',csv:'<i class="fa-solid fa-file-csv"></i>',jpg:'<i class="fa-solid fa-image"></i>',jpeg:'<i class="fa-solid fa-image"></i>',png:'<i class="fa-solid fa-image"></i>',webp:'<i class="fa-solid fa-image"></i>',gif:'<i class="fa-solid fa-image"></i>'};
+  return icons[ext]||'<i class="fa-solid fa-file-lines"></i>';
 }
 function formatSize(bytes){
   if(bytes<1024) return bytes+'B';
@@ -953,7 +954,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 
 <!-- TOP BAR -->
 <div id="topbar">
-  <div class="logo">School<em>Page</em> <span class="ver">v1.6</span></div>
+  <div class="logo">School<em>Page</em> <span class="ver">v1.7</span></div>
   <div class="tb-sep"></div>
   <input id="school-name" type="text" value="Western Cape College" oninput="saveProject()" placeholder="School name">
   <div class="tb-sep"></div>
@@ -962,11 +963,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     <div class="cpill"><div class="cdot" id="d-sec" style="background:#f07f24"><input type="color" id="c-sec" value="#f07f24" oninput="onColor()"></div>Accent</div>
   </div>
   <div class="tb-sep"></div>
-  <div id="tpl-pill" onclick="openTplModal()"><span class="tpl-swatch" id="tpl-swatch"></span><span id="tpl-pill-label">Heritage</span> &#9660;</div>
+  <div id="tpl-pill" onclick="openTplModal()"><i class="fa-solid fa-swatchbook" id="tpl-swatch" style="font-size:11px;color:var(--blue)"></i><span id="tpl-pill-label">Heritage</span> <i class="fa-solid fa-chevron-down" style="font-size:8px"></i></div>
   <div class="tb-r">
     <div class="pill-stat" id="prog-pill" style="display:none"><span class="n" id="prog-n">0</span>&nbsp;/&nbsp;<span id="prog-t">0</span>&nbsp;approved</div>
-    <button id="btn-zip" onclick="downloadZip()">&#128230; Download ZIP</button>
-    <button id="btn-new" onclick="resetProject()">&#43; New</button>
+    <button id="btn-zip" onclick="downloadZip()"><i class="fa-solid fa-file-zipper"></i> Download ZIP</button>
+    <button id="btn-new" onclick="resetProject()"><i class="fa-solid fa-plus"></i> New</button>
   </div>
 </div>
 
@@ -981,22 +982,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     <div id="disc-bar">
       <strong id="disc-title">Sub-pages found!</strong>
       <span id="disc-msg"></span><br>
-      <button class="disc-btn" onclick="addDiscovered()">+ Add to project</button>
+      <button class="disc-btn" onclick="addDiscovered()"><i class="fa-solid fa-plus"></i> Add to project</button>
     </div>
     <div id="tree"></div>
     <div id="left-ft">
       <div class="genhint" id="genhint">Ready</div>
-      <button id="btn-gen-next" onclick="genNext()">&#10024; Generate next page</button>
+      <button id="btn-gen-next" onclick="genNext()"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate next page</button>
     </div>
   </div>
 
   <!-- WELCOME -->
   <div id="welcome">
-    <div class="w-ico">&#127979;</div>
+    <div class="w-ico"></div>
     <div class="w-title">Redesign your school website</div>
     <div class="w-sub">Enter your school website address. We will scan all your pages, redesign them with your branding, and you review and approve each one.</div>
     <div class="scrape-box">
-      <h3>&#128269; Find your pages</h3>
+      <h3><i class="fa-solid fa-magnifying-glass"></i> Find your pages</h3>
       <p>Enter your school website address. We will scan and find all the pages.</p>
       <div class="url-row">
         <input type="url" id="scrape-url" placeholder="https://westerncapecollege.eq.edu.au" oninput="onUrlChange()">
@@ -1008,7 +1009,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     <div id="page-sel">
       <div class="psel-hd"><span class="psel-lbl" id="psel-lbl">0 pages found</span><span class="psel-all" onclick="psAll()">Select all</span></div>
       <div class="psel-list" id="psel-list"></div>
-      <div class="psel-ft"><span class="psel-cnt" id="psel-cnt">0 selected</span><button id="btn-start" onclick="startRedesign()" disabled>&#10024; Redesign selected</button></div>
+      <div class="psel-ft"><span class="psel-cnt" id="psel-cnt">0 selected</span><button id="btn-start" onclick="startRedesign()" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Redesign selected</button></div>
     </div>
   </div>
 
@@ -1016,9 +1017,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
   <div id="right">
     <div id="prev-topbar">
       <div class="ptitle" id="ptitle">Select a page</div>
-      <button id="btn-copy-html" onclick="copyPage()">&#128203; Copy HTML</button>
-      <button id="btn-add-content" onclick="toggleDrawer()">&#43; Add content</button>
-      <button id="btn-approve" onclick="toggleApprove()">&#10003; Approve</button>
+      <button id="btn-copy-html" onclick="copyPage()"><i class="fa-solid fa-copy"></i> Copy HTML</button>
+      <button id="btn-add-content" onclick="toggleDrawer()"><i class="fa-solid fa-circle-plus"></i> Add content</button>
+      <button id="btn-approve" onclick="toggleApprove()"><i class="fa-solid fa-check"></i> Approve</button>
       <div class="tb-sep" style="width:1px;height:16px;background:var(--border)"></div>
       <div class="vtog">
         <button class="vbtn on" id="vv" onclick="setView('preview')">Preview</button>
@@ -1039,10 +1040,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
       <button class="tbb" onclick="fmt('italic')"><em>I</em></button>
       <button class="tbb" onclick="fmt('underline')"><u>U</u></button>
       <div class="tbdiv"></div>
-      <button class="tbb" onclick="fmt('insertUnorderedList')">&#8226; List</button>
+      <button class="tbb" onclick="fmt('insertUnorderedList')"><i class="fa-solid fa-list-ul"></i> List</button>
       <button class="tbb" onclick="fmt('removeFormat')">Clear</button>
       <div class="tbdiv"></div>
-      <button class="tbb" onclick="fmt('fontSize','5')">A+</button>
+      <button class="tbb" onclick="fmt('fontSize','5')"><i class="fa-solid fa-text-height"></i> A+</button>
       <button class="tbb" onclick="fmt('fontSize','2')">A&#8722;</button>
       <span style="margin-left:auto;font-size:9px;color:var(--ink3)">Click any text to edit</span>
     </div>
@@ -1058,7 +1059,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
           </div>
           <div id="prev-err"></div>
           <div id="prev-empty">
-            <div class="pe-ico">&#127917;</div>
+            <div class="pe-ico"><i class="fa-solid fa-layer-group" style="font-size:32px;opacity:.14"></i></div>
             <div class="pe-t">Select a page from the left</div>
             <div class="pe-s">Click any page to see its preview here.</div>
           </div>
@@ -1072,10 +1073,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     <!-- ADD CONTENT DRAWER -->
     <div id="content-drawer">
       <div id="cd-header" onclick="toggleDrawerBody()">
-        <span style="font-size:14px">&#128196;</span>
+        <span style="font-size:14px"><i class="fa-solid fa-file-lines"></i></span>
         <span class="cd-title">Add content to this page</span>
         <span style="font-size:10px;color:var(--ink3);margin-right:4px">Word docs, images, PDFs, extra text</span>
-        <span class="cd-chevron" id="cd-chev">&#9650;</span>
+        <span class="cd-chevron" id="cd-chev"><i class="fa-solid fa-chevron-up" style="font-size:9px"></i></span>
       </div>
       <div id="cd-body">
 
@@ -1083,20 +1084,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         <div>
           <div class="drop-zone" id="drop-zone">
             <input type="file" id="cd-file-input" accept=".docx,.doc,.pdf,.pptx,.ppt,.txt,.jpg,.jpeg,.png,.webp,.gif" onchange="handleFileSelect(this)">
-            <div class="dz-ico">&#128196;</div>
+            <div class="dz-ico"><i class="fa-solid fa-file-lines"></i></div>
             <div class="dz-t">Drop a file here or click to browse</div>
             <div class="dz-s">We will extract the content and add it to the page</div>
             <div class="dz-types">
-              <span class="dz-type">&#128196; Word</span>
-              <span class="dz-type">&#128247; Images</span>
-              <span class="dz-type">&#128209; PDF</span>
-              <span class="dz-type">&#127912; PowerPoint</span>
-              <span class="dz-type">&#128220; Text</span>
+              <span class="dz-type"><i class="fa-solid fa-file-lines"></i> Word</span>
+              <span class="dz-type"><i class="fa-solid fa-image"></i> Images</span>
+              <span class="dz-type"><i class="fa-solid fa-file-pdf"></i> PDF</span>
+              <span class="dz-type"><i class="fa-solid fa-file-powerpoint"></i> PowerPoint</span>
+              <span class="dz-type"><i class="fa-solid fa-file-lines"></i> Text</span>
             </div>
           </div>
           <div id="cd-file-preview">
             <div class="fp-header">
-              <span class="fp-icon" id="fp-icon">&#128196;</span>
+              <span class="fp-icon" id="fp-icon"><i class="fa-solid fa-file-lines"></i></span>
               <span class="fp-name" id="fp-name">filename.docx</span>
               <span class="fp-size" id="fp-size"></span>
               <button class="fp-remove" onclick="clearFile()" title="Remove file">&times;</button>
@@ -1118,20 +1119,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         </div>
 
         <div class="cd-applying" id="cd-applying"><div class="minispin"></div>Adding content to your page&hellip;</div>
-        <button id="btn-cd-apply" onclick="applyAddedContent()">&#10133; Add to page</button>
+        <button id="btn-cd-apply" onclick="applyAddedContent()"><i class="fa-solid fa-circle-plus"></i> Add to page</button>
       </div>
     </div>
 
     <!-- VOICE / CHAT BAR -->
     <div id="voice-bar">
       <div class="vb-row">
-        <span class="vb-label">&#127908; Tell it what to change</span>
+        <span class="vb-label"><i class="fa-solid fa-microphone"></i> Tell it what to change</span>
         <div class="vb-applying" id="vb-applying"><div class="minispin"></div>Applying your changes&hellip;</div>
       </div>
       <div class="vb-row">
-        <button id="btn-mic" onclick="toggleMic()" title="Click to speak">&#127908;</button>
+        <button id="btn-mic" onclick="toggleMic()" title="Click to speak"><i class="fa-solid fa-microphone"></i></button>
         <textarea id="voice-transcript" rows="1" placeholder="Speak or type your changes&hellip; e.g. &ldquo;Make the tiles larger and use a darker hero background&rdquo;"></textarea>
-        <button id="btn-voice-send" onclick="applyVoiceEdit()">Apply &#8594;</button>
+        <button id="btn-voice-send" onclick="applyVoiceEdit()">Apply </button>
       </div>
       <div class="vb-examples">
         <span class="vb-ex" onclick="setPrompt('Make the hero banner darker and add a gradient')">Darker hero</span>
@@ -1144,7 +1145,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
     </div>
 
     <div id="paste-guide">
-      <span style="font-size:13px">&#9989;</span>
+      <span style="font-size:13px"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i></span>
       <span class="pg-t">In SharePoint: Edit page &rarr; <strong>+ Add web part</strong> &rarr; search <span class="pg-code">Embed</span> &rarr; paste HTML &rarr; <strong>Republish</strong></span>
     </div>
   </div>
@@ -1154,12 +1155,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 <!-- TEMPLATE MODAL -->
 <div id="tpl-modal" onclick="if(event.target===this)closeTplModal()">
   <div class="tpl-modal-card">
-    <h2>&#127775; Choose a design style</h2>
+    <h2><i class="fa-solid fa-swatchbook"></i> Choose a design style</h2>
     <p>This applies to all pages. Change it any time &mdash; your content stays the same.</p>
     <div class="tpl-modal-grid" id="tpl-modal-grid"></div>
     <div class="tpl-modal-ft">
       <span class="tpl-modal-note">Tip: After applying, use the voice bar to fine-tune any page.</span>
-      <div><button id="tpl-cancel" onclick="closeTplModal()">Cancel</button><button id="tpl-apply" onclick="applyTpl()">Apply this style &#8594;</button></div>
+      <div><button id="tpl-cancel" onclick="closeTplModal()">Cancel</button><button id="tpl-apply" onclick="applyTpl()">Apply this style </button></div>
     </div>
   </div>
 </div>
@@ -1340,7 +1341,7 @@ function tplHtml(id, pri, sec){
 }
 function updateTplPill(){
   var tpl = TEMPLATES[project.template] || TEMPLATES.heritage;
-  g('tpl-pill-label').textContent = tpl.name;
+  g('tpl-pill-label').textContent = tpl.name + ' '; // chevron added in HTML
   g('tpl-swatch').style.background = tpl.accent;
 }
 
@@ -1496,7 +1497,7 @@ function renderNode(node,container){
   var sec=document.createElement('div'); sec.className='tsec'; sec.id='tsec'+page.id;
   var row=document.createElement('div');
   row.className='tpar'+(isSel?' sel':''); row.id='prow'+page.id;
-  row.innerHTML='<span class="tchev" id="chev'+page.id+'">'+(hasKids?'&#9656;':'')+'</span>'
+  row.innerHTML='<span class="tchev" id="chev'+page.id+'">'+(hasKids?'<i class="fa-solid fa-chevron-right" style="font-size:8px"></i>':'')+'</span>'
     +'<div class="ticon" style="background:'+stBg(page.status)+'">'+stIco(page.status)+'</div>'
     +'<span class="ttitle">'+esc(page.title)+'</span>'
     +'<span class="sdot '+page.status+'" title="'+stLabel(page.status)+'"></span>';
@@ -1553,7 +1554,7 @@ function updateRow(id){
 
 function stLabel(s){return{pending:'Not generated yet',generating:'Generating with AI...',scraping:'Loading from website...',ready:'Ready to review',approved:'Approved',edited:'Edited',error:'Error — click Redo'}[s]||s;}
 function stBg(s){return{pending:'#F5F5F4',generating:'#EFF6FF',scraping:'#EFF6FF',ready:'#FFFBEB',approved:'#ECFDF5',edited:'#F5F3FF',error:'#FEF2F2'}[s]||'#F5F5F4';}
-function stIco(s){return{pending:'&middot;',generating:'&rsaquo;',scraping:'&rsaquo;',ready:'&#9733;',approved:'&#10003;',edited:'&#9998;',error:'!'}[s]||'';}
+function stIco(s){return{pending:'<i class="fa-regular fa-circle" style="font-size:8px;color:var(--ink3)"></i>',generating:'<i class="fa-solid fa-rotate" style="font-size:9px;color:#3B82F6"></i>',scraping:'<i class="fa-solid fa-rotate" style="font-size:9px;color:#3B82F6"></i>',ready:'<i class="fa-solid fa-star" style="font-size:9px;color:var(--amber)"></i>',approved:'<i class="fa-solid fa-check"></i>',edited:'<i class="fa-solid fa-pencil" style="font-size:9px"></i>',error:'!'}[s]||'';}
 
 // ── DISCOVERED SUB-PAGES ──────────────────────────────────
 function offerSubPages(page){
@@ -1581,8 +1582,8 @@ function addDiscovered(){
 function updateGenBtn(){
   var pend=project.pages.filter(function(p){return p.status==='pending';});
   var btn=g('btn-gen-next'), hint=g('genhint');
-  if(pend.length>0&&!isGen){ btn.classList.add('show'); btn.textContent='\u2728 Generate next ('+pend.length+' waiting)'; btn.disabled=false; hint.textContent=pend.length+' page'+(pend.length!==1?'s':'')+' waiting'; }
-  else if(isGen){ btn.classList.add('show'); btn.textContent='\u23F3 Generating...'; btn.disabled=true; hint.textContent='Please wait...'; }
+  if(pend.length>0&&!isGen){ btn.classList.add('show'); btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> Generate next ('+pend.length+' waiting)'; btn.disabled=false; hint.textContent=pend.length+' page'+(pend.length!==1?'s':'')+' waiting'; }
+  else if(isGen){ btn.classList.add('show'); btn.innerHTML='<i class="fa-solid fa-rotate fa-spin"></i> Generating...'; btn.disabled=true; hint.textContent='Please wait...'; }
   else{ btn.classList.remove('show'); hint.textContent='All pages processed'; }
 }
 
@@ -1705,7 +1706,7 @@ function selectPage(id){
 
   if(page.status==='pending'){
     showEmpty('&#9203;','Ready to generate','Click the button below to redesign this page with AI.');
-    g('prev-empty').innerHTML += '<div style="margin-top:16px"><button onclick="genThisPage()" style="padding:11px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">&#10024; Redesign this page</button></div>';
+    g('prev-empty').innerHTML += '<div style="margin-top:16px"><button onclick="genThisPage()" style="padding:11px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer"><i class="fa-solid fa-wand-magic-sparkles"></i> Redesign this page</button></div>';
   } else if(page.status==='scraping'||page.status==='generating') showLoading(page.status==='scraping'?'Loading from your website...':'AI is redesigning this page...');
   else if(page.status==='error'){
     g('prev-loading').classList.remove('show');
@@ -1774,10 +1775,10 @@ function toggleApprove(){
   saveProject(); updateRow(page.id); updateProgress();
   var ab=g('btn-approve');
   if(page.approved){
-    ab.textContent='&#10003; Approved'; ab.classList.add('on');
+    ab.textContent='<i class="fa-solid fa-check"></i> Approved'; ab.classList.add('on');
     var next=project.pages.find(function(p){return !p.approved&&(p.status==='ready'||p.status==='edited');});
     if(next) setTimeout(function(){selectPage(next.id);},350);
-  } else { ab.textContent='&#10003; Approve'; ab.classList.remove('on'); }
+  } else { ab.textContent='<i class="fa-solid fa-check"></i> Approve'; ab.classList.remove('on'); }
 }
 
 function copyPage(){
@@ -1800,14 +1801,14 @@ function initVoice(){
   recognition=new SR();
   recognition.continuous=false; recognition.interimResults=true; recognition.lang='en-AU';
   recognition.onresult=function(e){ var t=''; for(var i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript; g('voice-transcript').value=t; autoResizeTA(g('voice-transcript')); };
-  recognition.onend=function(){ isListening=false; g('btn-mic').classList.remove('listening'); g('btn-mic').innerHTML='&#127908;'; if(g('voice-transcript').value.trim()) applyVoiceEdit(); };
-  recognition.onerror=function(e){ isListening=false; g('btn-mic').classList.remove('listening'); g('btn-mic').innerHTML='&#127908;'; if(e.error!=='no-speech') alert('Mic error: '+e.error); };
+  recognition.onend=function(){ isListening=false; g('btn-mic').classList.remove('listening'); g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>'; if(g('voice-transcript').value.trim()) applyVoiceEdit(); };
+  recognition.onerror=function(e){ isListening=false; g('btn-mic').classList.remove('listening'); g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>'; if(e.error!=='no-speech') alert('Mic error: '+e.error); };
 }
 
 function toggleMic(){
   if(!recognition){alert('Voice input requires Chrome or Edge.');return;}
-  if(isListening){ recognition.stop(); isListening=false; g('btn-mic').classList.remove('listening'); g('btn-mic').innerHTML='&#127908;'; }
-  else { g('voice-transcript').value=''; recognition.start(); isListening=true; g('btn-mic').classList.add('listening'); g('btn-mic').innerHTML='&#9632;'; }
+  if(isListening){ recognition.stop(); isListening=false; g('btn-mic').classList.remove('listening'); g('btn-mic').innerHTML='<i class="fa-solid fa-microphone"></i>'; }
+  else { g('voice-transcript').value=''; recognition.start(); isListening=true; g('btn-mic').classList.add('listening'); g('btn-mic').innerHTML='<i class="fa-solid fa-stop"></i>'; }
 }
 
 function setPrompt(t){ g('voice-transcript').value=t; autoResizeTA(g('voice-transcript')); g('voice-transcript').focus(); }
@@ -2014,7 +2015,7 @@ async function applyAddedContent(){
   finally{ btn.disabled=false; g('cd-applying').classList.remove('show'); }
 }
 
-function getFileIcon(ext){ var m={docx:'&#128196;',doc:'&#128196;',pdf:'&#128209;',pptx:'&#127912;',ppt:'&#127912;',txt:'&#128220;',csv:'&#128200;',jpg:'&#128247;',jpeg:'&#128247;',png:'&#128247;',webp:'&#128247;',gif:'&#128247;'}; return m[ext]||'&#128196;'; }
+function getFileIcon(ext){ var m={docx:'<i class="fa-solid fa-file-lines"></i>',doc:'<i class="fa-solid fa-file-lines"></i>',pdf:'<i class="fa-solid fa-file-pdf"></i>',pptx:'<i class="fa-solid fa-file-powerpoint"></i>',ppt:'<i class="fa-solid fa-file-powerpoint"></i>',txt:'<i class="fa-solid fa-file-lines"></i>',csv:'<i class="fa-solid fa-file-csv"></i>',jpg:'<i class="fa-solid fa-image"></i>',jpeg:'<i class="fa-solid fa-image"></i>',png:'<i class="fa-solid fa-image"></i>',webp:'<i class="fa-solid fa-image"></i>',gif:'<i class="fa-solid fa-image"></i>'}; return m[ext]||'<i class="fa-solid fa-file-lines"></i>'; }
 function formatSize(b){ if(b<1024)return b+'B'; if(b<1048576)return Math.round(b/1024)+'KB'; return (b/1048576).toFixed(1)+'MB'; }
 </script>
 
