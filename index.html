@@ -372,7 +372,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
   <!-- STEP A: URL ENTRY -->
   <div class="ob-step active" id="ob-url">
     <div class="ob-logo-row">
-      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.4</span>
+      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.5</span>
     </div>
     <div class="ob-url-card">
       <h2>Let&#8217;s redesign your school website</h2>
@@ -727,7 +727,7 @@ function tplPrev(id,pri,sec){
 // ══ DESIGN CSS ══════════════════════════════════════════════════
 var DESIGN_CSS={
 academy:function(pri,sec,hF,bF,fi){return fi+'\n'+[
-'.sp-wrap{max-width:960px;margin:0 auto;font-family:"'+hF+'",Georgia,serif;color:#1A1A1A;line-height:1.7;font-size:16px}',
+'.sp-wrap{max-width:960px;margin:0 auto;font-family:"'+bF+'",Arial,sans-serif;color:#1A1A1A;line-height:1.7;font-size:16px}',
 '.sp-nav{background:'+pri+';padding:12px 40px;display:flex;align-items:center;gap:20px}',
 '.sp-nav-logo img{height:44px;width:auto;object-fit:contain;filter:brightness(0)invert(1)}',
 '.sp-nav-school{color:#fff;font-family:"'+hF+'",Georgia,serif;font-size:16px;font-weight:700;flex:1}',
@@ -817,7 +817,7 @@ academy:function(pri,sec,hF,bF,fi){return fi+'\n'+[
 ].join('\n');},
 
 forward:function(pri,sec,hF,bF,fi){return fi+'\n'+[
-'.sp-wrap{max-width:960px;margin:0 auto;font-family:"'+hF+'",Arial,sans-serif;color:#111;line-height:1.6;font-size:15px}',
+'.sp-wrap{max-width:960px;margin:0 auto;font-family:"'+bF+'",Arial,sans-serif;color:#111;line-height:1.6;font-size:15px}',
 '.sp-nav{background:#0A0A0A;padding:0 40px;display:flex;align-items:center;gap:20px;height:56px}',
 '.sp-nav-logo img{height:36px;width:auto;object-fit:contain;filter:brightness(0)invert(1)}',
 '.sp-nav-school{color:#fff;font-family:"'+hF+'",Arial,sans-serif;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;flex:1}',
@@ -908,7 +908,7 @@ forward:function(pri,sec,hF,bF,fi){return fi+'\n'+[
 ].join('\n');},
 
 horizon:function(pri,sec,hF,bF,fi){return fi+'\n'+[
-'.sp-wrap{max-width:960px;margin:0 auto;font-family:"'+hF+'",Arial,sans-serif;color:#1E293B;line-height:1.75;font-size:15px}',
+'.sp-wrap{max-width:960px;margin:0 auto;font-family:"'+bF+'",Arial,sans-serif;color:#1E293B;line-height:1.75;font-size:15px}',
 '.sp-nav{background:#fff;padding:12px 40px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 16px rgba(0,0,0,.06)}',
 '.sp-nav-logo img{height:40px;width:auto;object-fit:contain}',
 '.sp-nav-school{color:'+pri+';font-family:"'+hF+'",Georgia,serif;font-size:15px;font-weight:700;flex:1}',
@@ -1041,10 +1041,16 @@ function sysPrompt(tpl,pri,sec,inv,heroImage,stats,colorSafety){
     'Never change dates, prices or statistics from source',
     'Never change an href or src URL — copy exactly',
     'Never truncate — output the COMPLETE page',
+    '','═══ ALSO NEVER DO ═══',
+    'No sp-nav — SharePoint already provides site navigation',
+    'No sp-footer — SharePoint already provides the site footer',
+    'No "Last reviewed", "Last updated", "Last modified" sections — SharePoint manages this automatically',
+    'No breadcrumbs unless they exist in the source content',
     '','═══ ALWAYS DO ═══',
     'One <style> block at top with ONLY the framework CSS (verbatim)',
     'Wrap page in <div class="sp-wrap">',
-    'Include sp-nav with school logo img, sp-hero, sp-footer on every page',
+    'Start directly with sp-hero — this is the very first element inside sp-wrap',
+    'End with the last content section — no footer',
     'All images: descriptive alt text. External links: target="_blank" rel="noopener"',
     'Output ONLY HTML — no markdown fences, no explanation',
     '','═══ COLOR SYSTEM ═══',
@@ -1092,7 +1098,7 @@ function userPrompt(page,inv,heroImage,stats){
     '1. Copy ALL source text EXACTLY',
     '2. Use ONLY sp- class names — zero CSS',
     '3. Place hero image in sp-hero-image, others in sp-image-feature or sp-tile img',
-    '4. Structure: sp-nav > sp-hero > sp-stats (if available) > content > sp-tile-grid or sp-card-grid > sp-footer',
+    '4. Structure: sp-hero > sp-stats (if available) > content sections > sp-tile-grid or sp-card-grid',
     '5. For linked programs/activities: use sp-tile-grid with sp-tile for each item',
     '6. PDF/document links: use sp-download with sp-download-icon',
     '7. Do NOT stop early — complete page required',
@@ -1325,7 +1331,7 @@ function openVariants(){
   });
 }
 async function genVariant(page,tpl,pri,sec,mod){
-  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:4096,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)+(mod?'\n\nSTYLING VARIATION: '+mod:'')}]})});
+  var res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:6000,system:sysPrompt(tpl,pri,sec),messages:[{role:'user',content:userPrompt(page)+(mod?'\n\nSTYLING VARIATION: '+mod:'')}]})});
   if(!res.ok)throw new Error('API '+res.status);
   var data=await res.json();
   var html=(data.content&&data.content[0]&&data.content[0].text)||'';
