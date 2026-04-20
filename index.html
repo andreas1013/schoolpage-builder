@@ -372,7 +372,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
   <!-- STEP A: URL ENTRY -->
   <div class="ob-step active" id="ob-url">
     <div class="ob-logo-row">
-      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.6</span>
+      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.7</span>
     </div>
     <div class="ob-url-card">
       <h2>Let&#8217;s redesign your school website</h2>
@@ -421,7 +421,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
           <input type="color" id="c-sec" value="#f07f24" oninput="onColor('sec')">
         </div>
       </div>
-      <div class="ob-font-section">
+      <div class="ob-font-section" style="display:none">
         <div class="ob-colors-label"><i class="fa-solid fa-font" style="color:var(--blue);margin-right:4px"></i> Typography</div>
         <div id="ob-detected-font-row" style="display:none;padding:8px 10px;background:var(--green-lt);border-radius:8px;border:1px solid rgba(52,199,89,.2);margin-bottom:8px;font-size:11px;color:#1A7A35;align-items:center;gap:6px">
           <i class="fa-solid fa-check-circle"></i>
@@ -794,8 +794,9 @@ academy:function(pri,sec,hF,bF,fi){return fi+'\n'+[
 '.sp-links-list li a::after{content:"&#8594;";color:'+sec+';font-size:16px}',
 '.sp-btn{display:inline-flex;align-items:center;gap:8px;background:'+pri+';color:#fff;padding:13px 26px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:700;font-family:"'+hF+'",Georgia,serif;transition:all .2s;border:2px solid '+pri+'}',
 '.sp-btn:hover{background:'+sec+';border-color:'+sec+';transform:translateY(-2px)}',
-'.sp-btn-outline{background:transparent;color:'+pri+'}',
-'.sp-btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.4)}',
+'.sp-btn-outline{background:transparent;color:'+pri+';border-color:'+pri+'}',
+'.sp-btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:8px}',
+'.sp-btn-ghost:hover{background:rgba(255,255,255,.28)}',
 '.sp-download{display:flex;align-items:center;gap:12px;padding:14px 18px;background:#F8F6F1;border:1px solid #E8E4DC;border-radius:10px;text-decoration:none;color:'+pri+';margin:8px 0;transition:all .15s;font-size:14px;font-weight:500}',
 '.sp-download:hover{background:#fff;border-color:'+pri+';box-shadow:0 4px 12px rgba(0,0,0,.08)}',
 '.sp-download-icon{width:36px;height:36px;background:'+pri+';border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0}',
@@ -888,7 +889,8 @@ forward:function(pri,sec,hF,bF,fi){return fi+'\n'+[
 '.sp-btn{display:inline-flex;align-items:center;gap:8px;background:'+sec+';color:#111;padding:14px 32px;border-radius:40px;text-decoration:none;font-size:13px;font-weight:900;font-family:"'+hF+'",Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px;transition:all .2s}',
 '.sp-btn:hover{background:'+pri+';color:#fff;transform:scale(1.03)}',
 '.sp-btn-outline{background:transparent;color:'+pri+';border:2px solid '+pri+'}',
-'.sp-btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5)}',
+'.sp-btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5);border-radius:40px}',
+'.sp-btn-ghost:hover{background:rgba(255,255,255,.15)}',
 '.sp-download{display:flex;align-items:center;gap:14px;padding:14px 18px;background:#fff;border-radius:10px;text-decoration:none;color:'+pri+';margin:8px 0;transition:all .15s;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;box-shadow:0 2px 8px rgba(0,0,0,.07)}',
 '.sp-download:hover{box-shadow:0 6px 20px rgba(0,0,0,.12);transform:translateY(-2px)}',
 '.sp-download-icon{width:40px;height:40px;background:'+pri+';border-radius:8px;display:flex;align-items:center;justify-content:center;color:'+sec+';font-size:18px;flex-shrink:0}',
@@ -979,7 +981,8 @@ horizon:function(pri,sec,hF,bF,fi){return fi+'\n'+[
 '.sp-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,'+pri+','+pri+'CC);color:#fff;padding:13px 28px;border-radius:12px;text-decoration:none;font-size:14px;font-weight:700;font-family:"'+hF+'",Georgia,serif;transition:all .2s;box-shadow:0 4px 14px rgba(0,0,0,.15)}',
 '.sp-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}',
 '.sp-btn-outline{background:transparent;color:'+pri+';border:2px solid '+pri+';box-shadow:none}',
-'.sp-btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3)}',
+'.sp-btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4);border-radius:12px}',
+'.sp-btn-ghost:hover{background:rgba(255,255,255,.28)}',
 '.sp-download{display:flex;align-items:center;gap:14px;padding:16px 20px;background:#fff;border:1px solid #E2E8F0;border-radius:14px;text-decoration:none;color:'+pri+';margin:10px 0;transition:all .2s;font-size:14px;font-weight:600;font-family:"'+hF+'",Georgia,serif;box-shadow:0 2px 8px rgba(0,0,0,.05)}',
 '.sp-download:hover{box-shadow:0 8px 28px rgba(0,0,0,.1);transform:translateY(-2px)}',
 '.sp-download-icon{width:44px;height:44px;background:linear-gradient(135deg,'+pri+','+pri+'CC);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}',
@@ -1002,11 +1005,10 @@ horizon:function(pri,sec,hF,bF,fi){return fi+'\n'+[
 };// end DESIGN_CSS
 
 function getDesignCss(tplId,pri,sec){
-  var tpl=TEMPLATES[tplId]||TEMPLATES.academy;
-  var hF=project.headingFont||tpl.headingFont||'Playfair Display';
-  var bF=project.bodyFont||tpl.bodyFont||'Source Sans 3';
-  var fontUrl=project.googleFontUrl||tpl.googleFont||'';
-  var fi=fontUrl?"@import url('"+fontUrl+"');":"";
+  // Always Open Sans — consistent, readable, accessible
+  var hF='Open Sans';
+  var bF='Open Sans';
+  var fi="@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');";
   var id=tplId==='forward'?'forward':tplId==='horizon'?'horizon':'academy';
   return DESIGN_CSS[id](pri,sec,hF,bF,fi);
 }
@@ -1046,12 +1048,18 @@ function sysPrompt(tpl,pri,sec,inv,heroImage,stats,colorSafety){
     'No sp-footer — SharePoint already provides the site footer',
     'No "Last reviewed", "Last updated", "Last modified" sections — SharePoint manages this automatically',
     'No breadcrumbs unless they exist in the source content',
+    'No emoji or emoticons anywhere — strictly prohibited',
+    'No "Print this page", "Print", or "Download PDF" buttons',
+    'No raw <a> or <button> with inline border styles — always use sp-btn, sp-btn-outline, or sp-btn-ghost',
+    'No other fonts — Open Sans is the only font used throughout',
     '','═══ ALWAYS DO ═══',
     'One <style> block at top with ONLY the framework CSS (verbatim)',
     'Wrap page in <div class="sp-wrap">',
     'Start directly with sp-hero — this is the very first element inside sp-wrap',
     'End with the last content section — no footer',
     'All images: descriptive alt text. External links: target="_blank" rel="noopener"',
+    'Font: Open Sans only — already imported via @import in the framework CSS',
+    'Icons: use Font Awesome 6 classes only e.g. <i class="fa-solid fa-check"></i> — already loaded, do not draw SVG',
     'Output ONLY HTML — no markdown fences, no explanation',
     '','═══ COLOR SYSTEM ═══',
     'Primary: '+safeColor+' — text on this MUST be '+textOnPri,
