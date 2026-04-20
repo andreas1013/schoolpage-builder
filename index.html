@@ -78,7 +78,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .ob-color-swatch:hover{border-color:var(--blue);box-shadow:var(--shadow)}
 .ob-color-preview{height:44px;border-radius:8px;margin-bottom:10px;transition:background .2s}
 .ob-color-swatch-label{font-size:11px;font-weight:600;color:var(--ink2);display:block;margin-bottom:2px}
-.ob-color-hex{font-size:11px;color:var(--ink3);font-family:monospace}
+.ob-color-hex{font-size:11px;color:var(--ink3);font-family:monospace;border:none;background:none;outline:none;width:100%;cursor:text;padding:0}
 .ob-color-swatch input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .ob-detected-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--green-lt);border-radius:20px;font-size:10px;font-weight:600;color:#1A7A35;margin-bottom:16px}
 .ob-brand-note{font-size:11px;color:var(--ink3);line-height:1.6;margin-bottom:20px}
@@ -372,7 +372,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
   <!-- STEP A: URL ENTRY -->
   <div class="ob-step active" id="ob-url">
     <div class="ob-logo-row">
-      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.5</span>
+      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.6</span>
     </div>
     <div class="ob-url-card">
       <h2>Let&#8217;s redesign your school website</h2>
@@ -411,13 +411,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
         <div class="ob-color-swatch" id="ob-swatch-pri">
           <div class="ob-color-preview" id="ob-pri-preview"></div>
           <span class="ob-color-swatch-label">Main colour</span>
-          <span class="ob-color-hex" id="ob-pri-hex">#1a3a6b</span>
+          <input class="ob-color-hex" id="ob-pri-hex" type="text" value="#1a3a6b" maxlength="7" spellcheck="false" oninput="onHexInput('pri',this)" onclick="this.select()">
           <input type="color" id="c-pri" value="#1a3a6b" oninput="onColor('pri')">
         </div>
         <div class="ob-color-swatch" id="ob-swatch-sec">
           <div class="ob-color-preview" id="ob-sec-preview"></div>
           <span class="ob-color-swatch-label">Accent colour</span>
-          <span class="ob-color-hex" id="ob-sec-hex">#f07f24</span>
+          <input class="ob-color-hex" id="ob-sec-hex" type="text" value="#f07f24" maxlength="7" spellcheck="false" oninput="onHexInput('sec',this)" onclick="this.select()">
           <input type="color" id="c-sec" value="#f07f24" oninput="onColor('sec')">
         </div>
       </div>
@@ -1480,12 +1480,22 @@ function onColor(which){
   project.primaryColor=pri;project.accentColor=sec;
   updateColorUI();renderOnboardingTemplates();renderStyleStrip();saveProject();
 }
+function onHexInput(which, el){
+  var val = el.value.trim();
+  if(!val.startsWith('#')) val = '#' + val;
+  // Only apply when it's a valid full hex
+  if(/^#[0-9a-fA-F]{6}$/.test(val)){
+    if(which==='pri') project.primaryColor = val;
+    else project.accentColor = val;
+    updateColorUI();renderOnboardingTemplates();renderStyleStrip();saveProject();
+  }
+}
 function updateColorUI(){
   var pri=project.primaryColor,sec=project.accentColor;
   var pp=g('ob-pri-preview');if(pp)pp.style.background=pri;
   var sp=g('ob-sec-preview');if(sp)sp.style.background=sec;
-  var ph=g('ob-pri-hex');if(ph)ph.textContent=pri;
-  var sh=g('ob-sec-hex');if(sh)sh.textContent=sec;
+  var ph=g('ob-pri-hex');if(ph)ph.value=pri;
+  var sh=g('ob-sec-hex');if(sh)sh.value=sec;
   ['c-pri','ot-c-pri'].forEach(function(id){var el=g(id);if(el)el.value=pri;});
   ['c-sec','ot-c-sec'].forEach(function(id){var el=g(id);if(el)el.value=sec;});
   var pd=g('ot-pri-dot');if(pd)pd.style.background=pri;
