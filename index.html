@@ -372,7 +372,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
   <!-- STEP A: URL ENTRY -->
   <div class="ob-step active" id="ob-url">
     <div class="ob-logo-row">
-      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.7</span>
+      <span class="ob-logo">School<em>Page</em></span><span class="ob-ver">v2.8</span>
     </div>
     <div class="ob-url-card">
       <h2>Let&#8217;s redesign your school website</h2>
@@ -669,10 +669,9 @@ var FONT_PAIRINGS=[
 
 // ══ TEMPLATE PREVIEWS ════════════════════════════════════════════
 function tplPrev(id,pri,sec){
-  var tpl=TEMPLATES[id];
-  var fl=tpl?'<link href="'+tpl.googleFont+'" rel="stylesheet">':'';
-  var hF=tpl?"'"+tpl.headingFont+"',Georgia,serif":'Georgia,serif';
-  var bF=tpl?"'"+tpl.bodyFont+"',Arial,sans-serif":'Arial,sans-serif';
+  var fl='<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">';
+  var hF="'Open Sans',Arial,sans-serif";
+  var bF="'Open Sans',Arial,sans-serif";
   var school=(typeof project!=='undefined'&&project.schoolName)||'School Name';
   if(id==='academy')return'<!DOCTYPE html><html><head><meta charset="UTF-8">'+fl+'<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#F8F6F1;font-family:'+bF+'}</style></head><body>'
     +'<div style="background:'+pri+';padding:18px 20px;position:relative;overflow:hidden">'
@@ -1133,7 +1132,10 @@ function selectPage(id){
   else if(page.status==='scraping'||page.status==='generating'){showLoading(page.status==='scraping'?'Loading from your website\u2026':'AI is creating your new design\u2026');}
   else if(page.status==='error'){
     g('prev-loading').classList.remove('show');g('prev-iframe').style.display='none';g('prev-empty').style.display='none';
-    pe.textContent='Error: '+(page.error||'Unknown')+'. Use the voice bar to try again.';
+    pe.textContent='';
+    pe.innerHTML='<strong>Generation failed:</strong> '+(page.error||'Unknown error')+'<br><br>'
+      +'<button onclick="retryPage()" style="margin-top:8px;padding:8px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer"><i class="fa-solid fa-rotate-right"></i> Retry</button>'
+      +'<span style="margin-left:10px;font-size:11px;color:var(--ink3)">or use the voice bar to regenerate</span>';
     pe.style.display='block';pe.classList.add('show');if(vb)vb.classList.add('show');
   }else if(page.generatedHTML){
     setView('preview');showIframe(page.generatedHTML);
@@ -1767,6 +1769,12 @@ function updateGenBtn(){
   else{btn.classList.remove('show');if(hint)hint.textContent='All done';}
 }
 function genNext(){if(!isGen)processNext();}
+function retryPage(){
+  var page=project.pages.find(function(p){return p.id===selId;});
+  if(!page)return;
+  page.status='pending';page.error='';page.generatedHTML='';
+  saveProject();updateRow(page.id);genThisPage();
+}
 async function genThisPage(){
   var page=project.pages.find(function(p){return p.id===selId;});if(!page||page.status!=='pending'||isGen)return;
   isGen=true;updateGenBtn();await runPageGeneration(page);isGen=false;updateGenBtn();showStylePromptIfFirstPage();
@@ -1782,7 +1790,16 @@ async function runPageGeneration(page){
   page.status='generating';saveProject();updateRow(page.id);
   if(selId===page.id){showLoading('AI is designing your page...');var ls=g('ld-sub');if(ls)ls.textContent='Using Claude Sonnet \u2014 ~20 seconds';}
   try{page.generatedHTML=await genHtml(page);page.status='ready';page.error='';}
-  catch(e){page.status='error';page.error=e.message;}
+  catch(e){
+    // Auto-retry once on network errors
+    if(e.message&&(e.message.includes('NetworkError')||e.message.includes('fetch')||e.message.includes('Failed to fetch'))){
+      try{
+        await new Promise(function(r){setTimeout(r,2500);});
+        updateGenStatus(page.id,'Retrying...');
+        page.generatedHTML=await genHtml(page);page.status='ready';page.error='';
+      }catch(e2){page.status='error';page.error=e2.message;}
+    } else {page.status='error';page.error=e.message;}
+  }
   saveProject();updateRow(page.id);if(selId===page.id)selectPage(page.id);updateProgress();
 }
 
